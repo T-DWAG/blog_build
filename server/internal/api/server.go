@@ -23,11 +23,16 @@ func New(cfg config.Config, st *store.Store) *Server {
 	return &Server{cfg: cfg, st: st}
 }
 
-// Handler 只挂 GET /healthz，本步不挂任何业务路由。
+// Handler 挂路由。login 不鉴权；其余 /api/admin/* 一律先过 RequireAdmin。
 func (s *Server) Handler() http.Handler {
 	gin.SetMode(gin.ReleaseMode)
 	r := gin.New()
 	r.GET("/healthz", gin.WrapF(Health))
+
+	r.POST("/api/admin/login", s.Login)
+
+	admin := r.Group("/api/admin", s.RequireAdmin)
+	admin.GET("/ping", s.AdminPing)
 	return r
 }
 

@@ -4,6 +4,7 @@ import (
 	"context"
 	"database/sql"
 	"errors"
+	"time"
 
 	_ "github.com/jackc/pgx/v5/stdlib" // 注册 pgx 驱动
 )
@@ -12,7 +13,17 @@ import (
 var (
 	ErrNoDatabaseURL    = errors.New("store: no database url")
 	ErrEmptyPasswordHash = errors.New("store: empty password hash")
+	ErrNotFound          = errors.New("store: not found")
 )
+
+// Admin 对应 admin_users 表的一行。
+type Admin struct {
+	ID            int64
+	Username      string
+	PasswordHash  string
+	FailedAttempts int
+	LockedUntil   *time.Time
+}
 
 // Store 持有数据库连接池。
 type Store struct {
@@ -49,6 +60,45 @@ func (s *Store) SeedAdmin(ctx context.Context, username, passwordHash string) er
 		`INSERT INTO admin_users (username, password_hash) VALUES ($1, $2)
 		 ON CONFLICT (username) DO NOTHING`,
 		username, passwordHash)
+	return err
+}
+
+// GetAdminByUsername 按用户名取管理员，无行 → ErrNotFound。
+func (s *Store) GetAdminByUsername(ctx context.Context, username string) (*Admin, error) {
+	var a Admin
+	err := s.db.QueryRowContext(ctx,
+		`SELECT id, username, password_hash, failed_attempts, locked_until
+		 FROM admin_users WHERE username = $1`,
+		username).Scan(&a.ID, &a.Username, &a.PasswordHash, &a.FailedAttempts, &a.LockedUntil)
+	if errors.Is(err, sql.ErrNoRows) {
+		return nil, ErrNotFound
+	}
+	if err != nil {
+		return nil, err
+	}
+	return &a, nil
+}
+
+// RecordLoginFail 失败次数 +1；加后 >=5 则锁定 10 分钟。
+func (s *Store) RecordLoginFail(ctx context.Context, adminID int64) error {
+	_, err := s.db.ExecContext(ctx,
+		`UPDATE admin_users
+		 SET failed_attempts = failed_attempts + 1,
+		     locked_until = CASE
+		         WHEN failed_attempts + 1 >= 5 THEN now() + interval '10 minutes'
+		         ELSE locked_until END
+		 WHERE id = $1`,
+		adminID)
+	return err
+}
+
+// RecordLoginOK 登录成功：清零失败次数、解除锁定、记录登录时间。
+func (s *Store) RecordLoginOK(ctx context.Context, adminID int64) error {
+	_, err := s.db.ExecContext(ctx,
+		`UPDATE admin_users
+		 SET failed_attempts = 0, locked_until = NULL, last_login_at = now()
+		 WHERE id = $1`,
+		adminID)
 	return err
 }
 

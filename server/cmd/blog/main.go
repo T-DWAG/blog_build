@@ -4,9 +4,8 @@ import (
 	"context"
 	"log"
 
-	"golang.org/x/crypto/bcrypt"
-
 	"github.com/T-DWAG/blog_build/server/internal/api"
+	"github.com/T-DWAG/blog_build/server/internal/auth"
 	"github.com/T-DWAG/blog_build/server/internal/config"
 	"github.com/T-DWAG/blog_build/server/internal/store"
 )
@@ -28,7 +27,7 @@ func main() {
 		log.Fatalf("migrate: %v", err)
 	}
 
-	hash, err := bcrypt.GenerateFromPassword([]byte(cfg.AdminPassword), bcrypt.DefaultCost)
+	hash, err := auth.Hash(cfg.AdminPassword)
 	if err != nil {
 		log.Fatalf("hash password: %v", err)
 	}
