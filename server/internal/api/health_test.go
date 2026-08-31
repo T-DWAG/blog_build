@@ -7,10 +7,11 @@ import (
 	"testing"
 
 	"github.com/T-DWAG/blog_build/server/internal/config"
+	"github.com/T-DWAG/blog_build/server/internal/store"
 )
 
 func TestHealth(t *testing.T) {
-	srv := New(config.Config{Addr: ":0"})
+	srv := New(config.Config{Addr: ":0"}, &store.Store{})
 	req := httptest.NewRequest(http.MethodGet, "/healthz", nil)
 	rec := httptest.NewRecorder()
 
@@ -37,9 +38,8 @@ func TestHealth(t *testing.T) {
 }
 
 func TestHealth_NoAuthHeader(t *testing.T) {
-	srv := New(config.Config{Addr: ":0"})
+	srv := New(config.Config{Addr: ":0"}, &store.Store{})
 	req := httptest.NewRequest(http.MethodGet, "/healthz", nil)
-	// 显式不设置 Authorization 头
 	rec := httptest.NewRecorder()
 
 	srv.Handler().ServeHTTP(rec, req)
@@ -47,4 +47,25 @@ func TestHealth_NoAuthHeader(t *testing.T) {
 	if rec.Code != http.StatusOK {
 		t.Fatalf("status = %d, want %d", rec.Code, http.StatusOK)
 	}
+}
+
+func TestHealth_StillNoAuth(t *testing.T) {
+	srv := New(config.Config{Addr: ":0"}, &store.Store{})
+	req := httptest.NewRequest(http.MethodGet, "/healthz", nil)
+	rec := httptest.NewRecorder()
+
+	srv.Handler().ServeHTTP(rec, req)
+
+	if rec.Code != http.StatusOK {
+		t.Fatalf("status = %d, want 200 (healthz 不应要求鉴权)", rec.Code)
+	}
+}
+
+func TestListen_RequiresStore(t *testing.T) {
+	defer func() {
+		if r := recover(); r == nil {
+			t.Fatal("New with nil store 应 panic")
+		}
+	}()
+	New(config.Config{Addr: ":0"}, nil)
 }

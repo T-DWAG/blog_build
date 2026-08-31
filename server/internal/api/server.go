@@ -6,16 +6,21 @@ import (
 	"github.com/gin-gonic/gin"
 
 	"github.com/T-DWAG/blog_build/server/internal/config"
+	"github.com/T-DWAG/blog_build/server/internal/store"
 )
 
-// Server 持有启动进程所需的依赖。S01 只持有配置。
+// Server 持有启动进程所需的依赖。
 type Server struct {
 	cfg config.Config
+	st  *store.Store
 }
 
-// New 构造一个 Server。
-func New(cfg config.Config) *Server {
-	return &Server{cfg: cfg}
+// New 构造一个 Server。st 不能为 nil。
+func New(cfg config.Config, st *store.Store) *Server {
+	if st == nil {
+		panic("store is nil")
+	}
+	return &Server{cfg: cfg, st: st}
 }
 
 // Handler 只挂 GET /healthz，本步不挂任何业务路由。
