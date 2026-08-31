@@ -41,8 +41,11 @@ func (s *Server) Handler() http.Handler {
 	r.POST("/api/messages", s.SubmitMessage)
 	r.GET("/api/search", s.Search)
 	r.GET("/api/tags", s.Tags)
+	r.GET("/api/ai/suggestions", s.Suggestions)
 
 	admin := r.Group("/api/admin", s.RequireAdmin)
+	admin.GET("/settings", s.GetSettings)
+	admin.PUT("/settings", s.PutSettings)
 	admin.GET("/articles", s.ListArticlesAdmin)
 	admin.POST("/articles", s.CreateArticle)
 	admin.PUT("/articles/:id", s.UpdateArticle)

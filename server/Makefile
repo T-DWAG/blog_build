@@ -1,4 +1,4 @@
-.PHONY: run db-up test-s1 test-s2 test-s3 test-s4 test-s5 test-s6 test-s7
+.PHONY: run db-up test-s1 test-s2 test-s3 test-s4 test-s5 test-s6 test-s7 test-s8
 
 run:
 	go run ./cmd/blog
@@ -56,3 +56,11 @@ test-s7:
 	fi
 	@DATABASE_URL="$${DATABASE_URL:-postgres://postgres:postgres@localhost:5432/blog?sslmode=disable}" \
 		go test ./... -run 'TestSearch|TestTags' -v
+
+test-s8:
+	@if ! docker compose ps --status running db >/dev/null 2>&1; then \
+		echo "db 未运行，先执行: docker compose up -d db"; \
+		exit 1; \
+	fi
+	@DATABASE_URL="$${DATABASE_URL:-postgres://postgres:postgres@localhost:5432/blog?sslmode=disable}" \
+		go test ./... -run 'TestSettings|TestSuggestions' -v
