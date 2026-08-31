@@ -34,12 +34,17 @@ func (s *Server) Handler() http.Handler {
 	// 公开
 	r.GET("/api/articles", s.ListArticles)
 	r.GET("/api/articles/:slug", s.GetArticle)
+	r.GET("/api/projects", s.ListProjects)
 
 	admin := r.Group("/api/admin", s.RequireAdmin)
 	admin.GET("/articles", s.ListArticlesAdmin)
 	admin.POST("/articles", s.CreateArticle)
 	admin.PUT("/articles/:id", s.UpdateArticle)
 	admin.DELETE("/articles/:id", s.DeleteArticle)
+	admin.GET("/projects", s.ListProjectsAdmin)
+	admin.POST("/projects", s.CreateProject)
+	admin.PUT("/projects/:id", s.UpdateProject)
+	admin.DELETE("/projects/:id", s.DeleteProject)
 	return r
 }
 

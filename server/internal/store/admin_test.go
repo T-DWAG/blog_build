@@ -15,6 +15,9 @@ var adminCounter int
 // seedTestAdmin 种一个唯一用户名的管理员，返回 (admin, username)。
 func seedTestAdmin(t *testing.T, st *Store, prefix string) (*Admin, string) {
 	t.Helper()
+	// 清理本测试可能残留的同名用户（跨进程不唯一，须先删）
+	_, _ = st.db.ExecContext(context.Background(),
+		`DELETE FROM admin_users WHERE username LIKE $1`, prefix+"-%")
 	adminCounter++
 	username := prefix + "-" + strconv.Itoa(adminCounter)
 	hash, err := auth.Hash("correct-password")

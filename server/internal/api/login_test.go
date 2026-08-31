@@ -36,14 +36,18 @@ func newTestServer(t *testing.T, username string) (*Server, *store.Store) {
 	if err := st.Migrate(ctx); err != nil {
 		t.Fatalf("migrate: %v", err)
 	}
-	// 清空 articles，保证测试间数据隔离（每次测试从干净状态开始）
+	// 清空业务表，保证测试间数据隔离（每次测试从干净状态开始）
 	cleanupDB, err := sql.Open("pgx", url)
 	if err != nil {
 		t.Fatalf("open cleanup db: %v", err)
 	}
 	t.Cleanup(func() { cleanupDB.Close() })
-	if _, err := cleanupDB.ExecContext(ctx, `TRUNCATE articles`); err != nil {
-		t.Fatalf("truncate articles: %v", err)
+	if _, err := cleanupDB.ExecContext(ctx, `TRUNCATE articles, projects`); err != nil {
+		t.Fatalf("truncate tables: %v", err)
+	}
+	// 先删同名管理员，避免跨进程残留失败计数/锁定状态影响断言
+	if _, err := cleanupDB.ExecContext(ctx, `DELETE FROM admin_users WHERE username = $1`, username); err != nil {
+		t.Fatalf("cleanup admin: %v", err)
 	}
 	hash, err := auth.Hash("correct-password")
 	if err != nil {
