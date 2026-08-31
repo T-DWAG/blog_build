@@ -66,19 +66,31 @@ func (s *Server) Login(c *gin.Context) {
 		WriteErr(c.Writer, http.StatusInternalServerError, http.StatusInternalServerError, "internal error")
 		return
 	}
+	// 管理台页面走 cookie（HttpOnly）。Path=/ 覆盖 /api/admin/* 与 /admin/* 两类路径。
+	http.SetCookie(c.Writer, &http.Cookie{
+		Name:     "admin_token",
+		Value:    token,
+		Path:     "/",
+		HttpOnly: true,
+		SameSite: http.SameSiteLaxMode,
+	})
 	WriteOK(c.Writer, map[string]string{"token": token})
 }
 
-// RequireAdmin 校验 Authorization: Bearer <token>，失败 401。
-// 成功后用户名写入 request context。
+// RequireAdmin 校验令牌。优先级：Authorization: Bearer > cookie admin_token。
+// 失败 401；成功后用户名写入 request context。
 func (s *Server) RequireAdmin(c *gin.Context) {
-	header := c.GetHeader("Authorization")
-	if !strings.HasPrefix(header, "Bearer ") {
+	token := ""
+	if header := c.GetHeader("Authorization"); strings.HasPrefix(header, "Bearer ") {
+		token = strings.TrimPrefix(header, "Bearer ")
+	} else if cookie, err := c.Cookie("admin_token"); err == nil {
+		token = cookie
+	}
+	if token == "" {
 		WriteErr(c.Writer, http.StatusUnauthorized, http.StatusUnauthorized, "unauthorized")
 		c.Abort()
 		return
 	}
-	token := strings.TrimPrefix(header, "Bearer ")
 	username, err := auth.Parse(token, s.cfg.JWTSecret)
 	if err != nil {
 		WriteErr(c.Writer, http.StatusUnauthorized, http.StatusUnauthorized, "unauthorized")
@@ -89,4 +101,49 @@ func (s *Server) RequireAdmin(c *gin.Context) {
 	ctx := context.WithValue(c.Request.Context(), ctxUser, username)
 	c.Request = c.Request.WithContext(ctx)
 	c.Next()
+}
+
+// usernameFrom 取 RequireAdmin 写入的用户名。
+func usernameFrom(ctx context.Context) string {
+	u, _ := ctx.Value(ctxUser).(string)
+	return u
+}
+
+// changePasswordReq 是改密码请求体。
+type changePasswordReq struct {
+	Old string `json:"old"`
+	New string `json:"new"`
+}
+
+// ChangePassword POST /api/admin/password。旧密码错误 → 401。
+func (s *Server) ChangePassword(c *gin.Context) {
+	username := usernameFrom(c.Request.Context())
+	if username == "" {
+		WriteErr(c.Writer, http.StatusUnauthorized, http.StatusUnauthorized, "unauthorized")
+		return
+	}
+	var req changePasswordReq
+	if err := c.ShouldBindJSON(&req); err != nil {
+		WriteErr(c.Writer, http.StatusBadRequest, http.StatusBadRequest, "bad request")
+		return
+	}
+	admin, err := s.st.GetAdminByUsername(c.Request.Context(), username)
+	if err != nil {
+		WriteErr(c.Writer, http.StatusUnauthorized, http.StatusUnauthorized, "unauthorized")
+		return
+	}
+	if err := auth.Compare(req.Old, admin.PasswordHash); err != nil {
+		WriteErr(c.Writer, http.StatusUnauthorized, http.StatusUnauthorized, "unauthorized")
+		return
+	}
+	hash, err := auth.Hash(req.New)
+	if err != nil {
+		WriteErr(c.Writer, http.StatusInternalServerError, http.StatusInternalServerError, "internal error")
+		return
+	}
+	if err := s.st.UpdateAdminPassword(c.Request.Context(), admin.ID, hash); err != nil {
+		WriteErr(c.Writer, http.StatusInternalServerError, http.StatusInternalServerError, "internal error")
+		return
+	}
+	WriteOK(c.Writer, map[string]bool{"ok": true})
 }

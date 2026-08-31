@@ -103,6 +103,24 @@ func (s *Store) RecordLoginOK(ctx context.Context, adminID int64) error {
 	return err
 }
 
+// UpdateAdminPassword 修改管理员密码。0 行 → ErrNotFound。
+func (s *Store) UpdateAdminPassword(ctx context.Context, adminID int64, newHash string) error {
+	res, err := s.db.ExecContext(ctx,
+		`UPDATE admin_users SET password_hash = $2, updated_at = now() WHERE id = $1`,
+		adminID, newHash)
+	if err != nil {
+		return err
+	}
+	n, err := res.RowsAffected()
+	if err != nil {
+		return err
+	}
+	if n == 0 {
+		return ErrNotFound
+	}
+	return nil
+}
+
 // SeedSettings 写入 5 个种子配置 key，已存在则不覆盖。
 // 目的：保证 key 存在（代码读取时不缺 key），不锁死业务值。
 // persona / embedding / suggestions 只占位，具体值由站主在管理台（S08）表单填写；

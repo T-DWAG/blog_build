@@ -79,6 +79,10 @@
   </div>
 
   <script>
+    // API_BASE：按运行环境指向后端。本机 8000 端口 → 127.0.0.1:8080；线上 Pages → 云服务器公网地址
+    window.API_BASE = (location.hostname === '127.0.0.1' || location.hostname === 'localhost')
+      ? 'http://127.0.0.1:8080' : 'https://api.t-dwag.space'; // TODO: 替换为你的云服务器后端地址
+
     (function () {
       var toggle = document.querySelector('.gonav-toggle');
       var gonav = document.getElementById('gonav');
@@ -90,15 +94,57 @@
       });
     })();
 
-    // 静态壳：提交时给出提示（后端 /api/messages 就绪后替换此逻辑）
-    var form = document.getElementById('gbForm');
-    if (form) {
+    // 留言板：接后端 /api/messages（已过审才显示）
+    (function () {
+      var form = document.getElementById('gbForm');
+      var list = document.getElementById('gbList');
+      var note = form.querySelector('.note');
+
+      function load() {
+        fetch(window.API_BASE + '/api/messages')
+          .then(function (r) { return r.json(); })
+          .then(function (env) {
+            var items = env.data || [];
+            if (!items.length) {
+              list.innerHTML = '<p class="note"><span class="q">?</span> 还没有留言，来抢沙发。</p>';
+              return;
+            }
+            list.innerHTML = items.map(function (m) {
+              return '<article class="gb-item"><div class="gb-head"><span class="gb-name">' +
+                m.nickname + '</span><span class="gb-time">' + (m.created_at || '').slice(0, 16) +
+                '</span></div><p>' + m.content + '</p></article>';
+            }).join('');
+          }).catch(function () {
+            list.innerHTML = '<p class="note"><span class="err">> 留言加载失败，稍后再试</span></p>';
+          });
+      }
+
       form.addEventListener('submit', function (e) {
         e.preventDefault();
-        var note = form.querySelector('.note');
-        note.innerHTML = '<span class="q">?</span> 留言接口尚未接入(计划 M3)。表单已就绪,后端上线即可使用。';
+        var nickname = form.querySelector('[name=nickname]').value.trim();
+        var content = form.querySelector('[name=content]').value.trim();
+        if (!nickname || !content) { note.innerHTML = '<span class="err">> 昵称和内容都要填</span>'; return; }
+        fetch(window.API_BASE + '/api/messages', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ nickname: nickname, content: content })
+        }).then(function (r) { return r.json(); })
+          .then(function (env) {
+            if (env.code === 0) {
+              note.innerHTML = '<span class="q">?</span> 已提交，等待站主审核后展示。';
+              form.querySelector('[name=content]').value = '';
+            } else if (env.code === 429) {
+              note.innerHTML = '<span class="err">> 一分钟内只能提交一条，稍后再试</span>';
+            } else {
+              note.innerHTML = '<span class="err">> ' + (env.msg || '提交失败') + '</span>';
+            }
+          }).catch(function () {
+            note.innerHTML = '<span class="err">> 网络错误，稍后再试</span>';
+          });
       });
-    }
+
+      load();
+    })();
   </script>
 </body>
 </html>

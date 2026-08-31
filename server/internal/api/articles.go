@@ -1,11 +1,13 @@
 package api
 
 import (
+	"bytes"
 	"errors"
 	"net/http"
 	"strconv"
 
 	"github.com/gin-gonic/gin"
+	"github.com/yuin/goldmark"
 
 	"github.com/T-DWAG/blog_build/server/internal/store"
 )
@@ -141,4 +143,24 @@ func writeStoreErr(c *gin.Context, err error) {
 	default:
 		WriteErr(c.Writer, http.StatusInternalServerError, http.StatusInternalServerError, "internal error")
 	}
+}
+
+// previewReq 是 Markdown 预览请求体。
+type previewReq struct {
+	ContentMD string `json:"content_md"`
+}
+
+// Preview POST /api/admin/preview，goldmark 渲染 Markdown 为 HTML（无 KaTeX）。
+func (s *Server) Preview(c *gin.Context) {
+	var req previewReq
+	if err := c.ShouldBindJSON(&req); err != nil {
+		WriteErr(c.Writer, http.StatusBadRequest, http.StatusBadRequest, "bad request")
+		return
+	}
+	var buf bytes.Buffer
+	if err := goldmark.Convert([]byte(req.ContentMD), &buf); err != nil {
+		WriteErr(c.Writer, http.StatusInternalServerError, http.StatusInternalServerError, "internal error")
+		return
+	}
+	WriteOK(c.Writer, map[string]string{"html": buf.String()})
 }

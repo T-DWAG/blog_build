@@ -68,6 +68,10 @@
   </div>
 
   <script>
+    // API_BASE：按运行环境指向后端。本机 8000 端口 → 127.0.0.1:8080；线上 Pages → 云服务器公网地址
+    window.API_BASE = (location.hostname === '127.0.0.1' || location.hostname === 'localhost')
+      ? 'http://127.0.0.1:8080' : 'https://api.t-dwag.space'; // TODO: 替换为你的云服务器后端地址
+
     (function () {
       var toggle = document.querySelector('.gonav-toggle');
       var gonav = document.getElementById('gonav');
@@ -79,42 +83,59 @@
       });
     })();
 
-    // 静态演示：匹配当前已知文章标题（后端 /api/search 就绪后替换）
+    // 搜索：接后端 /api/search?q=（文章标题/正文 + 项目标题，分组）
     var form = document.getElementById('searchForm');
     var input = document.getElementById('searchInput');
     var hint = document.getElementById('searchHint');
     var results = document.getElementById('searchResults');
-    var index = [
-      { type: '文章', name: 'singleflight：用一次查询合并一批并发请求', url: 'articles/singleflight.html' },
-      { type: '文章', name: '课程短链接项目的 SSRF 风险：从发现到修复思路', url: 'posts.html' },
-      { type: '文章', name: 'MySQL、ES 与 Redis：评价查询链路的一致性设计', url: 'posts.html' },
-      { type: '文章', name: 'Agent 工具设计三原则：失败语义、最少入参、幂等', url: 'posts.html' },
-      { type: '文章', name: '为什么 Agent 的瓶颈在工程，不在模型', url: 'posts.html' },
-      { type: '项目', name: 'AI Agent 智能平台', url: 'projects.html' },
-      { type: '项目', name: '电商评价系统', url: 'projects.html' },
-      { type: '项目', name: '短链接服务', url: 'projects.html' }
-    ];
-    function render(q) {
-      if (!q) { results.innerHTML = ''; return; }
-      var hits = index.filter(function (it) {
-        return it.name.toLowerCase().indexOf(q.toLowerCase()) > -1;
-      });
-      if (!hits.length) {
-        results.innerHTML = '<p class="search-hint"><span class="err">> grep: no matches found: "' + q + '"</span></p>';
+
+    function esc(s) {
+      var d = document.createElement('div');
+      d.textContent = s;
+      return d.innerHTML;
+    }
+
+    function render(env) {
+      var data = env.data || { articles: [], projects: [] };
+      var arts = data.articles || [];
+      var projs = data.projects || [];
+      if (!arts.length && !projs.length) {
+        results.innerHTML = '<p class="search-hint"><span class="err">> grep: no matches found: "' + esc(input.value) + '"</span></p>';
         return;
       }
       var html = '<div class="ls">';
-      hits.forEach(function (it) {
-        html += '<a class="ls-row" href="' + it.url + '"><span>' + it.type + '</span><span class="ls-dot">::</span><span style="grid-column:span 2">' + it.name + '</span><span class="ls-name" style="grid-column:auto">go →</span></a>';
+      arts.forEach(function (a) {
+        html += '<a class="ls-row" href="articles/' + esc(a.slug) + '.html"><span>文章</span><span class="ls-dot">::</span>' +
+          '<span style="grid-column:span 2">' + esc(a.title) + '</span><span class="ls-name" style="grid-column:auto">go →</span></a>';
+      });
+      projs.forEach(function (p) {
+        html += '<a class="ls-row" href="projects.html"><span>项目</span><span class="ls-dot">::</span>' +
+          '<span style="grid-column:span 2">' + esc(p.name) + '</span><span class="ls-name" style="grid-column:auto">go →</span></a>';
       });
       html += '</div>';
       results.innerHTML = html;
     }
+
+    function search(q) {
+      hint.textContent = '# 正在搜索…';
+      fetch(window.API_BASE + '/api/search?q=' + encodeURIComponent(q))
+        .then(function (r) { return r.json(); })
+        .then(function (env) {
+          hint.textContent = '# 搜索结果来自后端 /api/search';
+          render(env);
+        })
+        .catch(function () {
+          hint.textContent = '# 搜索失败';
+          results.innerHTML = '<p class="search-hint"><span class="err">> 搜索接口不可用，稍后再试</span></p>';
+        });
+    }
+
     if (form) {
       form.addEventListener('submit', function (e) {
         e.preventDefault();
-        render(input.value);
-        hint.textContent = '# 搜索接口将在后端就绪后接入,当前为静态演示';
+        var q = input.value.trim();
+        if (!q) { results.innerHTML = ''; return; }
+        search(q);
       });
     }
   </script>

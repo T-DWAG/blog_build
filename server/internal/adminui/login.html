@@ -1,0 +1,100 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>admin login — 从气象到代码</title>
+<style>
+@font-face {
+  font-family: "Fusion Pixel";
+  src: url("/admin-assets/fonts/fusion-pixel-12px-proportional-zh_hans.subset.woff2") format("woff2");
+  font-display: swap;
+}
+@font-face {
+  font-family: "Fusion Pixel Full";
+  src: url("/admin-assets/fonts/fusion-pixel-12px-proportional-zh_hans.ttf.woff2") format("woff2");
+  font-display: swap;
+}
+@font-face {
+  font-family: "Fusion Pixel Mono";
+  src: url("/admin-assets/fonts/fusion-pixel-12px-monospaced-zh_hans.subset.woff2") format("woff2");
+  font-display: swap;
+}
+@font-face {
+  font-family: "Fusion Pixel Mono Full";
+  src: url("/admin-assets/fonts/fusion-pixel-12px-monospaced-zh_hans.ttf.woff2") format("woff2");
+  font-display: swap;
+}
+
+:root{--black:#000;--white:#fff;--green:#00ff41;--lt-red:#ff5f57;--lt-yellow:#febc2e;--lt-green:#28c840;
+--fp:"Fusion Pixel","Fusion Pixel Full","PingFang SC","Microsoft YaHei",sans-serif;
+--mono:"Fusion Pixel Mono","Fusion Pixel Mono Full","Courier New","PingFang SC",monospace}
+*{box-sizing:border-box}
+body{margin:0;min-width:320px;color:var(--black);background:var(--black);border:12px solid var(--black);font-family:var(--fp);font-size:15px;line-height:1.85;cursor:url("/admin-assets/assets/cursor_default.svg") 0 0,default}
+a,button,input{cursor:url("/admin-assets/assets/cursor_pointer.svg") 0 0,pointer}
+.pixel-round{clip-path:polygon(0 4px,2px 4px,4px 2px,4px 0,calc(100% - 4px) 0,calc(100% - 4px) 2px,calc(100% - 2px) 4px,100% 4px,100% calc(100% - 4px),calc(100% - 2px) calc(100% - 4px),calc(100% - 4px) calc(100% - 2px),calc(100% - 4px) 100%,4px 100%,4px calc(100% - 2px),2px calc(100% - 4px),0 calc(100% - 4px))}
+.win{background:var(--white);max-width:420px;margin:10vh auto 0;border:2px solid var(--black);box-shadow:8px 8px 0 var(--black)}
+.winbar{display:flex;align-items:center;gap:10px;padding:9px 12px;border-bottom:4px solid var(--black);font-family:var(--mono);font-size:12px}
+.lights{display:flex;gap:5px}
+.lights i{width:10px;height:10px;border:1px solid var(--black);display:block}
+.r{background:#ff5f57}.y{background:#febc2e}.g{background:#28c840}
+.winbar-path{margin-left:6px;white-space:nowrap;overflow:hidden}
+.main{padding:28px 24px}
+h1{font-size:18px;margin:0 0 4px}
+.sub{font-family:var(--mono);font-size:12px;margin:0 0 20px;opacity:.7}
+label{display:block;font-family:var(--mono);font-size:12px;margin:14px 0 4px}
+input{width:100%;border:2px solid var(--black);background:var(--white);padding:8px 10px;font-family:var(--mono);font-size:14px;color:var(--black);outline:none}
+input:focus{box-shadow:4px 4px 0 var(--black)}
+.btn{display:block;width:100%;margin-top:20px;border:3px solid var(--black);background:var(--black);color:var(--white);padding:10px;font-family:var(--mono);font-size:14px;box-shadow:3px 3px 0 var(--white),5px 5px 0 var(--black);transition:transform .14s ease,box-shadow .14s ease,color .14s ease}
+.btn:hover{transform:translate(2px,2px);box-shadow:1px 1px 0 var(--white),3px 3px 0 var(--black);color:var(--green)}
+.err{font-family:var(--mono);font-size:12px;color:var(--green);margin-top:14px;min-height:18px}
+/* 锁定系统色：自动填充/选中/光标/滚动条统一像素风 */\ninput:-webkit-autofill,input:-webkit-autofill:hover,input:-webkit-autofill:focus{-webkit-text-fill-color:var(--black);-webkit-box-shadow:0 0 0 1000px var(--white) inset;transition:background-color 9999s ease-out 0s}\n::selection{background:var(--black);color:var(--green)}\ninput,textarea,select{caret-color:var(--green)}\n::-webkit-scrollbar{width:12px;height:12px}\n::-webkit-scrollbar-track{background:var(--white)}\n::-webkit-scrollbar-thumb{background:var(--black);border:2px solid var(--white)}\n::-webkit-scrollbar-thumb:hover{background:var(--green)}
+</style>
+</head>
+<body>
+<div class="win pixel-round">
+  <header class="winbar">
+    <div class="lights" aria-hidden="true"><i class="r"></i><i class="y"></i><i class="g"></i></div>
+    <span class="winbar-path">t-dwag@blog: <b>~/admin/login</b></span>
+  </header>
+  <div class="main">
+    <h1>go /admin login</h1>
+    <p class="sub"># 站主登录 · 没令牌进不去</p>
+    <form id="loginForm" novalidate>
+      <label>USERNAME</label>
+      <input type="text" id="username" autocomplete="username" required>
+      <label>PASSWORD</label>
+      <input type="password" id="password" autocomplete="current-password" required>
+      <button class="btn" type="submit">go login <span>→</span></button>
+    </form>
+    <p class="err" id="err"></p>
+  </div>
+</div>
+<script>
+(function(){
+  var form=document.getElementById('loginForm');
+  var err=document.getElementById('err');
+  form.addEventListener('submit',function(e){
+    e.preventDefault();
+    err.textContent='';
+    var u=document.getElementById('username').value;
+    var p=document.getElementById('password').value;
+    fetch('/api/admin/login',{
+      method:'POST',
+      headers:{'Content-Type':'application/json'},
+      body:JSON.stringify({username:u,password:p})
+    }).then(function(r){return r.json().then(function(d){return{ok:r.ok,d:d}});})
+    .then(function(res){
+      if(res.ok && res.d.code===0){
+        location.href='/admin/articles';
+      } else if(res.d.msg==='locked'){
+        err.textContent='> error: 账号已锁定，10 分钟后再试';
+      } else {
+        err.textContent='> error: unauthorized 用户名或密码错误';
+      }
+    }).catch(function(){err.textContent='> error: 网络错误，请重试';});
+  });
+})();
+</script>
+</body>
+</html>
