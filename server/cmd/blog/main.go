@@ -3,10 +3,12 @@ package main
 import (
 	"context"
 	"log"
+	"time"
 
 	"github.com/T-DWAG/blog_build/server/internal/api"
 	"github.com/T-DWAG/blog_build/server/internal/auth"
 	"github.com/T-DWAG/blog_build/server/internal/config"
+	"github.com/T-DWAG/blog_build/server/internal/ratelimit"
 	"github.com/T-DWAG/blog_build/server/internal/store"
 )
 
@@ -38,7 +40,7 @@ func main() {
 		log.Fatalf("seed settings: %v", err)
 	}
 
-	if err := api.New(cfg, st).Listen(); err != nil {
+	if err := api.New(cfg, st, ratelimit.NewWindow(time.Minute)).Listen(); err != nil {
 		log.Fatalf("listen: %v", err)
 	}
 }

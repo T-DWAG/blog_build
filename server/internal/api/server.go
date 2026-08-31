@@ -6,6 +6,7 @@ import (
 	"github.com/gin-gonic/gin"
 
 	"github.com/T-DWAG/blog_build/server/internal/config"
+	"github.com/T-DWAG/blog_build/server/internal/ratelimit"
 	"github.com/T-DWAG/blog_build/server/internal/store"
 )
 
@@ -13,14 +14,15 @@ import (
 type Server struct {
 	cfg config.Config
 	st  *store.Store
+	lim *ratelimit.Window
 }
 
 // New 构造一个 Server。st 不能为 nil。
-func New(cfg config.Config, st *store.Store) *Server {
+func New(cfg config.Config, st *store.Store, lim *ratelimit.Window) *Server {
 	if st == nil {
 		panic("store is nil")
 	}
-	return &Server{cfg: cfg, st: st}
+	return &Server{cfg: cfg, st: st, lim: lim}
 }
 
 // Handler 挂路由。login 不鉴权；其余 /api/admin/* 一律先过 RequireAdmin。
@@ -35,6 +37,8 @@ func (s *Server) Handler() http.Handler {
 	r.GET("/api/articles", s.ListArticles)
 	r.GET("/api/articles/:slug", s.GetArticle)
 	r.GET("/api/projects", s.ListProjects)
+	r.GET("/api/messages", s.ListMessages)
+	r.POST("/api/messages", s.SubmitMessage)
 
 	admin := r.Group("/api/admin", s.RequireAdmin)
 	admin.GET("/articles", s.ListArticlesAdmin)
@@ -45,6 +49,9 @@ func (s *Server) Handler() http.Handler {
 	admin.POST("/projects", s.CreateProject)
 	admin.PUT("/projects/:id", s.UpdateProject)
 	admin.DELETE("/projects/:id", s.DeleteProject)
+	admin.GET("/messages", s.ListMessagesAdmin)
+	admin.PUT("/messages/:id", s.ReviewMessage)
+	admin.DELETE("/messages/:id", s.DeleteMessage)
 	return r
 }
 

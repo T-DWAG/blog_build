@@ -9,12 +9,14 @@ import (
 	"net/http/httptest"
 	"os"
 	"testing"
+	"time"
 
 	"github.com/gin-gonic/gin"
 	_ "github.com/jackc/pgx/v5/stdlib"
 
 	"github.com/T-DWAG/blog_build/server/internal/auth"
 	"github.com/T-DWAG/blog_build/server/internal/config"
+	"github.com/T-DWAG/blog_build/server/internal/ratelimit"
 	"github.com/T-DWAG/blog_build/server/internal/store"
 )
 
@@ -42,7 +44,7 @@ func newTestServer(t *testing.T, username string) (*Server, *store.Store) {
 		t.Fatalf("open cleanup db: %v", err)
 	}
 	t.Cleanup(func() { cleanupDB.Close() })
-	if _, err := cleanupDB.ExecContext(ctx, `TRUNCATE articles, projects`); err != nil {
+	if _, err := cleanupDB.ExecContext(ctx, `TRUNCATE articles, projects, messages`); err != nil {
 		t.Fatalf("truncate tables: %v", err)
 	}
 	// 先删同名管理员，避免跨进程残留失败计数/锁定状态影响断言
@@ -58,7 +60,7 @@ func newTestServer(t *testing.T, username string) (*Server, *store.Store) {
 	}
 
 	cfg := config.Config{Addr: ":0", JWTSecret: "test-secret"}
-	srv := New(cfg, st)
+	srv := New(cfg, st, ratelimit.NewWindow(time.Minute))
 	gin.SetMode(gin.TestMode)
 	return srv, st
 }
