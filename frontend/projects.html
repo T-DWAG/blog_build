@@ -1,0 +1,103 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description" content="项目：AI Agent 智能平台、电商评价系统、短链接服务。">
+  <meta name="theme-color" content="#000000">
+  <title>go /projects — 从气象到代码</title>
+  <link rel="preload" href="fonts/fusion-pixel-12px-proportional-zh_hans.subset.woff2" as="font" type="font/woff2" crossorigin>
+  <link rel="preload" href="fonts/fusion-pixel-12px-monospaced-zh_hans.subset.woff2" as="font" type="font/woff2" crossorigin>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <div class="win pixel-round">
+
+    <!-- 窗口标题栏 -->
+    <header class="winbar">
+      <div class="winbar-lights" aria-hidden="true">
+        <i class="r"></i><i class="y"></i><i class="g"></i>
+      </div>
+      <span class="winbar-path">t-dwag@blog: <b>~/projects</b></span>
+      <span class="winbar-go">[go]</span>
+    </header>
+
+    <!-- go 命令导航 -->
+    <nav class="gonav" id="gonav" aria-label="主导航">
+      <span class="gonav-prompt" aria-hidden="true">$</span>
+      <button class="gonav-toggle" type="button" aria-expanded="false" aria-controls="gonav-links">导航 ▾</button>
+      <div class="gonav-links" id="gonav-links">
+        <a href="index.html">go /home</a>
+        <a href="about.html">go /about</a>
+        <a href="posts.html">go /posts</a>
+        <a class="is-active" href="projects.html">go /projects</a>
+        <a href="guestbook.html">go /guestbook</a>
+        <a href="chat.html">go /chat</a>
+        <a href="search.html">go /search</a>
+      </div>
+    </nav>
+
+    <main>
+      <section class="section section-paper" aria-labelledby="projects-title">
+        <div class="container">
+          <p class="section-kicker">PROJECTS</p>
+          <h2 id="projects-title"><span>三个项目，一条能力链</span></h2>
+          <p class="section-intro">少，是指数级的多；清晰，胜过机巧。</p>
+
+          <div class="card-grid">
+            <article class="card">
+              <span class="num">01</span>
+              <h3>AI Agent 智能平台</h3>
+              <p>基于 MSZLU-AI / CloudWeGo Eino 的源码学习、部署验证与二次开发。</p>
+              <div class="tags"><span>Go</span><span>Eino</span><span>PostgreSQL</span><span>ES</span><span>Milvus</span><span>MCP</span><span>A2A</span></div>
+              <a class="card-link" href="#" title="项目详情链接(待补充)">来源 ↗(待补充)</a>
+            </article>
+
+            <article class="card">
+              <span class="num">02</span>
+              <h3>电商评价系统</h3>
+              <p>基于 Q1mi Go 微服务课程复现，并围绕一致性、安全和缓存治理做工程分析。</p>
+              <div class="tags"><span>Go</span><span>Kratos</span><span>gRPC</span><span>MySQL</span><span>ES</span><span>Redis</span><span>Wire</span></div>
+              <a class="card-link" href="#" title="项目详情链接(待补充)">来源 ↗(待补充)</a>
+            </article>
+
+            <article class="card">
+              <span class="num">03</span>
+              <h3>短链接服务</h3>
+              <p>面向消息投放与链接分发场景：Base62 短码 + MD5 幂等转链 + Redis 缓存与布隆过滤器 + 302 跳转策略。</p>
+              <div class="tags"><span>Go</span><span>go-zero</span><span>MySQL</span><span>Redis</span><span>Base62</span><span>Docker</span></div>
+              <a class="card-link" href="shortUrl/" title="打开短链接系统项目详情">demo ↗</a>
+            </article>
+          </div>
+
+          <p class="section-intro">每个项目都尽量写清楚：<strong>原项目有什么 → 问题是什么 → 我做了什么 → 还差什么</strong>。</p>
+          <p class="ls-note"><span class="dim"># 项目详情页与截图将随后台(go /admin)接入后逐步补全</span></p>
+        </div>
+      </section>
+    </main>
+
+    <footer class="statusbar">
+      <span>© 2025 · 从气象到代码</span>
+      <span>·</span>
+      <a href="mailto:wuonchannel@gmail.com">wuonchannel@gmail.com</a>
+      <span>·</span>
+      <a href="https://github.com/T-DWAG" target="_blank" rel="noreferrer">github.com/T-DWAG</a>
+      <span>·</span>
+      <span class="end-flag">END</span>
+    </footer>
+  </div>
+
+  <script>
+    (function () {
+      var toggle = document.querySelector('.gonav-toggle');
+      var gonav = document.getElementById('gonav');
+      if (!toggle || !gonav) return;
+      toggle.addEventListener('click', function () {
+        var open = gonav.classList.toggle('is-open');
+        toggle.setAttribute('aria-expanded', String(open));
+        toggle.textContent = open ? '导航 ▴' : '导航 ▾';
+      });
+    })();
+  </script>
+</body>
+</html>

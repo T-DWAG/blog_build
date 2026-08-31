@@ -1,0 +1,310 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description" content="短链接服务：转链与跳转链路、发号器、缓存治理与安全加固的工程实现。">
+  <meta name="theme-color" content="#000000">
+  <title>短链接服务 — 项目详情</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <header class="site-header">
+    <div class="header-inner">
+      <a class="brand" href="https://T-DWAG.github.io/personal-blog/">METEOROLOGY → CODE</a>
+      <nav aria-label="主导航">
+        <a href="#overview">概览</a>
+        <a href="#flow">链路</a>
+        <a href="#capability">核心能力</a>
+        <a href="#security">安全加固</a>
+        <a href="https://T-DWAG.github.io/personal-blog/#projects">← 返回项目列表</a>
+      </nav>
+    </div>
+  </header>
+
+  <main id="top">
+    <!-- Hero -->
+    <section class="hero" aria-labelledby="hero-title">
+      <div class="hero-pattern" aria-hidden="true"></div>
+      <div class="hero-card pixel-corner">
+        <div class="hero-card-bar"><span>PROJECT DETAIL / 短链接服务</span></div>
+        <div class="hero-card-content">
+          <p class="eyebrow">Go · go-zero · MySQL · Redis</p>
+          <h1 id="hero-title">短链接服务：<br><em>转链、跳转与安全治理。</em></h1>
+          <p class="hero-summary">
+            一套面向高并发读、低延迟跳转场景的短链接系统。围绕转链校验、发号、编码、缓存穿透 / 击穿防护与 URL 安全，
+            逐步把接口做扎实：不只是"能生成短链"，而是"生成短链的每一步都有明确的失败处理"。
+          </p>
+          <a class="pixel-button" href="#overview">查看详情 <span>↓</span></a>
+        </div>
+      </div>
+    </section>
+
+    <!-- Overview -->
+    <section class="section section-ink" id="overview" aria-labelledby="overview-title">
+      <div class="container">
+        <p class="section-kicker">OVERVIEW</p>
+        <h2 id="overview-title"><span>两条链路，一个核心约束</span></h2>
+        <p class="section-intro">系统只做两件事：把长链接安全地变成短链接，把短链接快速地还原成跳转。约束是：写入路径要防止脏数据进库，读取路径要防止缓存失效时打垮数据库。</p>
+
+        <div class="journey-grid">
+          <article class="journey-card">
+            <span class="card-number">01</span>
+            <h3>转链（Convert）</h3>
+            <p>长链接可达性校验 → MD5 去重（避免同一 URL 重复占号）→ 短链循环检测（防止 A→B→A）→ 发号器取号 → Base62 编码 → 黑名单过滤 → 落库并返回完整短链。</p>
+            <div class="tag-row"><span>幂等</span><span>MD5</span><span>黑名单</span></div>
+          </article>
+          <article class="journey-card">
+            <span class="card-number">02</span>
+            <h3>跳转（Show）</h3>
+            <p>短码查询长链接 → 命中缓存直接 302，未命中时经布隆过滤器 + singleflight 保护数据库，最终写回缓存并跳转。</p>
+            <div class="tag-row"><span>302</span><span>布隆过滤器</span><span>singleflight</span></div>
+          </article>
+          <article class="journey-card">
+            <span class="card-number">03</span>
+            <h3>约束：容错优先</h3>
+            <p>每个失败点都有对应处理：取号失败重试、黑名单命中重新取号、缓存穿透用布隆过滤器拦截、并发击穿用 singleflight 合并请求。</p>
+            <div class="tag-row"><span>容错</span><span>可观测</span><span>配置化</span></div>
+          </article>
+        </div>
+
+        <p class="journey-statement">设计目标不是"跑通 demo"，而是让每条失败路径都有明确归宿。</p>
+      </div>
+    </section>
+
+    <!-- Flow -->
+    <section class="section section-paper" id="flow" aria-labelledby="flow-title">
+      <div class="container">
+        <p class="section-kicker">REQUEST FLOW</p>
+        <h2 id="flow-title"><span>请求链路拆解</span></h2>
+        <p class="section-intro">用两张时序流程说明关键决策点，而不是罗列技术名词。</p>
+
+        <div class="flow-block">
+          <h3>转链请求</h3>
+          <ol class="flow-steps">
+            <li><b>参数校验</b> — 长链接格式、协议白名单（http/https）</li>
+            <li><b>可达性检查</b> — 请求目标 URL，判断是否可访问（当前已识别 SSRF 风险，见下文安全加固）</li>
+            <li><b>MD5 去重</b> — 对长链接做摘要，查是否已存在映射，命中直接复用旧短码</li>
+            <li><b>循环检测</b> — 判断目标是否为本服务已生成的短链，防止 A→B→A 死循环</li>
+            <li><b>发号 + 编码</b> — 通过发号器接口取自增 ID，Base62 编码为短码</li>
+            <li><b>黑名单校验</b> — 编码结果命中保留词 / 敏感词则重新取号</li>
+            <li><b>落库</b> — 写入短码 → 长链接映射，返回 <code>域名/短码</code></li>
+          </ol>
+        </div>
+
+        <div class="flow-block">
+          <h3>跳转请求</h3>
+          <ol class="flow-steps">
+            <li><b>布隆过滤器判断</b> — 短码是否可能存在，不存在直接 404，避免无效查询打到数据库</li>
+            <li><b>缓存查询</b> — Redis 命中直接 302 跳转</li>
+            <li><b>singleflight 合并</b> — 缓存未命中时，同一短码的并发请求合并为一次数据库查询，防止击穿</li>
+            <li><b>数据库回源 + 回写缓存</b> — 查到长链接后写回 Redis，设置过期时间</li>
+            <li><b>302 跳转</b> — 返回真实长链接</li>
+          </ol>
+        </div>
+
+        <div class="flow-block">
+          <h3>时序图版（Mermaid）</h3>
+          <p class="flow-note">文字版链路用图再走一遍，重点看失败分支（alt / else）落在哪里。需要联网加载渲染。</p>
+
+          <div class="mermaid-wrap" id="mm-convert">
+            <div class="mermaid-loading">LOADING DIAGRAM …</div>
+          </div>
+
+          <div class="mermaid-wrap" id="mm-show">
+            <div class="mermaid-loading">LOADING DIAGRAM …</div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Capability -->
+    <section class="section section-ink" id="capability" aria-labelledby="capability-title">
+      <div class="container">
+        <p class="section-kicker">CORE CAPABILITY</p>
+        <h2 id="capability-title"><span>六个值得展开的实现细节</span></h2>
+        <p class="section-intro">这些不是简单的 CRUD，每一项都对应一个具体的工程问题。</p>
+
+        <div class="strength-grid capability-grid">
+          <article>
+            <span>01</span>
+            <h3>发号器接口化</h3>
+            <p>发号逻辑抽象为接口，默认实现基于 MySQL <code>REPLACE INTO</code> + <code>LAST_INSERT_ID()</code>，同一连接取号安全；接口层面预留 Redis / 号段模式实现，不绑定单一方案。</p>
+          </article>
+          <article>
+            <span>02</span>
+            <h3>Base62 自实现编码</h3>
+            <p>自增 ID 转 Base62 短码，字符表可配置。6 位即可覆盖约 568 亿组合；同时明确字符表打乱只提升遍历成本，不构成安全边界。</p>
+          </article>
+          <article>
+            <span>03</span>
+            <h3>黑名单 + 配置化</h3>
+            <p>短码生成后过滤保留词（如 <code>api</code>、<code>health</code>）与敏感词，命中则重新取号；域名、黑名单词表均走配置文件，不写死在代码里。</p>
+          </article>
+          <article>
+            <span>04</span>
+            <h3>布隆过滤器防穿透</h3>
+            <p>跳转请求先经布隆过滤器判断短码是否可能存在，拦截对不存在短码的无效查询，减少无谓的数据库压力。</p>
+          </article>
+          <article>
+            <span>05</span>
+            <h3>singleflight 防击穿</h3>
+            <p>缓存失效瞬间，同一短码的并发查询请求合并为一次数据库调用，其余请求等待结果复用，避免瞬时流量击穿数据库。</p>
+          </article>
+          <article>
+            <span>06</span>
+            <h3>单元测试覆盖</h3>
+            <p>对 Base62 编解码、URL 校验、MD5 去重等纯逻辑模块编写单元测试，保证核心算法在重构时行为不漂移。</p>
+          </article>
+        </div>
+      </div>
+    </section>
+
+    <!-- Security -->
+    <section class="section section-paper" id="security" aria-labelledby="security-title">
+      <div class="container">
+        <p class="section-kicker">SECURITY</p>
+        <h2 id="security-title"><span>安全复盘：诚实面对风险</span></h2>
+        <p class="section-intro">可靠感来自边界和证据，包括承认当前实现的缺口。</p>
+
+        <div class="security-card pixel-corner">
+          <div class="security-row">
+            <span class="security-tag risk">风险</span>
+            <p>转链时的可达性检查会向用户提交的 URL 发起请求，若不加限制，攻击者可以构造指向内网地址（如 <code>127.0.0.1</code>、内网网段、云元数据接口）的链接，诱导服务端发起请求，构成 SSRF。</p>
+          </div>
+          <div class="security-row">
+            <span class="security-tag plan">加固方案</span>
+            <div class="project-list">
+              <p><b>协议限制</b>：仅允许 http/https，拒绝 file、gopher 等协议</p>
+              <p><b>内网地址过滤</b>：解析 URL 后校验目标 IP，拒绝私有网段与云元数据地址（如 169.254.169.254）</p>
+              <p><b>DNS 二次校验</b>：域名解析结果同样要过内网 IP 过滤，防止 DNS rebinding</p>
+              <p><b>重定向限制</b>：限制可达性检查的重定向跳转次数，并对每一跳都做同样的地址校验</p>
+              <p><b>超时控制</b>：可达性检查设置严格超时，避免慢速请求拖垮服务</p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Back -->
+    <section class="closing" id="back" aria-labelledby="back-title">
+      <div class="closing-pattern" aria-hidden="true"></div>
+      <div class="container closing-content">
+        <p class="section-kicker">MORE</p>
+        <h2 id="back-title">回到项目全景。</h2>
+        <p class="closing-quote">"每个失败路径都有归宿。"</p>
+        <p class="contact-note">
+          想看完整的能力链路和其他项目，
+          <a href="https://T-DWAG.github.io/personal-blog/#projects">返回项目首页</a>。
+        </p>
+      </div>
+    </section>
+  </main>
+
+  <script type="module">
+    const DIAGRAMS = {
+      convert: `sequenceDiagram
+    participant C as 客户端
+    participant API as Convert API
+    participant DB as MySQL
+    participant RC as Redis
+    C->>API: POST /convert {longUrl}
+    API->>API: 参数校验 + 协议白名单
+    API->>API: 可达性检查（SSRF 防护）
+    API->>DB: 查 MD5 摘要
+    alt 已存在
+        DB-->>API: 复用旧短码
+    else 不存在
+        API->>DB: REPLACE INTO 取号
+        DB-->>API: LAST_INSERT_ID
+        API->>API: Base62 编码 + 黑名单过滤
+        API->>DB: 落库映射
+        API->>RC: 写入缓存
+    end
+    API-->>C: 返回 域名/短码`,
+      show: `sequenceDiagram
+    participant C as 客户端
+    participant API as Show API
+    participant BF as 布隆过滤器
+    participant RC as Redis
+    participant DB as MySQL
+    C->>API: GET /{shortUrl}
+    API->>BF: 短码是否存在？
+    alt 不存在
+        BF-->>API: 大概率不存在
+        API-->>C: 404
+    else 可能存在
+        API->>RC: 查缓存
+        alt 命中
+            RC-->>API: 长链接
+        else 未命中
+            API->>API: singleflight 合并并发
+            API->>DB: 查询映射
+            DB-->>API: 长链接
+            API->>RC: 回写缓存
+        end
+        API-->>C: 302 → 长链接
+    end`
+    };
+
+    let mermaid;
+    try {
+      mermaid = (await import('https://cdn.jsdelivr.net/npm/mermaid@11/dist/mermaid.esm.min.mjs')).default;
+    } catch (err) {
+      for (const id of Object.keys(DIAGRAMS)) {
+        document.getElementById('mm-' + id).innerHTML =
+          '<div class="mermaid-error">图表需联网加载（mermaid CDN 不可达）</div>';
+      }
+      throw err;
+    }
+
+    mermaid.initialize({
+      startOnLoad: false,
+      theme: 'base',
+      themeVariables: {
+        fontFamily: '"Modalz Short", "PingFang SC", "Microsoft YaHei", sans-serif',
+        fontSize: '15px',
+        primaryColor: '#ffffff',
+        primaryTextColor: '#000000',
+        primaryBorderColor: '#000000',
+        lineColor: '#000000',
+        secondaryColor: '#000000',
+        tertiaryColor: '#ffffff',
+        actorBkg: '#000000',
+        actorBorder: '#000000',
+        actorTextColor: '#ffffff',
+        actorLineColor: '#000000',
+        signalColor: '#000000',
+        signalTextColor: '#000000',
+        noteBkgColor: '#ffffff',
+        noteTextColor: '#000000',
+        noteBorderColor: '#000000',
+        labelBoxBkgColor: '#ffffff',
+        labelBoxBorderColor: '#000000',
+        labelTextColor: '#000000'
+      },
+      sequence: { mirrorActors: false, messageAlign: 'left' }
+    });
+
+    let i = 0;
+    for (const [id, src] of Object.entries(DIAGRAMS)) {
+      const el = document.getElementById('mm-' + id);
+      try {
+        const { svg } = await mermaid.render('mermaid-svg-' + (i++), src);
+        el.innerHTML = svg;
+      } catch (err) {
+        el.innerHTML = '<div class="mermaid-error">图表渲染失败</div>';
+        console.error(err);
+      }
+    }
+  </script>
+
+  <footer>
+    <span>© 2025 · 从气象到代码</span>
+    <span>·</span>
+    <a href="mailto:wuonchannel@gmail.com">wuonchannel@gmail.com</a>
+    <span>·</span>
+    <a href="https://github.com/T-DWAG" target="_blank" rel="noreferrer">github.com/T-DWAG</a>
+  </footer>
+</body>
+</html>

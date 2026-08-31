@@ -1,0 +1,104 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description" content="留言板：留下你的想法。">
+  <meta name="theme-color" content="#000000">
+  <title>go /guestbook — 从气象到代码</title>
+  <link rel="preload" href="fonts/fusion-pixel-12px-proportional-zh_hans.subset.woff2" as="font" type="font/woff2" crossorigin>
+  <link rel="preload" href="fonts/fusion-pixel-12px-monospaced-zh_hans.subset.woff2" as="font" type="font/woff2" crossorigin>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <div class="win pixel-round">
+
+    <!-- 窗口标题栏 -->
+    <header class="winbar">
+      <div class="winbar-lights" aria-hidden="true">
+        <i class="r"></i><i class="y"></i><i class="g"></i>
+      </div>
+      <span class="winbar-path">t-dwag@blog: <b>~/guestbook</b></span>
+      <span class="winbar-go">[go]</span>
+    </header>
+
+    <!-- go 命令导航 -->
+    <nav class="gonav" id="gonav" aria-label="主导航">
+      <span class="gonav-prompt" aria-hidden="true">$</span>
+      <button class="gonav-toggle" type="button" aria-expanded="false" aria-controls="gonav-links">导航 ▾</button>
+      <div class="gonav-links" id="gonav-links">
+        <a href="index.html">go /home</a>
+        <a href="about.html">go /about</a>
+        <a href="posts.html">go /posts</a>
+        <a href="projects.html">go /projects</a>
+        <a class="is-active" href="guestbook.html">go /guestbook</a>
+        <a href="chat.html">go /chat</a>
+        <a href="search.html">go /search</a>
+      </div>
+    </nav>
+
+    <main>
+      <section class="section section-paper" aria-labelledby="gb-title">
+        <div class="container">
+          <p class="section-kicker">GUESTBOOK</p>
+          <h2 id="gb-title"><span>留言板</span></h2>
+          <p class="section-intro">随便写点什么：想法、建议、或者只是想打个招呼。</p>
+
+          <!-- 留言提交表单：后端就绪后 POST /api/messages -->
+          <form class="gb-form" id="gbForm" novalidate>
+            <label>昵称
+              <input type="text" name="nickname" maxlength="24" placeholder="怎么称呼你" required>
+            </label>
+            <label>内容
+              <textarea name="content" maxlength="500" placeholder="写下你的留言…" required></textarea>
+            </label>
+            <button class="pixel-button" type="submit">go send <span>→</span></button>
+            <p class="note"><span class="q">?</span> 留言提交后需站主审核通过才会展示。接口将在后端(M3)接入。</p>
+          </form>
+
+          <!-- 留言列表：后端就绪后 GET /api/messages -->
+          <div class="gb-list" id="gbList">
+            <article class="gb-item">
+              <div class="gb-head"><span class="gb-name">t-dwag</span><span class="gb-time">2025-07-28 10:30</span></div>
+              <p>第一位访客？欢迎留下你的想法。</p>
+            </article>
+          </div>
+        </div>
+      </section>
+    </main>
+
+    <footer class="statusbar">
+      <span>© 2025 · 从气象到代码</span>
+      <span>·</span>
+      <a href="mailto:wuonchannel@gmail.com">wuonchannel@gmail.com</a>
+      <span>·</span>
+      <a href="https://github.com/T-DWAG" target="_blank" rel="noreferrer">github.com/T-DWAG</a>
+      <span>·</span>
+      <span class="end-flag">END</span>
+    </footer>
+  </div>
+
+  <script>
+    (function () {
+      var toggle = document.querySelector('.gonav-toggle');
+      var gonav = document.getElementById('gonav');
+      if (!toggle || !gonav) return;
+      toggle.addEventListener('click', function () {
+        var open = gonav.classList.toggle('is-open');
+        toggle.setAttribute('aria-expanded', String(open));
+        toggle.textContent = open ? '导航 ▴' : '导航 ▾';
+      });
+    })();
+
+    // 静态壳：提交时给出提示（后端 /api/messages 就绪后替换此逻辑）
+    var form = document.getElementById('gbForm');
+    if (form) {
+      form.addEventListener('submit', function (e) {
+        e.preventDefault();
+        var note = form.querySelector('.note');
+        note.innerHTML = '<span class="q">?</span> 留言接口尚未接入(计划 M3)。表单已就绪,后端上线即可使用。';
+      });
+    }
+  </script>
+</body>
+</html>

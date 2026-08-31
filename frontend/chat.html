@@ -1,0 +1,128 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description" content="AI 分身：基于站主项目代码、经验、背景与喜好回答问题。">
+  <meta name="theme-color" content="#000000">
+  <title>go /chat — 从气象到代码</title>
+  <link rel="preload" href="fonts/fusion-pixel-12px-proportional-zh_hans.subset.woff2" as="font" type="font/woff2" crossorigin>
+  <link rel="preload" href="fonts/fusion-pixel-12px-monospaced-zh_hans.subset.woff2" as="font" type="font/woff2" crossorigin>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <div class="win pixel-round">
+
+    <!-- 窗口标题栏 -->
+    <header class="winbar">
+      <div class="winbar-lights" aria-hidden="true">
+        <i class="r"></i><i class="y"></i><i class="g"></i>
+      </div>
+      <span class="winbar-path">t-dwag@blog: <b>~/chat</b></span>
+      <span class="winbar-go">[go]</span>
+    </header>
+
+    <!-- go 命令导航 -->
+    <nav class="gonav" id="gonav" aria-label="主导航">
+      <span class="gonav-prompt" aria-hidden="true">$</span>
+      <button class="gonav-toggle" type="button" aria-expanded="false" aria-controls="gonav-links">导航 ▾</button>
+      <div class="gonav-links" id="gonav-links">
+        <a href="index.html">go /home</a>
+        <a href="about.html">go /about</a>
+        <a href="posts.html">go /posts</a>
+        <a href="projects.html">go /projects</a>
+        <a href="guestbook.html">go /guestbook</a>
+        <a class="is-active" href="chat.html">go /chat</a>
+        <a href="search.html">go /search</a>
+      </div>
+    </nav>
+
+    <main>
+      <section class="section section-paper" aria-labelledby="chat-title">
+        <div class="container">
+          <p class="section-kicker">AI AVATAR</p>
+          <h2 id="chat-title"><span>AI 分身</span></h2>
+          <p class="section-intro">我把自己的项目代码、经验、背景与喜好“蒸馏”成了一个会聊天的分身。问它任何关于我的问题。</p>
+
+          <div class="chat-window pixel-round">
+            <div class="chat-head">t-dwag@blog: ~/chat <span class="t-right">RAG · Eino</span></div>
+            <div class="chat-body" id="chatBody" aria-live="polite">
+              <p><span class="who">you$</span> 你是谁？</p>
+              <p><span class="who">me$</span> 我是站主在代码世界的分身 —— 基于他的项目代码、个人经验、背景与喜好训练(检索增强)而来。等他给我喂完素材,我就能真正回答问题了。</p>
+              <p><span class="who">you$</span> 他最擅长什么？</p>
+              <p><span class="who">me$</span> 目前我只能先占个位。AI 分身接口将在 M5 接入(Gin + Eino RAG),敬请期待。</p>
+            </div>
+            <div class="chat-suggestions" id="chatSuggestions">
+              <button type="button">他是做什么的？</button>
+              <button type="button">他的技术栈？</button>
+              <button type="button">他做过哪些项目？</button>
+              <button type="button">如何联系他？</button>
+            </div>
+            <form class="chat-input" id="chatForm">
+              <span class="who" aria-hidden="true">you$</span>
+              <input type="text" id="chatInput" placeholder="输入问题，回车发送…" autocomplete="off">
+              <span class="cursor" aria-hidden="true"></span>
+            </form>
+          </div>
+
+          <p class="note"><span class="q">?</span> 对话接口将在后端(M5 · Gin + Eino RAG + SiliconFlow/DeepSeek)就绪后接入,届时为流式输出。</p>
+        </div>
+      </section>
+    </main>
+
+    <footer class="statusbar">
+      <span>© 2025 · 从气象到代码</span>
+      <span>·</span>
+      <a href="mailto:wuonchannel@gmail.com">wuonchannel@gmail.com</a>
+      <span>·</span>
+      <a href="https://github.com/T-DWAG" target="_blank" rel="noreferrer">github.com/T-DWAG</a>
+      <span>·</span>
+      <span class="end-flag">END</span>
+    </footer>
+  </div>
+
+  <script>
+    (function () {
+      var toggle = document.querySelector('.gonav-toggle');
+      var gonav = document.getElementById('gonav');
+      if (!toggle || !gonav) return;
+      toggle.addEventListener('click', function () {
+        var open = gonav.classList.toggle('is-open');
+        toggle.setAttribute('aria-expanded', String(open));
+        toggle.textContent = open ? '导航 ▴' : '导航 ▾';
+      });
+    })();
+
+    // 静态壳：本地回声演示（后端 /api/ai/chat 就绪后替换为 SSE 流式接入）
+    var body = document.getElementById('chatBody');
+    var form = document.getElementById('chatForm');
+    var input = document.getElementById('chatInput');
+    var suggestions = document.getElementById('chatSuggestions');
+
+    function appendMsg(who, text) {
+      var p = document.createElement('p');
+      p.innerHTML = '<span class="who">' + who + '</span> ' + text.replace(/</g, '&lt;');
+      body.appendChild(p);
+      body.scrollTop = body.scrollHeight;
+    }
+    function ask(text) {
+      if (!text.trim()) return;
+      appendMsg('you$', text);
+      appendMsg('me$', '（静态演示）接口未接入。M5 之后我会基于站主的素材认真回答。');
+      input.value = '';
+    }
+    if (form) {
+      form.addEventListener('submit', function (e) {
+        e.preventDefault();
+        ask(input.value);
+      });
+    }
+    if (suggestions) {
+      suggestions.addEventListener('click', function (e) {
+        var btn = e.target.closest('button');
+        if (btn) ask(btn.textContent);
+      });
+    }
+  </script>
+</body>
+</html>
