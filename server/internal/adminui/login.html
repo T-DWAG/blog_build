@@ -4,33 +4,19 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>admin login — 从气象到代码</title>
+<link rel="preload" href="/admin-assets/fonts/fusion-pixel-12px-monospaced-zh_hans.ttf.woff2" as="font" type="font/woff2" crossorigin>
 <style>
 @font-face {
-  font-family: "Fusion Pixel";
-  src: url("/admin-assets/fonts/fusion-pixel-12px-proportional-zh_hans.subset.woff2") format("woff2");
-  font-display: swap;
-}
-@font-face {
-  font-family: "Fusion Pixel Full";
-  src: url("/admin-assets/fonts/fusion-pixel-12px-proportional-zh_hans.ttf.woff2") format("woff2");
-  font-display: swap;
-}
-@font-face {
   font-family: "Fusion Pixel Mono";
-  src: url("/admin-assets/fonts/fusion-pixel-12px-monospaced-zh_hans.subset.woff2") format("woff2");
-  font-display: swap;
-}
-@font-face {
-  font-family: "Fusion Pixel Mono Full";
   src: url("/admin-assets/fonts/fusion-pixel-12px-monospaced-zh_hans.ttf.woff2") format("woff2");
-  font-display: swap;
+  font-display: block;
 }
 
 :root{--black:#000;--white:#fff;--green:#00ff41;--lt-red:#ff5f57;--lt-yellow:#febc2e;--lt-green:#28c840;
---fp:"Fusion Pixel","Fusion Pixel Full","PingFang SC","Microsoft YaHei",sans-serif;
---mono:"Fusion Pixel Mono","Fusion Pixel Mono Full","Courier New","PingFang SC",monospace}
+
+--mono:"Fusion Pixel Mono","Courier New","PingFang SC",monospace}
 *{box-sizing:border-box}
-body{margin:0;min-width:320px;color:var(--black);background:var(--black);border:12px solid var(--black);font-family:var(--fp);font-size:15px;line-height:1.85;cursor:url("/admin-assets/assets/cursor_default.svg") 0 0,default}
+body{margin:0;min-width:320px;color:var(--black);background:var(--black);border:12px solid var(--black);font-family:var(--mono);font-size:15px;line-height:1.85;cursor:url("/admin-assets/assets/cursor_default.svg") 0 0,default}
 a,button,input{cursor:url("/admin-assets/assets/cursor_pointer.svg") 0 0,pointer}
 .pixel-round{clip-path:polygon(0 4px,2px 4px,4px 2px,4px 0,calc(100% - 4px) 0,calc(100% - 4px) 2px,calc(100% - 2px) 4px,100% 4px,100% calc(100% - 4px),calc(100% - 2px) calc(100% - 4px),calc(100% - 4px) calc(100% - 2px),calc(100% - 4px) 100%,4px 100%,4px calc(100% - 2px),2px calc(100% - 4px),0 calc(100% - 4px))}
 .win{background:var(--white);max-width:420px;margin:10vh auto 0;border:2px solid var(--black);box-shadow:8px 8px 0 var(--black)}
