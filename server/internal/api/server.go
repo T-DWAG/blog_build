@@ -39,6 +39,8 @@ func (s *Server) Handler() http.Handler {
 	r.GET("/api/projects", s.ListProjects)
 	r.GET("/api/messages", s.ListMessages)
 	r.POST("/api/messages", s.SubmitMessage)
+	r.GET("/api/search", s.Search)
+	r.GET("/api/tags", s.Tags)
 
 	admin := r.Group("/api/admin", s.RequireAdmin)
 	admin.GET("/articles", s.ListArticlesAdmin)
