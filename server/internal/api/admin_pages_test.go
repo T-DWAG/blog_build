@@ -156,3 +156,28 @@ func TestRequireAdmin_Cookie(t *testing.T) {
 		t.Fatalf("status = %d, want 200 (cookie 鉴权)", rec.Code)
 	}
 }
+
+func TestAdminAssets_FontEmbedded(t *testing.T) {
+	srv, _ := newTestServer(t, "s9_asset_font")
+
+	req := httptest.NewRequest(http.MethodGet, "/admin-assets/fonts/fusion-pixel-12px-monospaced-zh_hans.ttf.woff2", nil)
+	rec := httptest.NewRecorder()
+	srv.Handler().ServeHTTP(rec, req)
+	if rec.Code != http.StatusOK {
+		t.Fatalf("status = %d, want 200", rec.Code)
+	}
+	if rec.Body.Len() < 1000 {
+		t.Fatalf("font body too small: %d", rec.Body.Len())
+	}
+}
+
+func TestAdminAssets_Missing_404(t *testing.T) {
+	srv, _ := newTestServer(t, "s9_asset_miss")
+
+	req := httptest.NewRequest(http.MethodGet, "/admin-assets/fonts/no-such.woff2", nil)
+	rec := httptest.NewRecorder()
+	srv.Handler().ServeHTTP(rec, req)
+	if rec.Code != http.StatusNotFound {
+		t.Fatalf("status = %d, want 404", rec.Code)
+	}
+}

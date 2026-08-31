@@ -3,6 +3,7 @@ package api
 import (
 	"io/fs"
 	"net/http"
+	"path"
 	"strings"
 
 	"github.com/gin-gonic/gin"
@@ -51,8 +52,17 @@ func (s *Server) adminLogout(c *gin.Context) {
 	c.Redirect(http.StatusFound, "/admin/login")
 }
 
-// assetProxy 把 /admin-assets/xxx 代理到 frontend 静态资源（字体/cursor）。
+// assetProxy 从嵌入的 adminui/static 提供字体/光标/背景图。不读磁盘、不依赖 FRONTEND_DIR。
 func (s *Server) assetProxy(c *gin.Context) {
-	path := strings.TrimPrefix(c.Request.URL.Path, "/admin-assets/")
-	c.File(s.cfg.FrontendDir + "/" + path)
+	rel := strings.TrimPrefix(c.Param("filepath"), "/")
+	clean := path.Clean(rel)
+	if rel == "" || clean == "." || strings.HasPrefix(clean, "..") {
+		c.Status(http.StatusNotFound)
+		return
+	}
+	if _, err := fs.Stat(adminui.Static(), clean); err != nil {
+		c.Status(http.StatusNotFound)
+		return
+	}
+	c.FileFromFS(clean, http.FS(adminui.Static()))
 }

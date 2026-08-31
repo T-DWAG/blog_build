@@ -12,12 +12,11 @@ type Config struct {
 	JWTSecret     string
 	AdminUsername string
 	AdminPassword string
-	FrontendDir   string
 }
 
 // Load 从环境变量读取配置。
 // ADDR 为空时默认 :8080；其余四项任一为空则报错，进程不得启动。
-// FRONTEND_DIR 默认 ../frontend（管理台静态资源用）。
+// 管理台静态资源已 embed，不再读 FRONTEND_DIR。
 func Load() (Config, error) {
 	cfg := Config{
 		Addr:          os.Getenv("ADDR"),
@@ -25,13 +24,9 @@ func Load() (Config, error) {
 		JWTSecret:     os.Getenv("JWT_SECRET"),
 		AdminUsername: os.Getenv("ADMIN_USERNAME"),
 		AdminPassword: os.Getenv("ADMIN_PASSWORD"),
-		FrontendDir:   os.Getenv("FRONTEND_DIR"),
 	}
 	if cfg.Addr == "" {
 		cfg.Addr = ":8080"
-	}
-	if cfg.FrontendDir == "" {
-		cfg.FrontendDir = "../frontend"
 	}
 	for _, item := range []struct {
 		name, val string

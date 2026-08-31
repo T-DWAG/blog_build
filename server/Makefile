@@ -71,4 +71,4 @@ test-s9:
 		exit 1; \
 	fi
 	@DATABASE_URL="$${DATABASE_URL:-postgres://postgres:postgres@localhost:5432/blog?sslmode=disable}" \
-		go test ./... -run 'TestAdminPage|TestPreview|TestCORS|TestGuestbookHTML|TestSearchHTML|TestPublicNav|TestRequireAdmin_Cookie' -v
+		go test ./... -run 'TestAdminPage|TestPreview|TestCORS|TestGuestbookHTML|TestSearchHTML|TestPublicNav|TestRequireAdmin_Cookie|TestAdminAssets' -v
