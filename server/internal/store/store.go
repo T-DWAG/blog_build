@@ -11,18 +11,19 @@ import (
 
 // 哨兵错误
 var (
-	ErrNoDatabaseURL    = errors.New("store: no database url")
+	ErrNoDatabaseURL     = errors.New("store: no database url")
 	ErrEmptyPasswordHash = errors.New("store: empty password hash")
 	ErrNotFound          = errors.New("store: not found")
+	ErrValidation        = errors.New("store: validation failed")
 )
 
 // Admin 对应 admin_users 表的一行。
 type Admin struct {
-	ID            int64
-	Username      string
-	PasswordHash  string
-	FailedAttempts int
-	LockedUntil   *time.Time
+	ID             int64      `json:"id"`
+	Username       string     `json:"username"`
+	PasswordHash   string     `json:"-"`
+	FailedAttempts int        `json:"-"`
+	LockedUntil    *time.Time `json:"-"`
 }
 
 // Store 持有数据库连接池。

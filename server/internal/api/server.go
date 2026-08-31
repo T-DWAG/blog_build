@@ -31,8 +31,15 @@ func (s *Server) Handler() http.Handler {
 
 	r.POST("/api/admin/login", s.Login)
 
+	// 公开
+	r.GET("/api/articles", s.ListArticles)
+	r.GET("/api/articles/:slug", s.GetArticle)
+
 	admin := r.Group("/api/admin", s.RequireAdmin)
-	admin.GET("/ping", s.AdminPing)
+	admin.GET("/articles", s.ListArticlesAdmin)
+	admin.POST("/articles", s.CreateArticle)
+	admin.PUT("/articles/:id", s.UpdateArticle)
+	admin.DELETE("/articles/:id", s.DeleteArticle)
 	return r
 }
 

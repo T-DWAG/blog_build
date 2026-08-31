@@ -2,6 +2,7 @@ package store
 
 import (
 	"context"
+	"strconv"
 	"testing"
 	"time"
 
@@ -9,8 +10,13 @@ import (
 )
 
 // newStoreTestStore 复用 S2 的 testStore，并种一个管理员。
-func seedTestAdmin(t *testing.T, st *Store, username string) *Admin {
+var adminCounter int
+
+// seedTestAdmin 种一个唯一用户名的管理员，返回 (admin, username)。
+func seedTestAdmin(t *testing.T, st *Store, prefix string) (*Admin, string) {
 	t.Helper()
+	adminCounter++
+	username := prefix + "-" + strconv.Itoa(adminCounter)
 	hash, err := auth.Hash("correct-password")
 	if err != nil {
 		t.Fatalf("hash: %v", err)
@@ -22,7 +28,7 @@ func seedTestAdmin(t *testing.T, st *Store, username string) *Admin {
 	if err != nil {
 		t.Fatalf("get admin: %v", err)
 	}
-	return admin
+	return admin, username
 }
 
 func TestS3_RecordLoginFail_Increments(t *testing.T) {
@@ -31,8 +37,7 @@ func TestS3_RecordLoginFail_Increments(t *testing.T) {
 	if err := st.Migrate(ctx); err != nil {
 		t.Fatalf("migrate: %v", err)
 	}
-	const u = "s3_fail_inc"
-	admin := seedTestAdmin(t, st, u)
+	admin, u := seedTestAdmin(t, st, "s3_fail_inc")
 
 	for i := 0; i < 2; i++ {
 		if err := st.RecordLoginFail(ctx, admin.ID); err != nil {
@@ -57,8 +62,7 @@ func TestS3_RecordLoginFail_LocksAt5(t *testing.T) {
 	if err := st.Migrate(ctx); err != nil {
 		t.Fatalf("migrate: %v", err)
 	}
-	const u = "s3_fail_lock"
-	admin := seedTestAdmin(t, st, u)
+	admin, u := seedTestAdmin(t, st, "s3_fail_lock")
 
 	for i := 0; i < 5; i++ {
 		if err := st.RecordLoginFail(ctx, admin.ID); err != nil {
@@ -86,8 +90,7 @@ func TestS3_RecordLoginOK_Clears(t *testing.T) {
 	if err := st.Migrate(ctx); err != nil {
 		t.Fatalf("migrate: %v", err)
 	}
-	const u = "s3_ok_clear"
-	admin := seedTestAdmin(t, st, u)
+	admin, u := seedTestAdmin(t, st, "s3_ok_clear")
 
 	for i := 0; i < 3; i++ {
 		if err := st.RecordLoginFail(ctx, admin.ID); err != nil {

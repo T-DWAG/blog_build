@@ -70,7 +70,7 @@ func (s *Server) Login(c *gin.Context) {
 }
 
 // RequireAdmin 校验 Authorization: Bearer <token>，失败 401。
-// 成功后用户名写入 context，后续 handler 用 usernameFrom(c) 读取。
+// 成功后用户名写入 request context。
 func (s *Server) RequireAdmin(c *gin.Context) {
 	header := c.GetHeader("Authorization")
 	if !strings.HasPrefix(header, "Bearer ") {
@@ -89,15 +89,4 @@ func (s *Server) RequireAdmin(c *gin.Context) {
 	ctx := context.WithValue(c.Request.Context(), ctxUser, username)
 	c.Request = c.Request.WithContext(ctx)
 	c.Next()
-}
-
-// usernameFrom 取 RequireAdmin 写入的用户名。
-func usernameFrom(ctx context.Context) string {
-	u, _ := ctx.Value(ctxUser).(string)
-	return u
-}
-
-// AdminPing GET /api/admin/ping。S4 可删。
-func (s *Server) AdminPing(c *gin.Context) {
-	WriteOK(c.Writer, map[string]string{"user": usernameFrom(c.Request.Context())})
 }

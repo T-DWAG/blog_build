@@ -3,6 +3,7 @@ package api
 import (
 	"bytes"
 	"context"
+	"database/sql"
 	"encoding/json"
 	"net/http"
 	"net/http/httptest"
@@ -10,6 +11,7 @@ import (
 	"testing"
 
 	"github.com/gin-gonic/gin"
+	_ "github.com/jackc/pgx/v5/stdlib"
 
 	"github.com/T-DWAG/blog_build/server/internal/auth"
 	"github.com/T-DWAG/blog_build/server/internal/config"
@@ -33,6 +35,15 @@ func newTestServer(t *testing.T, username string) (*Server, *store.Store) {
 
 	if err := st.Migrate(ctx); err != nil {
 		t.Fatalf("migrate: %v", err)
+	}
+	// 清空 articles，保证测试间数据隔离（每次测试从干净状态开始）
+	cleanupDB, err := sql.Open("pgx", url)
+	if err != nil {
+		t.Fatalf("open cleanup db: %v", err)
+	}
+	t.Cleanup(func() { cleanupDB.Close() })
+	if _, err := cleanupDB.ExecContext(ctx, `TRUNCATE articles`); err != nil {
+		t.Fatalf("truncate articles: %v", err)
 	}
 	hash, err := auth.Hash("correct-password")
 	if err != nil {
@@ -124,52 +135,6 @@ func TestLogin_UnknownUser(t *testing.T) {
 	_ = json.Unmarshal(rec.Body.Bytes(), &env)
 	if env.Msg != "unauthorized" {
 		t.Fatalf("msg = %q, want unauthorized（与错密同文案）", env.Msg)
-	}
-}
-
-func TestAdminPing_NoToken(t *testing.T) {
-	srv, _ := newTestServer(t, "s3_ping_no_token")
-
-	req := httptest.NewRequest(http.MethodGet, "/api/admin/ping", nil)
-	rec := httptest.NewRecorder()
-	srv.Handler().ServeHTTP(rec, req)
-	if rec.Code != http.StatusUnauthorized {
-		t.Fatalf("status = %d, want 401", rec.Code)
-	}
-}
-
-func TestAdminPing_BadToken(t *testing.T) {
-	srv, _ := newTestServer(t, "s3_ping_bad_token")
-
-	req := httptest.NewRequest(http.MethodGet, "/api/admin/ping", nil)
-	req.Header.Set("Authorization", "Bearer x")
-	rec := httptest.NewRecorder()
-	srv.Handler().ServeHTTP(rec, req)
-	if rec.Code != http.StatusUnauthorized {
-		t.Fatalf("status = %d, want 401", rec.Code)
-	}
-}
-
-func TestAdminPing_OK(t *testing.T) {
-	const u = "s3_ping_ok"
-	srv, _ := newTestServer(t, u)
-
-	token, err := auth.Issue(u, "test-secret")
-	if err != nil {
-		t.Fatalf("issue: %v", err)
-	}
-	req := httptest.NewRequest(http.MethodGet, "/api/admin/ping", nil)
-	req.Header.Set("Authorization", "Bearer "+token)
-	rec := httptest.NewRecorder()
-	srv.Handler().ServeHTTP(rec, req)
-	if rec.Code != http.StatusOK {
-		t.Fatalf("status = %d, want 200; body=%s", rec.Code, rec.Body.String())
-	}
-	var env Envelope
-	_ = json.Unmarshal(rec.Body.Bytes(), &env)
-	user, _ := env.Data.(map[string]any)["user"].(string)
-	if user != u {
-		t.Fatalf("user = %q, want %q", user, u)
 	}
 }
 
