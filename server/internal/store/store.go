@@ -53,18 +53,20 @@ func (s *Store) SeedAdmin(ctx context.Context, username, passwordHash string) er
 }
 
 // SeedSettings 写入 5 个种子配置 key，已存在则不覆盖。
-// ai 不存任何 API Key；budget_per_month=10；build_state 为默认空构建态。
-// 结构见契约《数据》：site 不进库，全局信息写死在前端。
+// 目的：保证 key 存在（代码读取时不缺 key），不锁死业务值。
+// persona / embedding / suggestions 只占位，具体值由站主在管理台（S08）表单填写；
+// ai 的 budget_per_month=10 为契约锁定默认；build_state 契约保留。
+// API Key 一律不进库，走环境变量。
 func (s *Store) SeedSettings(ctx context.Context) error {
 	seeds := []struct {
 		key   string
 		value string
 	}{
-		{"persona", `{"role":"站主的 AI 分身，以第一人称回答","style":"简洁、克制，以证据说话","fallback":"素材里没有的内容，明确说不知道，不编造"}`},
+		{"persona", `{}`},
 		{"ai", `{"budget_per_month":10}`},
-		{"embedding", `{"provider":"siliconflow","model":"bge-m3","dim":1024}`},
+		{"embedding", `{}`},
 		{"build_state", `{"building":false,"last_build_at":"","last_status":""}`},
-		{"suggestions", `["他是做什么的？","他的技术栈？","他做过哪些项目？","如何联系他？"]`},
+		{"suggestions", `[]`},
 	}
 	for _, seed := range seeds {
 		_, err := s.db.ExecContext(ctx,
