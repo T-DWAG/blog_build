@@ -41,8 +41,12 @@ func TestArticleHTML_UsesAPI(t *testing.T) {
 	if err != nil {
 		t.Fatalf("read article.html: %v", err)
 	}
-	if !strings.Contains(string(b), "/api/articles/") {
+	s := string(b)
+	if !strings.Contains(s, "/api/articles/") {
 		t.Fatal("article.html 应包含 /api/articles/")
+	}
+	if !strings.Contains(s, "vendor/marked.min.js") {
+		t.Fatal("article.html 应引入 Markdown 渲染库，不应仅约正文")
 	}
 }
 

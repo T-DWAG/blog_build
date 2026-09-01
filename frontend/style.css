@@ -735,3 +735,47 @@ h2 {
 @media (prefers-reduced-motion: reduce) {
   *, *::before, *::after { animation: none !important; scroll-behavior: auto !important; transition: none !important; }
 }
+
+/* 文章详情正文（article.html，Markdown 渲染后的排版） */
+.article-body { margin-top: 18px; max-width: 720px; line-height: 1.75; }
+.article-body h1,
+.article-body h2,
+.article-body h3 { margin: 28px 0 12px; font-weight: 700; line-height: 1.35; }
+.article-body h1 { font-size: 22px; }
+.article-body h2 { font-size: 19px; padding: 0; background: none; color: var(--black); display: block; }
+.article-body h3 { font-size: 16px; }
+.article-body p { margin: 12px 0; }
+.article-body ul,
+.article-body ol { margin: 12px 0 12px 22px; }
+.article-body li { margin: 4px 0; }
+.article-body blockquote {
+  margin: 16px 0;
+  padding: 10px 16px;
+  border-left: 4px solid var(--black);
+  background: rgba(0,0,0,.04);
+}
+.article-body code {
+  font-family: var(--font-mono);
+  font-size: 13px;
+  padding: 2px 5px;
+  background: var(--black);
+  color: var(--white);
+}
+.article-body pre {
+  margin: 20px 0;
+  padding: 16px 18px;
+  overflow-x: auto;
+  color: var(--white);
+  background: var(--black);
+  border: 3px solid var(--black);
+  box-shadow: 6px 6px 0 var(--black);
+  font-family: var(--font-mono);
+  font-size: 13px;
+  line-height: 1.6;
+}
+.article-body pre code { padding: 0; background: transparent; color: inherit; }
+.article-body a { color: var(--black); text-decoration: underline; text-decoration-color: var(--green); text-decoration-thickness: 2px; }
+.article-body a:hover { color: var(--green); background: var(--black); }
+.article-body img { max-width: 100%; height: auto; border: 3px solid var(--black); margin: 16px 0; }
+.article-body hr { margin: 24px 0; border: none; border-top: 2px dashed var(--black); }
+

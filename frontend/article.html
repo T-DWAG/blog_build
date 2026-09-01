@@ -10,6 +10,7 @@
   <link rel="preload" href="fonts/fusion-pixel-12px-monospaced-zh_hans.subset.woff2" as="font" type="font/woff2" crossorigin>
   <link rel="stylesheet" href="style.css">
   <script src="api-base.js"></script>
+  <script src="vendor/marked.min.js"></script>
 </head>
 <body>
   <div class="win pixel-round">
@@ -114,11 +115,18 @@
             return '<a class="term-link" href="posts.html?tag=' + encodeURIComponent(t) + '">#' + escapeHTML(t) + '</a>';
           }).join(' ');
           document.title = a.title + ' — 从气象到代码';
+          var bodyHTML;
+          if (window.marked) {
+            window.marked.setOptions({ breaks: true, gfm: true });
+            bodyHTML = window.marked.parse(a.content_md || '');
+          } else {
+            bodyHTML = '<pre style="white-space:pre-wrap;word-break:break-word;">' + escapeHTML(a.content_md) + '</pre>';
+          }
           container.innerHTML =
             '<p class="section-kicker">POST' + (a.is_pinned ? ' · 置顶' : '') + '</p>' +
             '<h2 id="article-title"><span>' + escapeHTML(a.title) + '</span></h2>' +
             '<p class="ls-note"><span class="dim">' + escapeHTML(date) + (tags ? ' · ' + tags : '') + '</span></p>' +
-            '<div class="article-body" style="white-space:pre-wrap;word-break:break-word;">' + escapeHTML(a.content_md) + '</div>' +
+            '<div class="article-body">' + bodyHTML + '</div>' +
             '<p class="ls-note"><span class="p">$</span> <a class="term-link" href="posts.html">go /posts</a> 返回文章列表</p>';
         })
         .catch(function () {
