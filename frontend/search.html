@@ -44,13 +44,13 @@
           <h2 id="search-title"><span>全站搜索</span></h2>
           <p class="section-intro">检索范围：文章标题、文章正文、项目标题。结果按「文章 / 项目」分组。</p>
 
-          <!-- 搜索：后端就绪后 GET /api/search?q= -->
+          <!-- 搜索：接 GET /api/search?q= -->
           <form class="search-bar" id="searchForm">
             <span class="s-prompt" aria-hidden="true">$</span>
             <input type="search" id="searchInput" placeholder="grep -r 'singleflight'" autocomplete="off">
             <span class="cursor" aria-hidden="true"></span>
           </form>
-          <p class="search-hint" id="searchHint"><span class="dim"># 搜索接口将在后端就绪后接入,当前为静态演示</span></p>
+          <p class="search-hint" id="searchHint"><span class="dim"># 接后端 /api/search，请输入关键词回车搜索</span></p>
           <div id="searchResults" style="margin-top:28px"></div>
         </div>
       </section>

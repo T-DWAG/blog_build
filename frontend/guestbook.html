@@ -44,7 +44,7 @@
           <h2 id="gb-title"><span>留言板</span></h2>
           <p class="section-intro">随便写点什么：想法、建议、或者只是想打个招呼。</p>
 
-          <!-- 留言提交表单：后端就绪后 POST /api/messages -->
+          <!-- 留言提交表单：接 POST /api/messages -->
           <form class="gb-form" id="gbForm" novalidate>
             <label>昵称
               <input type="text" name="nickname" maxlength="24" placeholder="怎么称呼你" required>
@@ -53,10 +53,10 @@
               <textarea name="content" maxlength="500" placeholder="写下你的留言…" required></textarea>
             </label>
             <button class="pixel-button" type="submit">go send <span>→</span></button>
-            <p class="note"><span class="q">?</span> 留言提交后需站主审核通过才会展示。接口将在后端(M3)接入。</p>
+            <p class="note"><span class="q">?</span> 留言提交后需站主审核通过才会展示。</p>
           </form>
 
-          <!-- 留言列表：后端就绪后 GET /api/messages -->
+          <!-- 留言列表：接 GET /api/messages -->
           <div class="gb-list" id="gbList">
             <article class="gb-item">
               <div class="gb-head"><span class="gb-name">t-dwag</span><span class="gb-time">2025-07-28 10:30</span></div>
