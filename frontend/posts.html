@@ -9,6 +9,7 @@
   <link rel="preload" href="fonts/fusion-pixel-12px-proportional-zh_hans.subset.woff2" as="font" type="font/woff2" crossorigin>
   <link rel="preload" href="fonts/fusion-pixel-12px-monospaced-zh_hans.subset.woff2" as="font" type="font/woff2" crossorigin>
   <link rel="stylesheet" href="style.css">
+  <script src="api-base.js"></script>
 </head>
 <body>
   <div class="win pixel-round">
@@ -44,33 +45,14 @@
           <h2 id="posts-title"><span>技术思考</span></h2>
           <p class="section-intro">写作原则和项目一样：写清原项目有什么、问题是什么、我做了什么，以及还差什么。</p>
 
-          <!-- 搜索入口：search.html 或后端 /api/search 就绪后可用 -->
+          <!-- 搜索入口 -->
           <p class="ls-note"><span class="p">$</span> <a class="term-link" href="search.html">go /search</a> — 按标题 / 正文 / 项目标题搜索</p>
 
-          <div class="ls">
+          <div class="ls" id="postsList">
             <div class="ls-head"><span>PERMS</span><span>OWNER</span><span>SIZE</span><span>DATE</span><span>NAME</span></div>
-            <a class="ls-row" href="articles/singleflight.html">
-              <span>-rw-r--r--</span><span>t-dwag</span><span>2.1k</span><span>2025-07-28</span>
-              <span class="ls-name">singleflight：用一次查询合并一批并发请求</span>
-            </a>
-            <a class="ls-row is-todo" href="posts.html" title="待补全">
-              <span>-rw-r--r--</span><span>t-dwag</span><span>---</span><span>---------</span>
-              <span class="ls-name">课程短链接项目的 SSRF 风险：从发现到修复思路</span>
-            </a>
-            <a class="ls-row is-todo" href="posts.html" title="待补全">
-              <span>-rw-r--r--</span><span>t-dwag</span><span>---</span><span>---------</span>
-              <span class="ls-name">MySQL、ES 与 Redis：评价查询链路的一致性设计</span>
-            </a>
-            <a class="ls-row is-todo" href="posts.html" title="待补全">
-              <span>-rw-r--r--</span><span>t-dwag</span><span>---</span><span>---------</span>
-              <span class="ls-name">Agent 工具设计三原则：失败语义、最少入参、幂等</span>
-            </a>
-            <a class="ls-row is-todo" href="posts.html" title="待补全">
-              <span>-rw-r--r--</span><span>t-dwag</span><span>---</span><span>---------</span>
-              <span class="ls-name">为什么 Agent 的瓶颈在工程，不在模型</span>
-            </a>
+            <p class="ls-note"><span class="dim"># 加载中…</span></p>
           </div>
-          <p class="ls-note"><span class="dim"># 置顶文章优先展示 · 标签筛选与搜索将在后端就绪后接入</span></p>
+          <p class="ls-note" id="postsNote"><span class="dim"># 置顶文章优先展示</span></p>
         </div>
       </section>
     </main>
@@ -96,6 +78,40 @@
         toggle.setAttribute('aria-expanded', String(open));
         toggle.textContent = open ? '导航 ▴' : '导航 ▾';
       });
+    })();
+
+    // 文章列表：接 GET /api/articles，支持 ?tag=
+    (function () {
+      var list = document.getElementById('postsList');
+      var head = '<div class="ls-head"><span>PERMS</span><span>OWNER</span><span>SIZE</span><span>DATE</span><span>NAME</span></div>';
+      var params = new URLSearchParams(location.search);
+      var tag = params.get('tag') || '';
+      var url = window.API_BASE + '/api/articles' + (tag ? ('?tag=' + encodeURIComponent(tag)) : '');
+
+      function escapeHTML(s) {
+        return String(s || '').replace(/[&<>"']/g, function (c) {
+          return ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' })[c];
+        });
+      }
+
+      fetch(url)
+        .then(function (r) { return r.json(); })
+        .then(function (env) {
+          var items = env.data || [];
+          if (!items.length) {
+            list.innerHTML = head + '<p class="ls-note"><span class="q">?</span> ' + (tag ? '没有带标签 “' + escapeHTML(tag) + '” 的文章' : '还没有发布的文章') + '</p>';
+            return;
+          }
+          list.innerHTML = head + items.map(function (a) {
+            var date = (a.published_at || a.created_at || '').slice(0, 10) || '---------';
+            var size = Math.max(1, Math.round((a.content_md || '').length / 1024)) + 'k';
+            return '<a class="ls-row" href="article.html?slug=' + encodeURIComponent(a.slug) + '">' +
+              '<span>-rw-r--r--</span><span>t-dwag</span><span>' + size + '</span><span>' + date + '</span>' +
+              '<span class="ls-name">' + escapeHTML(a.title) + (a.is_pinned ? ' 📌' : '') + '</span></a>';
+          }).join('');
+        }).catch(function () {
+          list.innerHTML = head + '<p class="ls-note"><span class="err">> 文章列表加载失败，稍后再试</span></p>';
+        });
     })();
   </script>
 </body>

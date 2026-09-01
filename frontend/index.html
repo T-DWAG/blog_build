@@ -9,6 +9,7 @@
   <link rel="preload" href="fonts/fusion-pixel-12px-proportional-zh_hans.subset.woff2" as="font" type="font/woff2" crossorigin>
   <link rel="preload" href="fonts/fusion-pixel-12px-monospaced-zh_hans.subset.woff2" as="font" type="font/woff2" crossorigin>
   <link rel="stylesheet" href="style.css">
+  <script src="api-base.js"></script>
 </head>
 <body>
   <div class="win pixel-round">
@@ -84,20 +85,9 @@
         <div class="container">
           <p class="section-kicker">LATEST</p>
           <h2 id="latest-title"><span>最新文章</span></h2>
-          <div class="ls">
+          <div class="ls" id="latest-articles">
             <div class="ls-head"><span>PERMS</span><span>OWNER</span><span>SIZE</span><span>DATE</span><span>NAME</span></div>
-            <a class="ls-row" href="articles/singleflight.html">
-              <span>-rw-r--r--</span><span>t-dwag</span><span>2.1k</span><span>2025-07-28</span>
-              <span class="ls-name">singleflight：用一次查询合并一批并发请求</span>
-            </a>
-            <a class="ls-row is-todo" href="posts.html" title="待补全">
-              <span>-rw-r--r--</span><span>t-dwag</span><span>---</span><span>---------</span>
-              <span class="ls-name">课程短链接项目的 SSRF 风险：从发现到修复思路</span>
-            </a>
-            <a class="ls-row is-todo" href="posts.html" title="待补全">
-              <span>-rw-r--r--</span><span>t-dwag</span><span>---</span><span>---------</span>
-              <span class="ls-name">MySQL、ES 与 Redis：评价查询链路的一致性设计</span>
-            </a>
+            <p class="ls-note"><span class="dim"># 加载中…</span></p>
           </div>
           <p class="ls-note"><span class="p">$</span> <a class="term-link" href="posts.html">go /posts</a><span class="cursor" aria-hidden="true"></span></p>
         </div>
@@ -168,6 +158,37 @@
         toggle.setAttribute('aria-expanded', String(open));
         toggle.textContent = open ? '导航 ▴' : '导航 ▾';
       });
+    })();
+
+    // 最新文章：GET /api/articles，取前 3 条渲染
+    (function () {
+      var list = document.getElementById('latest-articles');
+      var head = '<div class="ls-head"><span>PERMS</span><span>OWNER</span><span>SIZE</span><span>DATE</span><span>NAME</span></div>';
+
+      function escapeHTML(s) {
+        return String(s || '').replace(/[&<>"']/g, function (c) {
+          return ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' })[c];
+        });
+      }
+
+      fetch(window.API_BASE + '/api/articles')
+        .then(function (r) { return r.json(); })
+        .then(function (env) {
+          var items = (env.data || []).slice(0, 3);
+          if (!items.length) {
+            list.innerHTML = head + '<p class="ls-note"><span class="q">?</span> 还没有发布的文章</p>';
+            return;
+          }
+          list.innerHTML = head + items.map(function (a) {
+            var date = (a.published_at || a.created_at || '').slice(0, 10) || '---------';
+            var size = Math.max(1, Math.round((a.content_md || '').length / 1024)) + 'k';
+            return '<a class="ls-row" href="article.html?slug=' + encodeURIComponent(a.slug) + '">' +
+              '<span>-rw-r--r--</span><span>t-dwag</span><span>' + size + '</span><span>' + date + '</span>' +
+              '<span class="ls-name">' + escapeHTML(a.title) + '</span></a>';
+          }).join('');
+        }).catch(function () {
+          list.innerHTML = head + '<p class="ls-note"><span class="err">> 文章加载失败，稍后再试</span></p>';
+        });
     })();
   </script>
 </body>

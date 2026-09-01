@@ -9,6 +9,7 @@
   <link rel="preload" href="fonts/fusion-pixel-12px-proportional-zh_hans.subset.woff2" as="font" type="font/woff2" crossorigin>
   <link rel="preload" href="fonts/fusion-pixel-12px-monospaced-zh_hans.subset.woff2" as="font" type="font/woff2" crossorigin>
   <link rel="stylesheet" href="style.css">
+  <script src="api-base.js"></script>
 </head>
 <body>
   <div class="win pixel-round">
@@ -44,34 +45,12 @@
           <h2 id="projects-title"><span>三个项目，一条能力链</span></h2>
           <p class="section-intro">少，是指数级的多；清晰，胜过机巧。</p>
 
-          <div class="card-grid">
-            <article class="card">
-              <span class="num">01</span>
-              <h3>AI Agent 智能平台</h3>
-              <p>基于 MSZLU-AI / CloudWeGo Eino 的源码学习、部署验证与二次开发。</p>
-              <div class="tags"><span>Go</span><span>Eino</span><span>PostgreSQL</span><span>ES</span><span>Milvus</span><span>MCP</span><span>A2A</span></div>
-              <a class="card-link" href="#" title="项目详情链接(待补充)">来源 ↗(待补充)</a>
-            </article>
-
-            <article class="card">
-              <span class="num">02</span>
-              <h3>电商评价系统</h3>
-              <p>基于 Q1mi Go 微服务课程复现，并围绕一致性、安全和缓存治理做工程分析。</p>
-              <div class="tags"><span>Go</span><span>Kratos</span><span>gRPC</span><span>MySQL</span><span>ES</span><span>Redis</span><span>Wire</span></div>
-              <a class="card-link" href="#" title="项目详情链接(待补充)">来源 ↗(待补充)</a>
-            </article>
-
-            <article class="card">
-              <span class="num">03</span>
-              <h3>短链接服务</h3>
-              <p>面向消息投放与链接分发场景：Base62 短码 + MD5 幂等转链 + Redis 缓存与布隆过滤器 + 302 跳转策略。</p>
-              <div class="tags"><span>Go</span><span>go-zero</span><span>MySQL</span><span>Redis</span><span>Base62</span><span>Docker</span></div>
-              <a class="card-link" href="shortUrl/" title="打开短链接系统项目详情">demo ↗</a>
-            </article>
+          <div class="card-grid" id="projectsGrid">
+            <p class="ls-note"><span class="dim"># 加载中…</span></p>
           </div>
 
           <p class="section-intro">每个项目都尽量写清楚：<strong>原项目有什么 → 问题是什么 → 我做了什么 → 还差什么</strong>。</p>
-          <p class="ls-note"><span class="dim"># 项目详情页与截图将随后台(go /admin)接入后逐步补全</span></p>
+          <p class="ls-note" id="projectsNote"><span class="dim"># 排列可在后台 sort_order 调整</span></p>
         </div>
       </section>
     </main>
@@ -97,6 +76,44 @@
         toggle.setAttribute('aria-expanded', String(open));
         toggle.textContent = open ? '导航 ▴' : '导航 ▾';
       });
+    })();
+
+    // 项目卡片：GET /api/projects
+    (function () {
+      var grid = document.getElementById('projectsGrid');
+
+      function escapeHTML(s) {
+        return String(s || '').replace(/[&<>"']/g, function (c) {
+          return ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' })[c];
+        });
+      }
+
+      fetch(window.API_BASE + '/api/projects')
+        .then(function (r) { return r.json(); })
+        .then(function (env) {
+          var items = env.data || [];
+          if (!items.length) {
+            grid.innerHTML = '<p class="ls-note"><span class="q">?</span> 还没有上线的项目</p>';
+            return;
+          }
+          grid.innerHTML = items.map(function (p, i) {
+            var num = String(i + 1).padStart(2, '0');
+            var tags = (p.tags || []).map(function (t) { return '<span>' + escapeHTML(t) + '</span>'; }).join('');
+            var link = p.demo_url || p.home_url || p.repo_url;
+            var linkHTML = link
+              ? '<a class="card-link" href="' + escapeHTML(link) + '" target="_blank" rel="noreferrer" title="打开项目链接">' + (p.demo_url ? 'demo' : '来源') + ' ↗</a>'
+              : '<span class="card-link" title="项目详情链接(待补充)">来源 ↗(待补充)</span>';
+            return '<article class="card">' +
+              '<span class="num">' + num + '</span>' +
+              '<h3>' + escapeHTML(p.name) + '</h3>' +
+              '<p>' + escapeHTML(p.summary) + '</p>' +
+              '<div class="tags">' + tags + '</div>' +
+              linkHTML +
+              '</article>';
+          }).join('');
+        }).catch(function () {
+          grid.innerHTML = '<p class="ls-note"><span class="err">> 项目列表加载失败，稍后再试</span></p>';
+        });
     })();
   </script>
 </body>

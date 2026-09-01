@@ -1,0 +1,130 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description" content="文章详情。">
+  <meta name="theme-color" content="#000000">
+  <title>go /posts — 从气象到代码</title>
+  <link rel="preload" href="fonts/fusion-pixel-12px-proportional-zh_hans.subset.woff2" as="font" type="font/woff2" crossorigin>
+  <link rel="preload" href="fonts/fusion-pixel-12px-monospaced-zh_hans.subset.woff2" as="font" type="font/woff2" crossorigin>
+  <link rel="stylesheet" href="style.css">
+  <script src="api-base.js"></script>
+</head>
+<body>
+  <div class="win pixel-round">
+
+    <!-- 窗口标题栏 -->
+    <header class="winbar">
+      <div class="winbar-lights" aria-hidden="true">
+        <i class="r"></i><i class="y"></i><i class="g"></i>
+      </div>
+      <span class="winbar-path">t-dwag@blog: <b id="articlePath">~/posts/…</b></span>
+      <span class="winbar-go">[go]</span>
+    </header>
+
+    <!-- go 命令导航 -->
+    <nav class="gonav" id="gonav" aria-label="主导航">
+      <span class="gonav-prompt" aria-hidden="true">$</span>
+      <button class="gonav-toggle" type="button" aria-expanded="false" aria-controls="gonav-links">导航 ▾</button>
+      <div class="gonav-links" id="gonav-links">
+        <a href="index.html">go /home</a>
+        <a href="about.html">go /about</a>
+        <a class="is-active" href="posts.html">go /posts</a>
+        <a href="projects.html">go /projects</a>
+        <a href="guestbook.html">go /guestbook</a>
+        <a href="chat.html">go /chat</a>
+        <a href="search.html">go /search</a>
+      </div>
+    </nav>
+
+    <main>
+      <section class="section section-paper" aria-labelledby="article-title">
+        <div class="container" id="articleContainer">
+          <p class="section-kicker">POST</p>
+          <h2 id="article-title"><span>加载中…</span></h2>
+          <p class="ls-note"><span class="dim"># 正在获取文章</span></p>
+        </div>
+      </section>
+    </main>
+
+    <footer class="statusbar">
+      <span>© 2025 · 从气象到代码</span>
+      <span>·</span>
+      <a href="mailto:wuonchannel@gmail.com">wuonchannel@gmail.com</a>
+      <span>·</span>
+      <a href="https://github.com/T-DWAG" target="_blank" rel="noreferrer">github.com/T-DWAG</a>
+      <span>·</span>
+      <span class="end-flag">END</span>
+    </footer>
+  </div>
+
+  <script>
+    (function () {
+      var toggle = document.querySelector('.gonav-toggle');
+      var gonav = document.getElementById('gonav');
+      if (!toggle || !gonav) return;
+      toggle.addEventListener('click', function () {
+        var open = gonav.classList.toggle('is-open');
+        toggle.setAttribute('aria-expanded', String(open));
+        toggle.textContent = open ? '导航 ▴' : '导航 ▾';
+      });
+    })();
+
+    // 文章详情：GET /api/articles/{slug}
+    (function () {
+      var container = document.getElementById('articleContainer');
+      var pathEl = document.getElementById('articlePath');
+
+      function escapeHTML(s) {
+        return String(s || '').replace(/[&<>"']/g, function (c) {
+          return ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' })[c];
+        });
+      }
+
+      function renderNotFound(msg) {
+        container.innerHTML = '<p class="section-kicker">POST</p>' +
+          '<h2><span>未找到该文章</span></h2>' +
+          '<p class="ls-note"><span class="err">> ' + escapeHTML(msg) + '</span></p>' +
+          '<p class="ls-note"><span class="p">$</span> <a class="term-link" href="posts.html">go /posts</a> 返回文章列表</p>';
+      }
+
+      var params = new URLSearchParams(location.search);
+      var slug = (params.get('slug') || '').trim();
+
+      if (!slug) {
+        renderNotFound('缺少文章标识（slug）');
+        return;
+      }
+
+      pathEl.textContent = '~/posts/' + slug;
+      document.title = 'go /posts/' + slug + ' — 从气象到代码';
+
+      fetch(window.API_BASE + '/api/articles/' + encodeURIComponent(slug))
+        .then(function (r) {
+          if (r.status === 404) { renderNotFound('这篇文章不存在，或已被下线'); return null; }
+          return r.json();
+        })
+        .then(function (env) {
+          if (!env) return;
+          var a = env.data;
+          if (!a) { renderNotFound('这篇文章不存在，或已被下线'); return; }
+          var date = (a.published_at || a.created_at || '').slice(0, 10);
+          var tags = (a.tags || []).map(function (t) {
+            return '<a class="term-link" href="posts.html?tag=' + encodeURIComponent(t) + '">#' + escapeHTML(t) + '</a>';
+          }).join(' ');
+          document.title = a.title + ' — 从气象到代码';
+          container.innerHTML =
+            '<p class="section-kicker">POST' + (a.is_pinned ? ' · 置顶' : '') + '</p>' +
+            '<h2 id="article-title"><span>' + escapeHTML(a.title) + '</span></h2>' +
+            '<p class="ls-note"><span class="dim">' + escapeHTML(date) + (tags ? ' · ' + tags : '') + '</span></p>' +
+            '<div class="article-body" style="white-space:pre-wrap;word-break:break-word;">' + escapeHTML(a.content_md) + '</div>' +
+            '<p class="ls-note"><span class="p">$</span> <a class="term-link" href="posts.html">go /posts</a> 返回文章列表</p>';
+        })
+        .catch(function () {
+          renderNotFound('文章加载失败，稍后再试');
+        });
+    })();
+  </script>
+</body>
+</html>

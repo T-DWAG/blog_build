@@ -1,4 +1,4 @@
-.PHONY: run db-up test-s1 test-s2 test-s3 test-s4 test-s5 test-s6 test-s7 test-s8 test-s9
+.PHONY: run db-up test-s1 test-s2 test-s3 test-s4 test-s5 test-s6 test-s7 test-s8 test-s9 test-s10
 
 run:
 	go run ./cmd/blog
@@ -72,3 +72,6 @@ test-s9:
 	fi
 	@DATABASE_URL="$${DATABASE_URL:-postgres://postgres:postgres@localhost:5432/blog?sslmode=disable}" \
 		go test ./... -run 'TestAdminPage|TestPreview|TestCORS|TestGuestbookHTML|TestSearchHTML|TestPublicNav|TestRequireAdmin_Cookie|TestAdminAssets' -v
+
+test-s10:
+	go test ./... -run 'TestPostsHTML_UsesAPI|TestIndexHTML_UsesAPI|TestArticleHTML_UsesAPI|TestProjectsHTML_UsesAPI' -v
