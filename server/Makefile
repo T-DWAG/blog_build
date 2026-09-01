@@ -1,10 +1,16 @@
-.PHONY: run db-up test-s1 test-s2 test-s3 test-s4 test-s5 test-s6 test-s7 test-s8 test-s9 test-s10
+.PHONY: run db-up up down test-s1 test-s2 test-s3 test-s4 test-s5 test-s6 test-s7 test-s8 test-s9 test-s10 test-s11
 
 run:
 	go run ./cmd/blog
 
 db-up:
 	docker compose up -d db
+
+up:
+	docker compose up -d --build
+
+down:
+	docker compose down
 
 test-s1:
 	go test ./... -run 'TestHealth' -v
@@ -75,3 +81,6 @@ test-s9:
 
 test-s10:
 	go test ./... -run 'TestPostsHTML_UsesAPI|TestIndexHTML_UsesAPI|TestArticleHTML_UsesAPI|TestProjectsHTML_UsesAPI' -v
+
+test-s11:
+	go test ./internal/compose/... -run 'TestCompose' -v -timeout 5m
