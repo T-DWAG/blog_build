@@ -5,6 +5,7 @@ import (
 
 	"github.com/gin-gonic/gin"
 
+	"github.com/T-DWAG/blog_build/server/internal/agent"
 	"github.com/T-DWAG/blog_build/server/internal/config"
 	"github.com/T-DWAG/blog_build/server/internal/ratelimit"
 	"github.com/T-DWAG/blog_build/server/internal/store"
@@ -15,20 +16,22 @@ type Server struct {
 	cfg config.Config
 	st  *store.Store
 	lim *ratelimit.Window
+	ag  agent.Service // AI 分身；nil 表示未配置密钥（/api/ai/chat 返回 503）
 }
 
-// New 构造一个 Server。st 不能为 nil。
-func New(cfg config.Config, st *store.Store, lim *ratelimit.Window) *Server {
+// New 构造一个 Server。st 不能为 nil；ag 可为 nil（AI 分身未启用）。
+// ag 由调用方用 agent.New 或 agenttest.Fake 构造，见 cmd/blog/main.go。
+func New(cfg config.Config, st *store.Store, lim *ratelimit.Window, ag agent.Service) *Server {
 	if st == nil {
 		panic("store is nil")
 	}
-	return &Server{cfg: cfg, st: st, lim: lim}
+	return &Server{cfg: cfg, st: st, lim: lim, ag: ag}
 }
 
 // allowedOrigins 是 CORS 白名单：本机联调 + 线上 Pages。
 var allowedOrigins = map[string]bool{
-	"http://127.0.0.1:8000":  true,
-	"http://localhost:8000":  true,
+	"http://127.0.0.1:8000":    true,
+	"http://localhost:8000":    true,
 	"https://T-DWAG.github.io": true,
 }
 
@@ -68,6 +71,7 @@ func (s *Server) Handler() http.Handler {
 	r.GET("/api/search", s.Search)
 	r.GET("/api/tags", s.Tags)
 	r.GET("/api/ai/suggestions", s.Suggestions)
+	r.POST("/api/ai/chat", s.Chat)
 
 	admin := r.Group("/api/admin", s.RequireAdmin)
 	admin.GET("/settings", s.GetSettings)

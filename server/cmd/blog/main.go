@@ -2,9 +2,11 @@ package main
 
 import (
 	"context"
+	"errors"
 	"log"
 	"time"
 
+	"github.com/T-DWAG/blog_build/server/internal/agent"
 	"github.com/T-DWAG/blog_build/server/internal/api"
 	"github.com/T-DWAG/blog_build/server/internal/auth"
 	"github.com/T-DWAG/blog_build/server/internal/config"
@@ -40,7 +42,18 @@ func main() {
 		log.Fatalf("seed settings: %v", err)
 	}
 
-	if err := api.New(cfg, st, ratelimit.NewWindow(time.Minute)).Listen(); err != nil {
+	// AI 分身：未配置 AI_API_KEY 时不阻塞启动，仅 /api/ai/chat 返回 503 不可用。
+	var ag agent.Service
+	a, err := agent.New(ctx, cfg, st)
+	if errors.Is(err, agent.ErrNoAPIKey) {
+		log.Println("AI avatar disabled: AI_API_KEY not set")
+	} else if err != nil {
+		log.Fatalf("init agent: %v", err)
+	} else {
+		ag = a
+	}
+
+	if err := api.New(cfg, st, ratelimit.NewWindow(time.Minute), ag).Listen(); err != nil {
 		log.Fatalf("listen: %v", err)
 	}
 }

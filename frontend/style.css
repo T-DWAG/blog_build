@@ -548,7 +548,7 @@ h2 {
 .gb-item p { margin: 0; font-size: 14px; font-weight: 600; line-height: 1.85; }
 
 /* ============================================================
-   AI 分身聊天(静态壳)
+   AI 分身聊天
    ============================================================ */
 .chat-window {
   margin-top: 40px;
@@ -576,6 +576,8 @@ h2 {
 .chat-body p { margin: 0 0 10px; }
 .chat-body .who { color: var(--green); font-weight: 700; }
 .chat-body .you .who { color: var(--white); }
+.chat-body .chat-pending .reply-text { opacity: .55; }  /* “正在检索…”占位半透明 */
+.chat-body .chat-err { color: var(--green); font-weight: 700; }  /* 错误提示用终端绿 */
 .chat-suggestions {
   display: flex;
   flex-wrap: wrap;
@@ -616,6 +618,19 @@ h2 {
   border-radius: 0;
 }
 .chat-input input:focus { outline: none; border-bottom-color: var(--green); }
+.chat-input .chat-stop {
+  padding: 4px 10px;
+  color: var(--white);
+  background: transparent;
+  border: 2px solid var(--white);
+  border-radius: 0;
+  font-family: var(--font-mono);
+  font-size: 12px;
+  font-weight: 700;
+  line-height: 1.2;
+  transition: color .12s ease, background .12s ease;
+}
+.chat-input .chat-stop:hover { color: var(--black); background: var(--green); border-color: var(--green); }
 
 /* ============================================================
    搜索

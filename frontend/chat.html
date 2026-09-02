@@ -9,6 +9,7 @@
   <link rel="preload" href="fonts/fusion-pixel-12px-proportional-zh_hans.subset.woff2" as="font" type="font/woff2" crossorigin>
   <link rel="preload" href="fonts/fusion-pixel-12px-monospaced-zh_hans.subset.woff2" as="font" type="font/woff2" crossorigin>
   <link rel="stylesheet" href="style.css">
+  <script src="api-base.js"></script>
 </head>
 <body>
   <div class="win pixel-round">
@@ -45,27 +46,20 @@
           <p class="section-intro">我把自己的项目代码、经验、背景与喜好“蒸馏”成了一个会聊天的分身。问它任何关于我的问题。</p>
 
           <div class="chat-window pixel-round">
-            <div class="chat-head">t-dwag@blog: ~/chat <span class="t-right">RAG · Eino</span></div>
+            <div class="chat-head">t-dwag@blog: ~/chat <span class="t-right">ReAct · Eino</span></div>
             <div class="chat-body" id="chatBody" aria-live="polite">
-              <p><span class="who">you$</span> 你是谁？</p>
-              <p><span class="who">me$</span> 我是站主在代码世界的分身 —— 基于他的项目代码、个人经验、背景与喜好训练(检索增强)而来。等他给我喂完素材,我就能真正回答问题了。</p>
-              <p><span class="who">you$</span> 他最擅长什么？</p>
-              <p><span class="who">me$</span> 目前我只能先占个位。AI 分身接口将在 M5 接入(Gin + Eino RAG),敬请期待。</p>
+              <p><span class="who">me$</span> <span class="reply-text">你好，我是站主的 AI 分身。基于他的项目代码、经验、背景与喜好训练而来，想问什么尽管问。</span></p>
             </div>
-            <div class="chat-suggestions" id="chatSuggestions">
-              <button type="button">他是做什么的？</button>
-              <button type="button">他的技术栈？</button>
-              <button type="button">他做过哪些项目？</button>
-              <button type="button">如何联系他？</button>
-            </div>
+            <div class="chat-suggestions" id="chatSuggestions"></div>
             <form class="chat-input" id="chatForm">
               <span class="who" aria-hidden="true">you$</span>
               <input type="text" id="chatInput" placeholder="输入问题，回车发送…" autocomplete="off">
+              <button type="button" id="chatStop" class="chat-stop" hidden>■ 停止</button>
               <span class="cursor" aria-hidden="true"></span>
             </form>
           </div>
 
-          <p class="note"><span class="q">?</span> 对话接口将在后端(M5 · Gin + Eino RAG + SiliconFlow/DeepSeek)就绪后接入,届时为流式输出。</p>
+          <p class="note"><span class="q">?</span> 对话接口已接入：检索素材时显示 <i>正在检索…</i>，正文流式输出、边收边渲染，可用 <i>■ 停止</i> 随时中断。</p>
         </div>
       </section>
     </main>
@@ -93,36 +87,299 @@
       });
     })();
 
-    // 静态壳：本地回声演示（后端 /api/ai/chat 就绪后替换为 SSE 流式接入）
-    var body = document.getElementById('chatBody');
-    var form = document.getElementById('chatForm');
-    var input = document.getElementById('chatInput');
-    var suggestions = document.getElementById('chatSuggestions');
+    // AI 分身：接后端 POST /api/ai/chat（SSE 流式）+ GET /api/ai/suggestions
+    (function () {
+      var body = document.getElementById('chatBody');
+      var form = document.getElementById('chatForm');
+      var input = document.getElementById('chatInput');
+      var suggestionsEl = document.getElementById('chatSuggestions');
+      var stopBtn = document.getElementById('chatStop');
 
-    function appendMsg(who, text) {
-      var p = document.createElement('p');
-      p.innerHTML = '<span class="who">' + who + '</span> ' + text.replace(/</g, '&lt;');
-      body.appendChild(p);
-      body.scrollTop = body.scrollHeight;
-    }
-    function ask(text) {
-      if (!text.trim()) return;
-      appendMsg('you$', text);
-      appendMsg('me$', '（静态演示）接口未接入。M5 之后我会基于站主的素材认真回答。');
-      input.value = '';
-    }
-    if (form) {
-      form.addEventListener('submit', function (e) {
-        e.preventDefault();
-        ask(input.value);
-      });
-    }
-    if (suggestions) {
-      suggestions.addEventListener('click', function (e) {
-        var btn = e.target.closest('button');
-        if (btn) ask(btn.textContent);
-      });
-    }
+      var history = [];        // 对话历史（服务端只取最近 4 条）
+      var controller = null;   // 当前流的 AbortController
+      var replyEl = null;      // 正在流式输出的回复段落
+      var replyText = null;    // 回复段落内的文本容器
+      var gotText = false;     // 是否已收到首个文本增量
+      var streaming = false;
+
+      var DEFAULT_SUGGESTIONS = ['他是做什么的？', '他的技术栈？', '他做过哪些项目？', '如何联系他？'];
+
+      function scrollBottom() { body.scrollTop = body.scrollHeight; }
+
+      // 追加一条消息；一律用 textContent 渲染，杜绝 HTML 注入
+      function appendText(who, text, isUser, cls) {
+        var p = document.createElement('p');
+        var w = document.createElement('span');
+        w.className = 'who';
+        w.textContent = who;
+        p.appendChild(w);
+        p.appendChild(document.createTextNode(' '));
+        var t = document.createElement('span');
+        t.className = 'reply-text';
+        t.textContent = text;
+        p.appendChild(t);
+        if (isUser) p.classList.add('you');
+        if (cls) p.classList.add(cls);
+        body.appendChild(p);
+        scrollBottom();
+        return t;
+      }
+
+      function cursorSpan() {
+        var c = document.createElement('span');
+        c.className = 'cursor';
+        c.setAttribute('aria-hidden', 'true');
+        return c;
+      }
+
+      // 新建助手回复段落：先显示“正在检索…”占位，收到首个文本增量后转正文
+      function openReply() {
+        replyEl = document.createElement('p');
+        replyEl.classList.add('chat-pending');
+        var w = document.createElement('span');
+        w.className = 'who';
+        w.textContent = 'me$';
+        replyEl.appendChild(w);
+        replyEl.appendChild(document.createTextNode(' '));
+        replyText = document.createElement('span');
+        replyText.className = 'reply-text';
+        replyText.textContent = '正在检索…';
+        replyEl.appendChild(replyText);
+        replyEl.appendChild(cursorSpan());
+        body.appendChild(replyEl);
+        gotText = false;
+        scrollBottom();
+      }
+
+      // keep=true：保留已输出的正文并去掉光标；keep=false：整体移除占位段落
+      function finishReply(keep) {
+        if (replyEl) {
+          if (!keep) {
+            if (replyEl.parentNode) replyEl.parentNode.removeChild(replyEl);
+          } else {
+            replyEl.classList.remove('chat-pending');
+            var cur = replyEl.querySelector('.cursor');
+            if (cur && cur.parentNode) cur.parentNode.removeChild(cur);
+          }
+        }
+        replyEl = null;
+        replyText = null;
+      }
+
+      function setStreaming(on) {
+        streaming = on;
+        if (stopBtn) stopBtn.hidden = !on;
+        if (input) input.disabled = on;
+      }
+
+      // 取消当前流：手动停止或 fetch 被 abort 都会走到这里（幂等）
+      function cancelStream(manual) {
+        if (controller) { controller.abort(); controller = null; }
+        if (streaming) setStreaming(false);
+        if (replyEl) {
+          if (gotText) {
+            // 已输出部分正文：保留并标注中断
+            replyText.textContent += manual ? '（已停止）' : '（中断）';
+            finishReply(true);
+          } else {
+            // 只有“正在检索…”占位：直接移除并提示
+            finishReply(false);
+            appendText('me$', '已取消。', false, 'chat-err');
+          }
+        }
+        if (input) input.focus();
+      }
+
+      // 发送一轮对话：history 传发送前快照，当前问题只放 message，避免在历史里重复
+      function send() {
+        var question = (input.value || '').trim();
+        if (!question || streaming) return;
+        appendText('you$', question, true);
+        input.value = '';
+        openReply();
+        setStreaming(true);
+        stream(question, history.slice(-8));
+      }
+
+      function stream(question, past) {
+        controller = new AbortController();
+        fetch(window.API_BASE + '/api/ai/chat', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            message: { content: question },
+            history: past
+          }),
+          signal: controller.signal
+        }).then(function (r) {
+          if (!r.ok) {
+            // 流开始前的错误：普通 JSON 信封（400 / 413 / 503 …）
+            return r.json().then(function (env) {
+              var err = new Error(env.msg || ('HTTP ' + r.status));
+              err.msg = env.msg || ('HTTP ' + r.status);
+              throw err;
+            });
+          }
+          return readSSE(r.body.getReader());
+        }).then(function (reply) {
+          // 本轮完整结束才记入历史（错误/中断不入历史），先 user 后 assistant
+          history.push({ role: 'user', content: question });
+          if (reply && reply.message && reply.message.content) {
+            history.push({ role: 'assistant', content: reply.message.content });
+          }
+          if (replyEl) {
+            if (!gotText) {
+              // 没收到任何文本增量（空回复）：占位转提示
+              replyEl.classList.remove('chat-pending');
+              replyText.textContent = '（无输出）';
+            }
+            finishReply(true);
+          }
+          setStreaming(false);
+          scrollBottom();
+        }).catch(function (err) {
+          if (err && err.name === 'AbortError') { cancelStream(true); return; }
+          var msg = (err && err.msg) ? err.msg : '网络异常，稍后再试';
+          if (gotText && replyEl) {
+            // 已输出部分正文：保留，错误另起一行
+            finishReply(true);
+            appendText('me$', '> ' + msg, false, 'chat-err');
+          } else {
+            finishReply(false);
+            appendText('me$', '出错了：' + msg, false, 'chat-err');
+          }
+          setStreaming(false);
+        });
+      }
+
+      // 逐帧解析 SSE：event: X / data: JSON，空行分隔，data 恒为单行 JSON
+      function readSSE(reader) {
+        var decoder = new TextDecoder('utf-8');
+        var buf = '';
+        return pump();
+
+        function pump() {
+          return reader.read().then(function (res) {
+            if (res.done) return null; // 流结束但没收到 done 帧
+            buf += decoder.decode(res.value, { stream: true });
+            var frames = buf.split('\n\n');
+            buf = frames.pop(); // 最后一段可能不完整，留到下次
+            for (var i = 0; i < frames.length; i++) {
+              var f = handleFrame(frames[i]);
+              if (f && f.done) return f.reply;
+              if (f && f.error) throw f.error;
+            }
+            return pump();
+          });
+        }
+      }
+
+      // 处理一帧；返回 {done, reply} / {error} / null
+      function handleFrame(raw) {
+        var event = 'message';
+        var data = '';
+        var lines = raw.replace(/\r\n/g, '\n').split('\n');
+        for (var i = 0; i < lines.length; i++) {
+          var line = lines[i];
+          if (line.indexOf('event:') === 0) event = line.slice(6).trim();
+          else if (line.indexOf('data:') === 0) data += (data ? '\n' : '') + line.slice(5).trim();
+        }
+        if (!data) return null;
+        var payload;
+        try { payload = JSON.parse(data); } catch (e) { return null; }
+
+        if (event === 'message') {
+          if (replyEl) {
+            if (!gotText) {
+              gotText = true;
+              replyEl.classList.remove('chat-pending');
+              replyText.textContent = '';
+            }
+            replyText.textContent += payload.content || '';
+            scrollBottom();
+          }
+          return null;
+        }
+        if (event === 'done') {
+          var reply = payload.reply || null;
+          if (replyEl && !gotText) {
+            // 服务端没给文本增量：直接用最终回复兜底
+            var content = reply && reply.message ? reply.message.content : '';
+            gotText = true;
+            replyEl.classList.remove('chat-pending');
+            replyText.textContent = content || '（空回复）';
+            scrollBottom();
+          }
+          return { done: true, reply: reply };
+        }
+        if (event === 'error') {
+          return { error: { msg: payload.msg || 'AI 分身出错了' } };
+        }
+        // tool 进度帧（S12-AI 任务 9：{"type":"tool","name":...}）：
+        // 工具检索中维持「正在检索…」中间态，并点名当前调用的工具。
+        if (payload && payload.type === 'tool') {
+          if (!gotText && replyEl) {
+            replyText.textContent = '正在检索…（调用 ' + (payload.name || '工具') + '）';
+            scrollBottom();
+          }
+          return null;
+        }
+        // 其它未知事件：回到“正在检索…”占位
+        if (!gotText && replyEl) {
+          replyText.textContent = payload.msg || '正在检索…';
+          scrollBottom();
+        }
+        return null;
+      }
+
+      // 建议问题：GET /api/ai/suggestions，失败时用默认占位
+      function renderSuggestions(items) {
+        if (!suggestionsEl) return;
+        suggestionsEl.innerHTML = '';
+        items.forEach(function (text) {
+          if (!text) return;
+          var b = document.createElement('button');
+          b.type = 'button';
+          b.textContent = text;
+          suggestionsEl.appendChild(b);
+        });
+      }
+
+      function loadSuggestions() {
+        if (!suggestionsEl) return;
+        renderSuggestions(DEFAULT_SUGGESTIONS);
+        fetch(window.API_BASE + '/api/ai/suggestions')
+          .then(function (r) { return r.json(); })
+          .then(function (env) {
+            var items = (env && env.code === 0 && Array.isArray(env.data)) ? env.data : null;
+            if (!items || !items.length) items = DEFAULT_SUGGESTIONS;
+            renderSuggestions(items);
+          })
+          .catch(function () { renderSuggestions(DEFAULT_SUGGESTIONS); });
+      }
+
+      if (form) {
+        form.addEventListener('submit', function (e) {
+          e.preventDefault();
+          send();
+        });
+      }
+      if (stopBtn) {
+        stopBtn.addEventListener('click', function () { cancelStream(true); });
+      }
+      if (suggestionsEl) {
+        suggestionsEl.addEventListener('click', function (e) {
+          var btn = e.target.closest('button');
+          if (btn && !streaming) {
+            input.value = btn.textContent;
+            send();
+          }
+        });
+      }
+      window.addEventListener('pagehide', function () { if (controller) controller.abort(); });
+
+      loadSuggestions();
+    })();
   </script>
 </body>
 </html>

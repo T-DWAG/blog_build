@@ -15,6 +15,7 @@ var (
 	ErrEmptyPasswordHash = errors.New("store: empty password hash")
 	ErrNotFound          = errors.New("store: not found")
 	ErrValidation        = errors.New("store: validation failed")
+	ErrBudgetExceeded    = errors.New("store: ai usage budget exceeded for this month")
 )
 
 // Admin 对应 admin_users 表的一行。

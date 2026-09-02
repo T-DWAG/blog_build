@@ -2,10 +2,10 @@ package api
 
 import (
 	"encoding/json"
-	"time"
 	"net/http"
 	"net/http/httptest"
 	"testing"
+	"time"
 
 	"github.com/T-DWAG/blog_build/server/internal/config"
 	"github.com/T-DWAG/blog_build/server/internal/ratelimit"
@@ -13,7 +13,7 @@ import (
 )
 
 func TestHealth(t *testing.T) {
-	srv := New(config.Config{Addr: ":0"}, &store.Store{}, ratelimit.NewWindow(time.Minute))
+	srv := New(config.Config{Addr: ":0"}, &store.Store{}, ratelimit.NewWindow(time.Minute), nil)
 	req := httptest.NewRequest(http.MethodGet, "/healthz", nil)
 	rec := httptest.NewRecorder()
 
@@ -40,7 +40,7 @@ func TestHealth(t *testing.T) {
 }
 
 func TestHealth_NoAuthHeader(t *testing.T) {
-	srv := New(config.Config{Addr: ":0"}, &store.Store{}, ratelimit.NewWindow(time.Minute))
+	srv := New(config.Config{Addr: ":0"}, &store.Store{}, ratelimit.NewWindow(time.Minute), nil)
 	req := httptest.NewRequest(http.MethodGet, "/healthz", nil)
 	rec := httptest.NewRecorder()
 
@@ -52,7 +52,7 @@ func TestHealth_NoAuthHeader(t *testing.T) {
 }
 
 func TestHealth_StillNoAuth(t *testing.T) {
-	srv := New(config.Config{Addr: ":0"}, &store.Store{}, ratelimit.NewWindow(time.Minute))
+	srv := New(config.Config{Addr: ":0"}, &store.Store{}, ratelimit.NewWindow(time.Minute), nil)
 	req := httptest.NewRequest(http.MethodGet, "/healthz", nil)
 	rec := httptest.NewRecorder()
 
@@ -69,5 +69,5 @@ func TestListen_RequiresStore(t *testing.T) {
 			t.Fatal("New with nil store 应 panic")
 		}
 	}()
-	New(config.Config{Addr: ":0"}, nil, ratelimit.NewWindow(time.Minute))
+	New(config.Config{Addr: ":0"}, nil, ratelimit.NewWindow(time.Minute), nil)
 }

@@ -60,7 +60,7 @@ func newTestServer(t *testing.T, username string) (*Server, *store.Store) {
 	}
 
 	cfg := config.Config{Addr: ":0", JWTSecret: "test-secret"}
-	srv := New(cfg, st, ratelimit.NewWindow(time.Minute))
+	srv := New(cfg, st, ratelimit.NewWindow(time.Minute), nil)
 	gin.SetMode(gin.TestMode)
 	return srv, st
 }

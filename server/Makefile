@@ -1,4 +1,4 @@
-.PHONY: run db-up up down test-s1 test-s2 test-s3 test-s4 test-s5 test-s6 test-s7 test-s8 test-s9 test-s10 test-s11
+.PHONY: run db-up up down test-s1 test-s2 test-s3 test-s4 test-s5 test-s6 test-s7 test-s8 test-s9 test-s10 test-s11 test-s12
 
 run:
 	go run ./cmd/blog
@@ -84,3 +84,11 @@ test-s10:
 
 test-s11:
 	go test ./internal/compose/... -run 'TestCompose' -v -timeout 5m
+
+test-s12:
+	@if ! docker compose ps --status running db >/dev/null 2>&1; then \
+		echo "db 未运行，先执行: docker compose up -d db"; \
+		exit 1; \
+	fi
+	@DATABASE_URL="$${DATABASE_URL:-postgres://postgres:postgres@localhost:5432/blog?sslmode=disable}" \
+		go test ./... -run 'TestChat_|TestS12_|TestTools_|TestStream_|TestNew_NoAPIKey|TestSystemPrompt_|TestBuildInput_|TestSeedKnowledge_|TestSuggestions_|TestChatHTML_UsesAPI|TestSettingsHTML_NoEmbedding' -v

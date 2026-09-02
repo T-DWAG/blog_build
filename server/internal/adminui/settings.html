@@ -85,13 +85,6 @@ input,textarea,select{caret-color:var(--green)}
     <label>BUDGET / MONTH</label><input type="text" id="ai_budget" placeholder="10">
 
     <hr style="border:none;border-top:2px solid var(--black);margin:24px 0">
-    <h2 style="font-size:16px;margin:0 0 4px">EMBEDDING · 向量配置</h2>
-    <p class="note"># 站主买哪家填哪家；API Key 走环境变量不进这里</p>
-    <label>PROVIDER（供应商）</label><input type="text" id="e_provider" placeholder="siliconflow">
-    <label>MODEL（模型名）</label><input type="text" id="e_model" placeholder="bge-m3">
-    <label>DIM（向量维度）</label><input type="text" id="e_dim" placeholder="1024">
-
-    <hr style="border:none;border-top:2px solid var(--black);margin:24px 0">
     <h2 style="font-size:16px;margin:0 0 4px">SUGGESTIONS · 常用问题</h2>
     <p class="note"># 访客点一下就发问的按钮，每行一条</p>
     <textarea id="suggestions" placeholder="他是做什么的？&#10;他的技术栈？"></textarea>
@@ -129,12 +122,6 @@ input,textarea,select{caret-color:var(--green)}
         document.getElementById('ai_budget').value=ai.budget_per_month!=null?ai.budget_per_month:'';
       }catch(e){}
       try{
-        var em=JSON.parse(d.embedding||'{}');
-        document.getElementById('e_provider').value=em.provider||'';
-        document.getElementById('e_model').value=em.model||'';
-        document.getElementById('e_dim').value=em.dim!=null?em.dim:'';
-      }catch(e){}
-      try{
         var su=JSON.parse(d.suggestions||'[]');
         document.getElementById('suggestions').value=(su||[]).join('\n');
       }catch(e){}
@@ -158,13 +145,6 @@ input,textarea,select{caret-color:var(--green)}
     if(v('ai_budget')!==''){
       jobs.push(put('ai',{budget_per_month:isNaN(budget)?0:budget}));
     }
-    // embedding
-    var embedding={};
-    if(v('e_provider'))embedding.provider=v('e_provider');
-    if(v('e_model'))embedding.model=v('e_model');
-    var dim=parseInt(v('e_dim'),10);
-    if(v('e_dim')!=='')embedding.dim=isNaN(dim)?0:dim;
-    if(Object.keys(embedding).length)jobs.push(put('embedding',embedding));
     // suggestions（每行一条）
     var sugs=document.getElementById('suggestions').value.split(/\n/).map(function(s){return s.trim();}).filter(Boolean);
     jobs.push(put('suggestions',sugs));

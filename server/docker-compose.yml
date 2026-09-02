@@ -23,6 +23,11 @@ services:
       JWT_SECRET: ${JWT_SECRET}
       ADMIN_USERNAME: ${ADMIN_USERNAME:-admin}
       ADMIN_PASSWORD: ${ADMIN_PASSWORD}
+      # AI 三项均为可选：AI_API_KEY 留空时服务照常启动（AI 能力返回不可用），
+      # AI_BASE_URL / AI_MODEL 留空时由程序按默认值（DeepSeek / deepseek-chat）兜底
+      AI_API_KEY: ${AI_API_KEY:-}
+      AI_BASE_URL: ${AI_BASE_URL:-}
+      AI_MODEL: ${AI_MODEL:-}
     depends_on:
       db:
         condition: service_healthy
