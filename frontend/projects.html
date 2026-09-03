@@ -99,16 +99,32 @@
           grid.innerHTML = items.map(function (p, i) {
             var num = String(i + 1).padStart(2, '0');
             var tags = (p.tags || []).map(function (t) { return '<span>' + escapeHTML(t) + '</span>'; }).join('');
-            var link = p.demo_url || p.home_url || p.repo_url;
-            var linkHTML = link
-              ? '<a class="card-link" href="' + escapeHTML(link) + '" target="_blank" rel="noreferrer" title="打开项目链接">' + (p.demo_url ? 'demo' : '来源') + ' ↗</a>'
-              : '<span class="card-link" title="项目详情链接(待补充)">来源 ↗(待补充)</span>';
+            
+            // 左下角：来源（repo_url）
+            var sourceLink = '';
+            if (p.repo_url) {
+              sourceLink = '<a class="card-link card-link-source" href="' + escapeHTML(p.repo_url) + '" target="_blank" rel="noreferrer" title="查看源代码">来源 ↗</a>';
+            }
+            
+            // 右下角：demo（demo_url 或 home_url）
+            var demoLink = '';
+            var demoUrl = p.demo_url || p.home_url;
+            if (demoUrl) {
+              demoLink = '<a class="card-link card-link-demo" href="' + escapeHTML(demoUrl) + '" target="_blank" rel="noreferrer" title="在线演示">demo ↗</a>';
+            }
+            
+            // 如果两个链接都有，用容器包裹实现左右布局
+            var linksHTML = '';
+            if (sourceLink || demoLink) {
+              linksHTML = '<div class="card-links">' + sourceLink + demoLink + '</div>';
+            }
+            
             return '<article class="card">' +
               '<span class="num">' + num + '</span>' +
               '<h3>' + escapeHTML(p.name) + '</h3>' +
               '<p>' + escapeHTML(p.summary) + '</p>' +
               '<div class="tags">' + tags + '</div>' +
-              linkHTML +
+              linksHTML +
               '</article>';
           }).join('');
         }).catch(function () {

@@ -410,8 +410,11 @@ h2 {
   line-height: 1.3;
 }
 .card-ink .tags span { color: var(--black); background: var(--white); }
-.card-link { display: inline-block; margin-top: 18px; font-family: var(--font-mono); font-size: 13px; font-weight: 700; color: var(--green); text-decoration: none; border-bottom: 2px solid var(--green); }
+.card-links { display: flex; justify-content: space-between; align-items: center; margin-top: 18px; }
+.card-link { display: inline-block; font-family: var(--font-mono); font-size: 13px; font-weight: 700; color: var(--green); text-decoration: none; border-bottom: 2px solid var(--green); }
 .card-link:hover { color: var(--black); background: var(--green); }
+.card-link-source { /* 左下角：来源 */ }
+.card-link-demo { /* 右下角：demo */ }
 
 /* ============================================================
    ls 风格文章列表
