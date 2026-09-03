@@ -11,6 +11,7 @@
   <link rel="stylesheet" href="style.css">
   <script src="api-base.js"></script>
   <script src="vendor/marked.min.js"></script>
+  <script src="mermaid-render.js"></script>
 </head>
 <body>
   <div class="win pixel-round">
@@ -128,6 +129,12 @@
             '<p class="ls-note"><span class="dim">' + escapeHTML(date) + (tags ? ' · ' + tags : '') + '</span></p>' +
             '<div class="article-body">' + bodyHTML + '</div>' +
             '<p class="ls-note"><span class="p">$</span> <a class="term-link" href="posts.html">go /posts</a> 返回文章列表</p>';
+
+          // mermaid：把正文里 ```mermaid 代码块替换成图（无图时不加载库）
+          if (window.renderMermaidBlocks) {
+            var bodyEl = container.querySelector('.article-body');
+            if (bodyEl) window.renderMermaidBlocks(bodyEl);
+          }
         })
         .catch(function () {
           renderNotFound('文章加载失败，稍后再试');

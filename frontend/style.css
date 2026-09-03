@@ -800,3 +800,49 @@ h2 {
 .article-body img { max-width: 100%; height: auto; border: 3px solid var(--black); margin: 16px 0; }
 .article-body hr { margin: 24px 0; border: none; border-top: 2px dashed var(--black); }
 
+/* mermaid 图（mermaid-render.js 替换 ```mermaid 代码块后插入） */
+.article-body .mermaid-svg-pending {
+  margin: 20px 0;
+  padding: 30px 14px;
+  text-align: center;
+  font-family: var(--font-mono);
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--black);
+  background: var(--white);
+  border: 3px dashed var(--black);
+}
+.article-body .mermaid-svg {
+  margin: 20px 0;
+  text-align: center;
+  overflow-x: auto;
+  background: var(--white);
+  border: 3px solid var(--black);
+  box-shadow: 6px 6px 0 var(--black);
+  padding: 14px 10px;
+}
+.article-body .mermaid-svg svg { max-width: 100%; height: auto; }
+/* —— 像素化：方角、粗描边、像素字体（抹掉 mermaid 默认圆角细线现代感）—— */
+.article-body .mermaid-svg rect { rx: 0 !important; ry: 0 !important; stroke-width: 2px; }
+.article-body .mermaid-svg polygon { stroke-width: 2px; }
+.article-body .mermaid-svg .edgePaths path,
+.article-body .mermaid-svg .flowchart-link,
+.article-body .mermaid-svg .edgeLabel { stroke-width: 2px; }
+.article-body .mermaid-svg text,
+.article-body .mermaid-svg .nodeLabel,
+.article-body .mermaid-svg div,
+.article-body .mermaid-svg span { font-family: var(--fp) !important; }
+.article-body .mermaid-svg .messageText,
+.article-body .mermaid-svg .edgeLabel { font-style: normal !important; }
+.article-body .mermaid-svg .edgeLabel { background: var(--white); }
+.article-body .mermaid-error {
+  margin: 20px 0;
+  padding: 10px 14px;
+  font-family: var(--font-mono);
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--white);
+  background: var(--black);
+  border: 3px solid var(--black);
+}
+
