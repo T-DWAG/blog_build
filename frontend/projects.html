@@ -106,11 +106,12 @@
               sourceLink = '<a class="card-link card-link-source" href="' + escapeHTML(p.repo_url) + '" target="_blank" rel="noreferrer" title="查看源代码">来源 ↗</a>';
             }
             
-            // 右下角：demo（demo_url 或 home_url）
+            // 右下角：按字段区分文案（demo_url → demo；只有 home_url → home），不写死
             var demoLink = '';
-            var demoUrl = p.demo_url || p.home_url;
-            if (demoUrl) {
-              demoLink = '<a class="card-link card-link-demo" href="' + escapeHTML(demoUrl) + '" target="_blank" rel="noreferrer" title="在线演示">demo ↗</a>';
+            if (p.demo_url) {
+              demoLink = '<a class="card-link card-link-demo" href="' + escapeHTML(p.demo_url) + '" target="_blank" rel="noreferrer" title="在线演示">demo ↗</a>';
+            } else if (p.home_url) {
+              demoLink = '<a class="card-link card-link-demo" href="' + escapeHTML(p.home_url) + '" target="_blank" rel="noreferrer" title="项目主页">home ↗</a>';
             }
             
             // 如果两个链接都有，用容器包裹实现左右布局

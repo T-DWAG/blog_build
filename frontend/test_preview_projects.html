@@ -1,0 +1,90 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>项目卡片布局预览（本地验证用，勿同步服务器）</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <div class="win pixel-round" style="margin: 20px auto;">
+
+    <header class="winbar">
+      <div class="winbar-lights" aria-hidden="true">
+        <i class="r"></i><i class="y"></i><i class="g"></i>
+      </div>
+      <span class="winbar-path">t-dwag@blog: <b>~/preview-projects</b></span>
+      <span class="winbar-go">[local-preview]</span>
+    </header>
+
+    <main>
+      <section class="section section-paper" aria-labelledby="projects-title">
+        <div class="container">
+          <p class="section-kicker">PREVIEW</p>
+          <h2 id="projects-title"><span>卡片布局验证：来源左下 / demo 右下 / 沉底对齐</span></h2>
+          <p class="section-intro">mock 数据跑真实渲染逻辑。注意观察：① 卡片等高、链接沉底同一水平线 ② 只有 repo_url 的项目仅左下角有"来源" ③ 有 demo_url 的项目右下角多一个"demo"。</p>
+
+          <div class="card-grid" id="projectsGrid"></div>
+
+          <p class="ls-note" id="projectsNote"><span class="dim"># 预览文件不进 git、不同步服务器（rsync 用 --exclude 排除）。</span></p>
+        </div>
+      </section>
+    </main>
+  </div>
+
+  <script>
+    // ===== 与 projects.html 完全一致的渲染逻辑（唯一区别：数据来自 mock 而非 fetch）=====
+    (function () {
+      var grid = document.getElementById('projectsGrid');
+
+      function escapeHTML(s) {
+        return String(s || '').replace(/[&<>"']/g, function (c) {
+          return ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' })[c];
+        });
+      }
+
+      // mock：尽量还原线上 6 条真实数据（summary 长度刻意有差异，验证等高沉底）
+      var items = [
+        { name: 'Eino Agent 可观测性', summary: '面向 Agent 应用的可观测组件：以回调机制无侵入接入 Agent 执行流程，采集调用链路、模型 Token 消耗与成本、工具调用入参和结果。落地了敏感信息脱敏、按成功/失败和成本自适应采样、指标聚合看板，以及基于 LLM 自动打分（准确性/工具使用/效率三维度）的效果评估，并能导出到 OpenTelemetry(Jaeger)。多租户目前是按租户 ID 做数据隔离标记，非完整权限体系。', repo_url: 'https://github.com/T-DWAG/agent-observability', tags: ['Go', '可观测性', 'Agent', 'PostgreSQL'] },
+        { name: 'AI 编程助手英语学习插件', summary: '让日常写代码、跟 AI 助手对话的过程变成英语练习场的编程工具插件：实时检测输入中的中文并按设定严格程度拦截或提醒，动态构造系统提示词让 AI 按双语或纯英文模式回应，并按 CEFR 分级(A2-C1)调整语言难度。', repo_url: 'https://github.com/T-DWAG/pi-english-tutor', demo_url: 'https://example.com/pi-english-tutor', tags: ['TypeScript', '插件开发', '工具'] },
+        { name: '遥感无人机影像地块分割', summary: '处理无人机拍摄的大幅遥感 TIFF 影像：按窗口切片，用 YOLO 实例分割模型逐片识别地块边界，生成掩膜后经 rasterio/geopandas 转换成带地理坐标的矢量图层，最终合并输出。', repo_url: 'https://github.com/T-DWAG/remote_v1', tags: ['Python', 'YOLO', '遥感', 'GIS'] },
+        { name: 'go-zero 短链接服务', summary: '核心链路用 singleflight 合并同一长链接的并发转链请求；用布隆过滤器快速判断短链是否存在；发号器生成唯一自增 ID 转 base62 短码，MD5 做重复去重。', repo_url: 'https://github.com/T-DWAG/zeroProject', home_url: 'https://example.com/zero', tags: ['Go', 'go-zero', 'singleflight', 'MySQL', 'Redis'] },
+        { name: '保险理赔流程管理系统', summary: '基于微服务框架的理赔管理系统，覆盖报案到结案的完整链路。列表查询走 Redis 缓存 → singleflight 合并 → ES 检索 → MySQL 兜底降级，gRPC 和 HTTP 双协议。', repo_url: 'https://github.com/T-DWAG/claim-system', tags: ['Go', 'Kratos', '微服务', 'MySQL', 'Elasticsearch', 'Redis'] },
+        { name: '图片相似度分组与授权管理系统', summary: 'Web 工具：YOLO 分类筛图 + 感知哈希自动分组去重，支持 ZIP 批量上传处理。授权信息用 HMAC 哈希链保护，防部署环境本地篡改配额/有效期/IP。', repo_url: 'https://github.com/T-DWAG/yak_v2', demo_url: 'https://example.com/yak', home_url: 'https://example.com/yak-home', tags: ['Python', 'Flask', 'YOLO', '图像处理'] }
+      ];
+
+      grid.innerHTML = items.map(function (p, i) {
+        var num = String(i + 1).padStart(2, '0');
+        var tags = (p.tags || []).map(function (t) { return '<span>' + escapeHTML(t) + '</span>'; }).join('');
+
+        // 左下角：来源（repo_url）
+        var sourceLink = '';
+        if (p.repo_url) {
+          sourceLink = '<a class="card-link card-link-source" href="' + escapeHTML(p.repo_url) + '" target="_blank" rel="noreferrer" title="查看源代码">来源 ↗</a>';
+        }
+
+        // 右下角：按字段区分文案（demo_url → demo；只有 home_url → home），不写死
+        var demoLink = '';
+        if (p.demo_url) {
+          demoLink = '<a class="card-link card-link-demo" href="' + escapeHTML(p.demo_url) + '" target="_blank" rel="noreferrer" title="在线演示">demo ↗</a>';
+        } else if (p.home_url) {
+          demoLink = '<a class="card-link card-link-demo" href="' + escapeHTML(p.home_url) + '" target="_blank" rel="noreferrer" title="项目主页">home ↗</a>';
+        }
+
+        var linksHTML = '';
+        if (sourceLink || demoLink) {
+          linksHTML = '<div class="card-links">' + sourceLink + demoLink + '</div>';
+        }
+
+        return '<article class="card">' +
+          '<span class="num">' + num + '</span>' +
+          '<h3>' + escapeHTML(p.name) + '</h3>' +
+          '<p>' + escapeHTML(p.summary) + '</p>' +
+          '<div class="tags">' + tags + '</div>' +
+          linksHTML +
+          '</article>';
+      }).join('');
+    })();
+  </script>
+</body>
+</html>
