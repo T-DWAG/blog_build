@@ -98,28 +98,8 @@
         <div class="container">
           <p class="section-kicker">PROJECTS</p>
           <h2 id="projects-title"><span>三个项目，一条能力链</span></h2>
-          <div class="card-grid">
-            <article class="card card-ink">
-              <span class="num">01</span>
-              <h3>AI Agent 智能平台</h3>
-              <p>基于 MSZLU-AI / CloudWeGo Eino 的源码学习、部署验证与二次开发：多级编排、工作流注册表、RAG 与工具规范。</p>
-              <div class="tags"><span>Go</span><span>Eino</span><span>PostgreSQL</span><span>ES</span><span>Milvus</span></div>
-              <a class="card-link" href="projects.html">go /projects →</a>
-            </article>
-            <article class="card card-ink">
-              <span class="num">02</span>
-              <h3>电商评价系统</h3>
-              <p>基于 Q1mi Go 微服务课程复现：分层架构 + Wire 依赖注入，ES 检索 + Redis/singleflight 缓存治理，一致性设计。</p>
-              <div class="tags"><span>Go</span><span>Kratos</span><span>gRPC</span><span>MySQL</span><span>Redis</span></div>
-              <a class="card-link" href="projects.html">go /projects →</a>
-            </article>
-            <article class="card card-ink">
-              <span class="num">03</span>
-              <h3>短链接服务</h3>
-              <p>Base62 短码、MD5 幂等转链、Redis 缓存 + 布隆过滤器防穿透、302 跳转策略与安全复盘。</p>
-              <div class="tags"><span>Go</span><span>go-zero</span><span>MySQL</span><span>Redis</span><span>Docker</span></div>
-              <a class="card-link" href="projects.html">go /projects →</a>
-            </article>
+          <div class="card-grid" id="featured-projects">
+            <p class="ls-note"><span class="dim"># 加载中…</span></p>
           </div>
         </div>
       </section>
@@ -158,6 +138,67 @@
         toggle.setAttribute('aria-expanded', String(open));
         toggle.textContent = open ? '导航 ▴' : '导航 ▾';
       });
+    })();
+
+    // 精选项目：优先 GET /api/projects 取前 3；接口无数据/不可用时回退到内置静态三条
+    (function () {
+      var grid = document.getElementById('featured-projects');
+      if (!grid) return;
+
+      function escapeHTML(s) {
+        return String(s || '').replace(/[&<>"']/g, function (c) {
+          return ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' })[c];
+        });
+      }
+
+      // 内置兜底：与「项目管理」Obsidian 笔记内容一致（全量 6 条在笔记/库中，这里只放首页展示的前 3）
+      var FALLBACK = [
+        {
+          name: 'Eino Agent 可观测性',
+          repo_url: 'https://github.com/T-DWAG/agent-observability',
+          summary: '面向 Agent 应用的可观测组件：以回调机制无侵入接入 Agent 执行流程，采集调用链路、模型 Token 消耗与成本、工具调用入参和结果。落地了敏感信息脱敏（目前覆盖手机号规则）、按成功/失败和成本自适应采样、指标聚合看板，以及基于 LLM 自动打分（准确性/工具使用/效率三维度）的效果评估，并能导出到 OpenTelemetry(Jaeger)。多租户目前是按租户 ID 做数据隔离标记，非完整权限体系。',
+          tags: ['Go', '可观测性', 'Agent', 'PostgreSQL']
+        },
+        {
+          name: 'go-zero 短链接服务',
+          repo_url: 'https://github.com/T-DWAG/zeroProject',
+          summary: '用 go-zero 框架实践的短链接服务，核心链路用 singleflight 合并同一长链接的并发转链请求，避免相同请求同时打穿数据库；用布隆过滤器在查询阶段快速判断短链是否存在，减少无效查库；发号器生成唯一自增 ID 转 base62 短码，MD5 做重复长链接去重。',
+          tags: ['Go', 'go-zero', 'singleflight', 'MySQL', 'Redis']
+        },
+        {
+          name: '遥感无人机影像地块分割',
+          repo_url: 'https://github.com/T-DWAG/remote_v1',
+          summary: '处理无人机拍摄的大幅遥感 TIFF 影像：按窗口切片，用 YOLO 实例分割模型逐片识别地块边界，生成掩膜后经 rasterio/geopandas 转换成带地理坐标的矢量图层(shapefile)，最终合并输出。用配置文件管理模型路径和处理参数，避免硬编码，并做了失败重试和日志记录。',
+          tags: ['Python', 'YOLO', '遥感', 'GIS']
+        }
+      ];
+
+      function render(items) {
+        grid.innerHTML = items.map(function (p, i) {
+          var num = String(i + 1).padStart(2, '0');
+          var tags = (p.tags || []).map(function (t) { return '<span>' + escapeHTML(t) + '</span>'; }).join('');
+          // 左下角：来源（repo_url），不做 demo/home 判断
+          var sourceLink = p.repo_url
+            ? '<a class="card-link card-link-source" href="' + escapeHTML(p.repo_url) + '" target="_blank" rel="noreferrer" title="查看源代码">来源 ↗</a>'
+            : '';
+          var linksHTML = sourceLink ? '<div class="card-links">' + sourceLink + '</div>' : '';
+          return '<article class="card card-ink">' +
+            '<span class="num">' + num + '</span>' +
+            '<h3>' + escapeHTML(p.name) + '</h3>' +
+            '<p>' + escapeHTML(p.summary) + '</p>' +
+            '<div class="tags">' + tags + '</div>' +
+            linksHTML +
+            '</article>';
+        }).join('');
+      }
+
+      fetch(window.API_BASE + '/api/projects')
+        .then(function (r) { return r.json(); })
+        .then(function (env) {
+          var items = ((env && env.data) || []).slice(0, 3);
+          render(items.length ? items : FALLBACK); // 接口有数据 → 用接口；空 → 静态兜底
+        })
+        .catch(function () { render(FALLBACK); }); // 接口不可用 → 静态兜底
     })();
 
     // 最新文章：GET /api/articles，取前 3 条渲染
