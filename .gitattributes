@@ -1,0 +1,12 @@
+# 行尾统一 LF:仓库只存 LF,检出/比较时自动归一,杜绝 CRLF 噪音 diff
+* text=auto eol=lf
+
+# 二进制/字体明确不归一
+*.woff2 binary
+*.woff   binary
+*.ttf    binary
+*.png    binary
+*.jpg    binary
+*.jpeg   binary
+*.webp   binary
+*.ico    binary

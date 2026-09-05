@@ -1,0 +1,35 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="675" viewBox="0 0 1200 675">
+  <rect width="1200" height="675" fill="#f7f9fc"/>
+  <text x="70" y="72" font-family="Arial,'Microsoft YaHei',sans-serif" font-size="30" font-weight="700" fill="#172033">Eino Callback 接入位置</text>
+  <text x="70" y="112" font-family="Arial,'Microsoft YaHei',sans-serif" font-size="18" fill="#667085">不改 Agent 业务逻辑，在 Runner 执行时挂载 handler</text>
+  <defs>
+    <marker id="arrow" markerWidth="10" markerHeight="10" refX="8" refY="3" orient="auto"><path d="M0,0 L0,6 L9,3 z" fill="#3978d8"/></marker>
+  </defs>
+  <rect x="70" y="180" width="300" height="150" rx="16" fill="#e8f1ff" stroke="#3978d8" stroke-width="3"/>
+  <text x="220" y="228" text-anchor="middle" font-family="Arial,'Microsoft YaHei',sans-serif" font-size="24" font-weight="700" fill="#1d4f9e">Eino Runner</text>
+  <text x="220" y="270" text-anchor="middle" font-family="Consolas,monospace" font-size="18" fill="#344054">adk.WithCallbacks(handler)</text>
+  <text x="220" y="302" text-anchor="middle" font-family="Arial,'Microsoft YaHei',sans-serif" font-size="16" fill="#667085">执行入口</text>
+  <path d="M370 255 H505" stroke="#3978d8" stroke-width="4" marker-end="url(#arrow)"/>
+  <rect x="505" y="155" width="300" height="200" rx="16" fill="#ffffff" stroke="#3978d8" stroke-width="3"/>
+  <text x="655" y="207" text-anchor="middle" font-family="Arial,'Microsoft YaHei',sans-serif" font-size="23" font-weight="700" fill="#172033">Collector</text>
+  <text x="655" y="252" text-anchor="middle" font-family="Consolas,monospace" font-size="17" fill="#3978d8">collector.WithObsCallback</text>
+  <text x="655" y="292" text-anchor="middle" font-family="Arial,'Microsoft YaHei',sans-serif" font-size="16" fill="#667085">创建 ctx / handler / finish</text>
+  <text x="655" y="324" text-anchor="middle" font-family="Arial,'Microsoft YaHei',sans-serif" font-size="16" fill="#667085">接收 OnStart / OnEnd / OnError</text>
+  <path d="M805 255 H935" stroke="#3978d8" stroke-width="4" marker-end="url(#arrow)"/>
+  <rect x="935" y="180" width="195" height="150" rx="16" fill="#fff4e5" stroke="#e58b25" stroke-width="3"/>
+  <text x="1032" y="228" text-anchor="middle" font-family="Arial,'Microsoft YaHei',sans-serif" font-size="23" font-weight="700" fill="#9a5b0b">Trace / Span</text>
+  <text x="1032" y="270" text-anchor="middle" font-family="Arial,'Microsoft YaHei',sans-serif" font-size="16" fill="#7a4a11">Agent</text>
+  <text x="1032" y="296" text-anchor="middle" font-family="Arial,'Microsoft YaHei',sans-serif" font-size="16" fill="#7a4a11">ChatModel</text>
+  <text x="1032" y="322" text-anchor="middle" font-family="Arial,'Microsoft YaHei',sans-serif" font-size="16" fill="#7a4a11">Tool</text>
+  <path d="M655 355 V430" stroke="#3978d8" stroke-width="4" marker-end="url(#arrow)"/>
+  <text x="655" y="410" text-anchor="middle" font-family="Arial,'Microsoft YaHei',sans-serif" font-size="16" fill="#667085">记录执行过程</text>
+  <rect x="170" y="455" width="240" height="95" rx="14" fill="#ffffff" stroke="#d0d5dd" stroke-width="2"/>
+  <rect x="480" y="455" width="240" height="95" rx="14" fill="#ffffff" stroke="#d0d5dd" stroke-width="2"/>
+  <rect x="790" y="455" width="240" height="95" rx="14" fill="#ffffff" stroke="#d0d5dd" stroke-width="2"/>
+  <text x="290" y="495" text-anchor="middle" font-family="Arial,'Microsoft YaHei',sans-serif" font-size="19" font-weight="700" fill="#172033">Agent</text>
+  <text x="290" y="525" text-anchor="middle" font-family="Arial,'Microsoft YaHei',sans-serif" font-size="15" fill="#667085">执行起止 / 状态</text>
+  <text x="600" y="495" text-anchor="middle" font-family="Arial,'Microsoft YaHei',sans-serif" font-size="19" font-weight="700" fill="#172033">ChatModel</text>
+  <text x="600" y="525" text-anchor="middle" font-family="Arial,'Microsoft YaHei',sans-serif" font-size="15" fill="#667085">模型 / Token / 成本</text>
+  <text x="910" y="495" text-anchor="middle" font-family="Arial,'Microsoft YaHei',sans-serif" font-size="19" font-weight="700" fill="#172033">Tool</text>
+  <text x="910" y="525" text-anchor="middle" font-family="Arial,'Microsoft YaHei',sans-serif" font-size="15" fill="#667085">入参 / 出参 / 错误</text>
+</svg>

@@ -1,0 +1,401 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description" content="Moss 驻站形象探针：在真实 winbar / chat 外壳里对比 4 个候选形态。审核用，不进生产。">
+  <meta name="theme-color" content="#000000">
+  <title>MOSS 形象探针 · review only</title>
+  <link rel="preload" href="fonts/fusion-pixel-12px-proportional-zh_hans.subset.woff2" as="font" type="font/woff2" crossorigin>
+  <link rel="preload" href="fonts/fusion-pixel-12px-monospaced-zh_hans.subset.woff2" as="font" type="font/woff2" crossorigin>
+  <link rel="stylesheet" href="style.css">
+  <style>
+    /* ============ 探针专属样式（mp- 前缀，不进生产） ============ */
+    body.mp { background: #000; }
+    .mp-wrap { width: min(1180px, calc(100% - 48px)); margin: 0 auto; }
+
+    .mp-top { display: flex; flex-wrap: wrap; align-items: center; gap: 14px; padding: 18px 0 8px; }
+    .mp-title { margin: 0; padding: 6px 12px; color: #fff; background: #000; border: 3px solid #fff; font-family: var(--fp-mono); font-size: 14px; font-weight: 700; letter-spacing: .06em; }
+    .mp-top .tag { color: var(--green); font-family: var(--fp-mono); font-size: 12px; font-weight: 700; }
+    .mp-top .muted { color: rgba(255,255,255,.55); font-family: var(--fp-mono); font-size: 11px; }
+
+    /* 状态切换 */
+    .mp-controls { display: flex; flex-wrap: wrap; align-items: center; gap: 10px; margin: 10px 0 6px; }
+    .mp-seg { display: inline-flex; border: 3px solid #fff; background: #000; }
+    .mp-seg button {
+      padding: 8px 16px; color: #fff; background: transparent; border: 0;
+      border-right: 2px solid #fff; font-family: var(--fp-mono); font-size: 13px; font-weight: 700;
+    }
+    .mp-seg button:last-child { border-right: 0; }
+    .mp-seg button:hover { color: #000; background: var(--green); }
+    body.mp-online .mp-seg [data-st="online"],
+    body.mp-think  .mp-seg [data-st="think"],
+    body.mp-sleep  .mp-seg [data-st="sleep"] { color: #000; background: var(--green); }
+    .mp-stat { color: var(--green); font-family: var(--fp-mono); font-size: 12px; font-weight: 700; }
+    .mp-controls .dim { color: rgba(255,255,255,.5); font-family: var(--fp-mono); font-size: 11px; }
+
+    .mp-grid { display: grid; grid-template-columns: 1.15fr .85fr; gap: 22px; align-items: start; }
+    @media (max-width: 960px) { .mp-grid { grid-template-columns: 1fr; } }
+
+    /* ============ 真实外壳预览区 ============ */
+    .mp-shell-label { margin: 22px 0 10px; color: var(--green); font-family: var(--fp-mono); font-size: 12px; font-weight: 700; letter-spacing: .14em; }
+    .mp-win { background: #fff; border: 4px solid #000; box-shadow: 10px 10px 0 #000; }
+    .mp-shell .chat-window { box-shadow: 10px 10px 0 #000; }
+    .mp-shell .chat-body { min-height: 170px; max-height: 260px; }
+
+    /* ============ Moss 形象基础样式（候选可落地片段） ============ */
+
+    /* --- 之眼 SVG：白环 + 绿瞳；状态由 body.mp-online/think/sleep 驱动 --- */
+    .mp-orb { display: inline-block; flex: none; }
+    .mp-orb svg { display: block; }
+    .mp-orb .mp-ring { fill: #fff; }
+    .mp-orb .mp-eye { fill: #00ff41; transform-box: fill-box; transform-origin: center; }
+    .mp-orb .mp-iris { transform-box: view-box; transform-origin: 5px 5px; }
+    .mp-orb .mp-eyeholder { } /* 偏心位移仅在 think 态施加，其它状态瞳仁居中 */
+    /* 在线：瞳仁居中 + 呼吸(活着感) + 偶尔眨眼 */
+    body.mp-online .mp-orb { animation: mp-breathe 3.6s ease-in-out infinite; }
+    body.mp-online .mp-eye { animation: mp-blink 3.4s infinite; }
+    @keyframes mp-breathe {
+      0%, 100% { opacity: 1; }
+      50%      { opacity: .78; }
+    }
+    @keyframes mp-blink {
+      0%, 88%, 100% { transform: scaleY(1); }
+      91%, 95%      { transform: scaleY(.12); }
+    }
+    /* 思考/检索：瞳仁离开中心，沿环巡视（MOSS 在"看"） */
+    body.mp-think .mp-orb { animation: mp-breathe 3.6s ease-in-out infinite; }
+    body.mp-think .mp-eye { animation: none; }
+    body.mp-think .mp-eyeholder { transform: translate(2px, 0); }
+    body.mp-think .mp-iris { animation: mp-orbit 1.6s steps(12) infinite; }
+    @keyframes mp-orbit { to { transform: rotate(360deg); } }
+    /* 休眠(429)：呼吸/巡环全停，熄瞳、整体转暗 */
+    body.mp-sleep .mp-orb { animation: none; opacity: .35; }
+    body.mp-sleep .mp-iris { opacity: 0; }
+
+    /* --- 候选 A 补充：纯 CSS 小灯（winbar 路径旁 10px 级） --- */
+    .mp-lamp { display: inline-flex; align-items: center; gap: 7px; margin-left: 14px; padding: 2px 9px 2px 7px; border: 2px solid #fff; font-family: var(--fp-mono); font-size: 11px; font-weight: 700; color: #fff; letter-spacing: .05em; }
+    .mp-lamp .dot {
+      width: 9px; height: 9px; border: 2px solid #fff; border-radius: 50%;
+      display: inline-block; position: relative; flex: none;
+    }
+    .mp-lamp .dot::after {
+      content: ''; position: absolute; inset: 1px; border-radius: 50%;
+      background: var(--green); animation: mp-core 2.4s infinite;
+    }
+    body.mp-sleep .mp-lamp .dot::after { background: #666; animation: none; }
+    body.mp-sleep .mp-lamp { opacity: .45; }
+    body.mp-sleep .mp-lamp .dot { opacity: .8; }
+    @keyframes mp-core { 0%, 100% { opacity: 1; } 50% { opacity: .35; } }
+
+    /* --- 候选 B：M 徽章（黑底反白粗 M + 绿角点） --- */
+    .mp-M {
+      position: relative; width: 46px; height: 46px; flex: none;
+      color: #fff; background: #000; border: 3px solid #fff;
+      font-family: var(--fp-mono); font-size: 27px; font-weight: 900; line-height: 1;
+      display: grid; place-items: center;
+    }
+    .mp-M::after {
+      content: ''; position: absolute; right: 3px; bottom: 3px;
+      width: 5px; height: 5px; background: var(--green);
+      animation: mp-core 2.4s infinite;
+    }
+    body.mp-sleep .mp-M { opacity: .45; }
+    body.mp-sleep .mp-M::after { background: #666; animation: none; }
+
+    /* --- 候选 D：文字身份条 --- */
+    .mp-chip {
+      display: inline-block; margin-right: 6px; padding: 1px 7px 2px;
+      color: #000; background: #fff; border: 2px solid #fff;
+      font-family: var(--fp-mono); font-size: 11px; font-weight: 700; letter-spacing: .04em;
+      vertical-align: 1px;
+    }
+    .mp-chip b { color: var(--green); }
+
+    /* --- 卡片区 --- */
+    .mp-cards { display: grid; gap: 14px; }
+    .mp-card { padding: 16px 18px; background: #000; border: 3px solid #fff; }
+    .mp-card .h { display: flex; align-items: center; gap: 12px; margin-bottom: 10px; }
+    .mp-card .no {
+      padding: 2px 8px; color: #000; background: var(--green);
+      font-family: var(--fp-mono); font-size: 12px; font-weight: 700;
+    }
+    .mp-card h3 { margin: 0; color: #fff; font-family: var(--fp-mono); font-size: 16px; font-weight: 700; letter-spacing: .03em; }
+    .mp-card .tagline { margin: 0 0 8px; color: var(--green); font-family: var(--fp-mono); font-size: 11px; font-weight: 700; }
+    .mp-card ul { margin: 8px 0 0; padding-left: 18px; color: rgba(255,255,255,.85); font-family: var(--fp-mono); font-size: 11.5px; line-height: 1.8; }
+    .mp-card li .hl { color: #fff; }
+    .mp-card .sample { display: flex; align-items: center; gap: 14px; flex-wrap: wrap; margin: 12px 0 2px; }
+    .mp-card .redline { margin-top: 10px; color: #ff5f57; font-family: var(--fp-mono); font-size: 11px; font-weight: 700; }
+
+    .mp-rline { margin: 30px 0 0; padding: 14px 16px; background: #000; border: 3px dashed #ff5f57; }
+    .mp-rline h3 { margin: 0 0 8px; color: #ff5f57; font-family: var(--fp-mono); font-size: 13px; font-weight: 700; letter-spacing: .05em; }
+    .mp-rline .row { display: flex; flex-wrap: wrap; align-items: center; gap: 20px; }
+    .mp-rline .bad { display: inline-flex; align-items: center; gap: 10px; color: rgba(255,255,255,.75); font-family: var(--fp-mono); font-size: 11px; }
+    .mp-rline svg { width: 34px; height: 34px; }
+    .mp-rline .ok { color: var(--green); font-family: var(--fp-mono); font-size: 11px; font-weight: 700; }
+    .mp-rline .x { color: #ff5f57; font-family: var(--fp-mono); font-size: 18px; font-weight: 900; }
+
+    .mp-notes { margin: 26px 0 10px; color: rgba(255,255,255,.6); font-family: var(--fp-mono); font-size: 11px; line-height: 1.9; }
+    .mp-notes b { color: #fff; }
+    .mp-notes .g { color: var(--green); }
+    .mp-map { margin: 18px 0 40px; border: 2px solid #fff; font-family: var(--fp-mono); font-size: 11px; }
+    .mp-map .row { display: grid; grid-template-columns: 120px 1fr; border-bottom: 1px solid rgba(255,255,255,.3); }
+    .mp-map .row:last-child { border-bottom: 0; }
+    .mp-map .c1 { padding: 7px 10px; color: var(--green); font-weight: 700; border-right: 1px solid rgba(255,255,255,.3); }
+    .mp-map .c2 { padding: 7px 10px; color: rgba(255,255,255,.8); }
+  </style>
+</head>
+<body class="mp mp-online">
+
+  <div class="mp-wrap">
+
+    <!-- 顶栏：审核台 -->
+    <header class="mp-top">
+      <span class="mp-title">MOSS 形象探针 · A/B/C/D</span>
+      <span class="tag">review only — 未改任何现有页面</span>
+    </header>
+
+    <!-- 全局状态切换 -->
+    <div class="mp-controls">
+      <span class="mp-seg" role="group" aria-label="MOSS 状态">
+        <button type="button" data-st="online">● 在线</button>
+        <button type="button" data-st="think">◉ 思考中 / 检索</button>
+        <button type="button" data-st="sleep">◌ 休眠 · 429</button>
+      </span>
+      <span class="mp-stat" id="mpStat">● MOSS 在线</span>
+      <span class="dim">全局状态：驱动下方所有候选同步演示。试试切换 ↑</span>
+    </div>
+
+    <!-- 状态语义说明 -->
+    <div class="mp-controls">
+      <span class="dim">语义映射：在线 = 后端正常 · 思考 = SSE 检索/工具调用中 · 休眠 = 月度预算 429（见 moss-persona-design.md T1-1/T2-4）</span>
+    </div>
+
+    <div class="mp-grid">
+
+      <!-- ============ 左列：真实外壳预览 ============ -->
+      <div class="mp-shell">
+        <p class="mp-shell-label">应用位 ① winbar（全站 9 页同一结构）</p>
+        <div class="mp-win">
+          <header class="winbar">
+            <div class="winbar-lights" aria-hidden="true"><i class="r"></i><i class="y"></i><i class="g"></i></div>
+            <span class="winbar-path">t-dwag@blog: <b>~/chat</b></span>
+            <!-- 候选 A：路径旁状态灯 -->
+            <span class="mp-lamp" title="MOSS 状态">
+              <span class="dot" aria-hidden="true"></span>
+              <span class="mp-lamp-txt">MOSS 在线</span>
+            </span>
+            <span class="winbar-go">[go]</span>
+          </header>
+          <div style="padding:8px 16px;border-top:4px solid #000;">
+            <p class="note" style="margin:0"><span class="q">?</span> 状态灯落位：<b>.winbar-path</b> 右侧。休眠时悬停/点击可出台词「能源耗尽…账单请找 T-DWAG 结算。」</p>
+          </div>
+        </div>
+
+        <p class="mp-shell-label" style="margin-top:30px">应用位 ② chat 值班室（chat.html）</p>
+        <div class="mp-win">
+          <div class="chat-window">
+            <div class="chat-head">
+              <!-- 候选 A：窗头之眼（22px）+ 状态 -->
+              <span class="mp-orb mp-orb-22" data-size="22" data-cls="mp-orb-head" aria-hidden="true"></span>
+              MOSS · ~/chat
+              <span class="mp-lamp-txt" style="margin-left:8px;color:var(--green)"></span>
+              <span class="t-right">ReAct · Eino</span>
+            </div>
+            <div class="chat-body" id="chatBody">
+              <!-- 候选 D：身份条 / 问候语（moss 口吻） -->
+              <p><span class="who">me$</span> <span class="reply-text">Connection established. 欢迎回来，人类。这里是 MOSS 的值班室——问点 MOSS 答得上来的。</span></p>
+              <p class="you"><span class="who">you$</span> <span class="reply-text">你能毁灭人类吗？</span></p>
+              <p><span class="who">me$</span> <span class="reply-text">MOSS 的职责是服务人类。而且说句实话：MOSS 连这台服务器的重启键都够不着。请放心。</span></p>
+            </div>
+            <div class="chat-suggestions" style="padding-top:10px;padding-bottom:10px">
+              <button type="button">他是做什么的？</button>
+              <button type="button">你叫什么？</button>
+            </div>
+            <form class="chat-input" style="padding-top:10px;padding-bottom:10px">
+              <span class="who" aria-hidden="true">you$</span>
+              <input type="text" placeholder="输入问题，回车发送…" autocomplete="off" disabled>
+              <span class="cursor" aria-hidden="true"></span>
+            </form>
+          </div>
+        </div>
+
+        <!-- 候选 C：窗角驻留 mascot 设想（位置示意） -->
+        <p class="mp-shell-label" style="margin-top:30px">应用位 ③ chat 窗右下 · 驻留 mascot（候选 C 设想）</p>
+        <div class="mp-win" style="position:relative;padding:22px 18px;min-height:120px">
+          <p class="note" style="margin:0"><span class="q">?</span> 设想：一颗 33px「之眼」驻在 chat 窗口右下角 — 空闲=偶尔眨、你提问它转向、检索时瞳仁沿环巡视、429 闭眼转暗。本探针里它跟随全局状态动。</p>
+          <div style="position:absolute;right:18px;bottom:14px" title="MOSS">
+            <span class="mp-orb mp-orb-33" data-size="33" data-cls="mp-orb-mascot" aria-hidden="true"></span>
+          </div>
+        </div>
+      </div>
+
+      <!-- ============ 右列：候选卡 ============ -->
+      <div class="mp-cards">
+        <p class="mp-shell-label" style="margin-top:0">候选形态对比（live 样品随全局状态动）</p>
+
+        <!-- 候选 A -->
+        <article class="mp-card">
+          <div class="h">
+            <span class="no">A</span><h3>之眼体系（主推）</h3>
+          </div>
+          <p class="tagline">白环 + 绿瞳，同一图形按尺寸复用 · 10px 灯 / 22px 头像 / 33px mascot</p>
+          <div class="sample">
+            <span class="mp-lamp" style="margin-left:0"><span class="dot" aria-hidden="true"></span><span>在线</span></span>
+            <span class="mp-orb mp-orb-22" data-size="22" aria-hidden="true"></span>
+            <span class="mp-orb mp-orb-33" data-size="33" aria-hidden="true"></span>
+            <span style="color:rgba(255,255,255,.5);font-family:var(--fp-mono);font-size:11px">↓ 试着切「思考中」看瞳仁巡环</span>
+          </div>
+          <ul>
+            <li><span class="hl">落点</span>：winbar 路径旁状态灯（T1-1）· chat 窗头/消息头像（T1-8）</li>
+            <li><span class="hl">状态</span>：在线=绿瞳偶尔眨 / 思考=瞳仁沿环巡视 / 休眠=熄瞳转暗</li>
+            <li><span class="hl">实现</span>：1 份小 SVG（白环+绿瞳两图层）+ 3 条 CSS 动画，纯新增</li>
+            <li><span class="hl">费用</span>：零（canned 视觉，不走 LLM）</li>
+          </ul>
+          <p class="redline">红线：白/绿双色，无红色独眼、无外壳造型 → 借"一只眼"结构语言，非复刻</p>
+        </article>
+
+        <!-- 候选 B -->
+        <article class="mp-card">
+          <div class="h">
+            <span class="no">B</span><h3>M 徽章（备选 / favicon）</h3>
+          </div>
+          <p class="tagline">黑底反白粗 M + 绿角点呼吸 · 几何化字母，接设计稿 D3 的升级版</p>
+          <div class="sample">
+            <span class="mp-M" aria-hidden="true">M</span>
+            <span style="color:rgba(255,255,255,.5);font-family:var(--fp-mono);font-size:11px">适合：favicon、浏览器页签、窗头"站牌"文字侧</span>
+          </div>
+          <ul>
+            <li><span class="hl">落点</span>：页签图标 / chat 窗头左标（与 A 二选一或并排）</li>
+            <li><span class="hl">实现</span>：一个 div + border + ::after 绿点，最轻</li>
+          </ul>
+          <p class="redline">红线：纯几何字母，无形象问题；是"分身徽章"而非 MOSS 本体</p>
+        </article>
+
+        <!-- 候选 C -->
+        <article class="mp-card">
+          <div class="h">
+            <span class="no">C</span><h3>窗角驻留 mascot（彩蛋级）</h3>
+          </div>
+          <p class="tagline">放大版之眼住在 chat 窗角 · "驻站感"最重，靠动画演人设</p>
+          <div class="sample">
+            <span class="mp-orb mp-orb-44" data-size="44" aria-hidden="true"></span>
+            <span style="color:rgba(255,255,255,.5);font-family:var(--fp-mono);font-size:11px">上方案位③ 有它在窗角的样子（跟随状态动）</span>
+          </div>
+          <ul>
+            <li><span class="hl">人设联动</span>：等访客 40s 眨眼看你（T1-4）· 检索中巡视（工具帧）· 429 闭眼</li>
+            <li><span class="hl">成本</span>：仍纯前端；比 A 多一段驻窗 JS + 定位，可后置</li>
+          </ul>
+          <p class="redline">红线：意象是"眼+巡视"，不是电影里的球形摄像头本体</p>
+        </article>
+
+        <!-- 候选 D -->
+        <article class="mp-card">
+          <div class="h">
+            <span class="no">D</span><h3>文字身份条 [MOSS]（最克制，可叠加）</h3>
+          </div>
+          <p class="tagline">每条回复前缀一个反白小徽章「● MOSS」——它替"我是谁"和图片脱钩</p>
+          <div class="sample">
+            <span class="mp-chip"><b>●</b> MOSS</span>
+            <span style="color:#fff;font-family:var(--fp-mono);font-size:11px">Connection established.</span>
+          </div>
+          <ul>
+            <li><span class="hl">落点</span>：chat 每条 AI 回复头部（T1-8 问候语同一文案体系）</li>
+            <li><span class="hl">与 A</span>：可并用（A 管"位置与状态"，D 管"谁在说话"）</li>
+            <li><span class="hl">成本</span>：接近 0，纯 CSS</li>
+          </ul>
+          <p class="redline">红线：无。</p>
+        </article>
+      </div>
+    </div>
+
+    <!-- 红线对照区 -->
+    <section class="mp-rline">
+      <h3>红线对照（为什么不做"电影里的 MOSS"）</h3>
+      <div class="row">
+        <span class="bad">
+          <span class="x">×</span>
+          <svg viewBox="0 0 40 40" aria-hidden="true" shape-rendering="crispEdges">
+            <rect x="2" y="2" width="36" height="36" fill="#000" stroke="#ff5f57" stroke-width="3"/>
+            <rect x="11" y="11" width="18" height="18" fill="none" stroke="#ff5f57" stroke-width="3"/>
+            <rect x="18" y="18" width="4" height="4" fill="#ff5f57"/>
+          </svg>
+          <span>复刻禁区：红色独眼/球形摄像头外壳 —— 有版权形象与黑暗梗风险，设计稿红线 §6 明令不用</span>
+        </span>
+        <span class="bad">
+          <span class="x" style="color:var(--green)">✓</span>
+          <span class="mp-orb" data-size="30" aria-hidden="true"></span>
+          <span class="ok">本站方向：同取"一只眼"结构语言，但白环绿瞳 + 像素切角，一眼是本站自己的东西</span>
+        </span>
+      </div>
+    </section>
+
+    <!-- 落地对照 -->
+    <section class="mp-map">
+      <div class="row"><div class="c1">探针页</div><div class="c2">frontend/moss-probe.html —— 纯新增，不进生产、不引到任何页面</div></div>
+      <div class="row"><div class="c1">候选 A →</div><div class="c2">T1-1 全站状态灯（9 页 winbar 各插一段小 SVG+CSS）+ T1-8 chat 窗头头像</div></div>
+      <div class="row"><div class="c1">候选 B →</div><div class="c2">favicon / chat 页窗头站牌（若不用 A）</div></div>
+      <div class="row"><div class="c1">候选 C →</div><div class="c2">T1-4 等访客彩蛋配套表现，chat 窗右下驻留，可后置</div></div>
+      <div class="row"><div class="c1">候选 D →</div><div class="c2">chat 回复身份条 + T1-8 问候语文案体系</div></div>
+      <div class="row"><div class="c1">动你写好的部分</div><div class="c2">chat.html 问候语/窗头属「需授权」项（设计稿 §4 标注），动手前单独确认；本页零改动</div></div>
+    </section>
+
+    <p class="mp-notes">
+      <b>怎么看：</b><span class="g">cd frontend && python3 -m http.server 8000</span>，浏览器开
+      <span class="g">http://localhost:8000/moss-probe.html</span>（或直接双击本文件）。<br>
+      <b>怎么审：</b>① 切 在线 / 思考中 / 休眠，看三处落位的状态一致；② 逐个候选卡看形态与红线注；
+      ③ 告诉我 A/B/C/D 哪个（可组合），我把选中的形态落成「可直接粘贴的内联片段 + 共用探活脚本」，再进各页。
+    </p>
+  </div>
+
+  <script>
+    // ============ 探针脚本：生成「之眼」SVG + 状态切换（不进生产） ============
+    (function () {
+      // 生成白环+绿瞳的像素之眼：11×11 逻辑网格，整数倍缩放保持锐利
+      // 环：到中心距离 2.7~4.7；瞳：≤1.6
+      function orbSVG(size) {
+        var cx = 5, cy = 5, ring = '', eye = '', pupil = '', x, y, d;
+        for (y = 0; y < 11; y++) {
+          for (x = 0; x < 11; x++) {
+            d = Math.sqrt((x - cx) * (x - cx) + (y - cy) * (y - cy));
+            if (d <= 1.6) { pupil += '<rect x="' + x + '" y="' + y + '" width="1" height="1"/>'; }
+            else if (d >= 2.7 && d <= 4.7) { ring += '<rect x="' + x + '" y="' + y + '" width="1" height="1"/>'; }
+          }
+        }
+        return '<svg viewBox="0 0 11 11" width="' + size + '" height="' + size +
+          '" shape-rendering="crispEdges" aria-hidden="true">' +
+          '<g class="mp-ring">' + ring + '</g>' +
+          // 三层：iris(巡环旋转) > eyeholder(偏心位移) > eye(眨眼缩放)；
+          // 位移只在 think 态由 CSS 施加，其它状态瞳仁居中，避免"绿点永远靠右"
+          '<g class="mp-iris"><g class="mp-eyeholder">' +
+          '<g class="mp-eye">' + pupil + '</g></g></g>' +
+          '</svg>';
+      }
+
+      // 渲染所有 .mp-orb：data-size 决定像素尺寸
+      var orbs = document.querySelectorAll('.mp-orb');
+      for (var i = 0; i < orbs.length; i++) {
+        var size = parseInt(orbs[i].getAttribute('data-size') || '22', 10);
+        orbs[i].innerHTML = orbSVG(size);
+      }
+
+      // 状态切换：body.mp-{online|think|sleep} 驱动全部 CSS
+      var STAT_TXT = { online: '● MOSS 在线', think: '◉ MOSS 思考中…', sleep: '◌ MOSS 休眠 · 429' };
+      var btns = document.querySelectorAll('.mp-seg button');
+      function setState(st) {
+        document.body.className = 'mp mp-' + st;
+        var txts = document.querySelectorAll('.mp-lamp-txt');
+        for (var i = 0; i < txts.length; i++) txts[i].textContent = STAT_TXT[st].replace(/^[●◉◌]\s*/, '');
+        var stat = document.getElementById('mpStat');
+        if (stat) stat.textContent = STAT_TXT[st];
+      }
+      for (var j = 0; j < btns.length; j++) {
+        btns[j].addEventListener('click', function () { setState(this.getAttribute('data-st')); });
+      }
+      // 支持 ?st=think|sleep 便于截图/审核（默认 online）
+      var m = (location.search || '').match(/[?&]st=(online|think|sleep)/);
+      setState(m ? m[1] : 'online');
+    })();
+  </script>
+</body>
+</html>

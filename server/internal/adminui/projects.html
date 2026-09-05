@@ -1,0 +1,186 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>go /admin/projects — 从气象到代码</title>
+<link rel="preload" href="/admin-assets/fonts/fusion-pixel-12px-monospaced-zh_hans.ttf.woff2" as="font" type="font/woff2" crossorigin>
+<style>
+@font-face {
+  font-family: "Fusion Pixel Mono";
+  src: url("/admin-assets/fonts/fusion-pixel-12px-monospaced-zh_hans.ttf.woff2") format("woff2");
+  font-display: block;
+}
+
+:root{--black:#000;--white:#fff;--green:#00ff41;--lt-red:#ff5f57;--lt-yellow:#febc2e;--lt-green:#28c840;
+
+--mono:"Fusion Pixel Mono","Courier New","PingFang SC",monospace}
+*{box-sizing:border-box}
+body{margin:0;min-width:320px;color:var(--black);background:var(--black);border:12px solid var(--black);font-family:var(--mono);font-size:15px;line-height:1.85;cursor:url("/admin-assets/assets/cursor_default.svg") 0 0,default}
+a,button,input,textarea,select{cursor:url("/admin-assets/assets/cursor_pointer.svg") 0 0,pointer}
+a{color:inherit;text-decoration:none}
+.pixel-round{clip-path:polygon(0 4px,2px 4px,4px 2px,4px 0,calc(100% - 4px) 0,calc(100% - 4px) 2px,calc(100% - 2px) 4px,100% 4px,100% calc(100% - 4px),calc(100% - 2px) calc(100% - 4px),calc(100% - 4px) calc(100% - 2px),calc(100% - 4px) 100%,4px 100%,4px calc(100% - 2px),2px calc(100% - 4px),0 calc(100% - 4px))}
+.win{background:var(--white);max-width:1120px;margin:0 auto;border:4px solid var(--black);box-shadow:12px 12px 0 var(--black)}
+.winbar{display:flex;align-items:center;gap:10px;padding:9px 12px;border-bottom:4px solid var(--black);font-family:var(--mono);font-size:12px}
+.lights{display:flex;gap:5px}.lights i{width:10px;height:10px;border:1px solid var(--black);display:block}
+.r{background:#ff5f57}.y{background:#febc2e}.g{background:#28c840}
+.winbar-path{margin-left:6px;white-space:nowrap;overflow:hidden}
+.nav{display:flex;flex-wrap:wrap;border-bottom:4px solid var(--black);font-family:var(--mono);font-size:13px}
+.nav a{padding:10px 16px;border-right:1px solid var(--black)}
+.nav a:hover{background:var(--black);color:var(--white)}
+.nav a.on{background:var(--black);color:var(--green)}
+.main{position:relative;overflow:hidden;background:var(--white);padding:24px}
+.main .bg-layer{position:absolute;inset:0;opacity:.35;pointer-events:none;background-image:url('/admin-assets/assets/scanline.svg');background-size:8px 48px;animation:scan-down 6s linear infinite}
+.main .content{position:relative;z-index:1}
+@keyframes scan-down{from{background-position:0 0}to{background-position:0 48px}}
+h1{font-size:18px;margin:0 0 16px}
+.tbl{width:100%;border-collapse:collapse;font-size:14px}
+.tbl th,.tbl td{border:1px solid var(--black);padding:8px 10px;text-align:left;font-size:13px}
+.tbl th{background:var(--black);color:var(--white);font-family:var(--mono);font-weight:normal;letter-spacing:.06em}
+.tbl tr:hover td{background:#f2f2f2}
+.tag{display:inline-block;border:1px solid var(--black);padding:0 6px;margin-right:4px;font-size:11px;font-family:var(--mono)}
+.pill{display:inline-block;border:1px solid var(--black);padding:1px 8px;font-size:11px;font-family:var(--mono)}
+.pill.on{background:var(--black);color:var(--white)}
+.act a{margin-right:12px;text-decoration:underline}
+.act a:hover{color:var(--green)}
+.btn{display:inline-block;border:3px solid var(--black);background:var(--black);color:var(--white);padding:10px 18px;font-family:var(--mono);font-size:13px;box-shadow:3px 3px 0 var(--white),5px 5px 0 var(--black);transition:transform .14s ease,box-shadow .14s ease,color .14s ease}
+.btn:hover{transform:translate(2px,2px);box-shadow:1px 1px 0 var(--white),3px 3px 0 var(--black);color:var(--green)}
+.note{font-family:var(--mono);font-size:12px;opacity:.7}
+/* 表单控件：像素风，与文章编辑页一致 */
+label{display:block;font-family:var(--mono);font-size:12px;margin:12px 0 4px}
+input[type=text],select,textarea{width:100%;border:2px solid var(--black);background:var(--white);padding:8px 10px;font-family:var(--mono);font-size:14px;color:var(--black);outline:none}
+input[type=text]:focus,select:focus,textarea:focus{box-shadow:4px 4px 0 var(--black)}
+
+
+/* 锁定系统色：自动填充/选中/光标/滚动条统一像素风 */\ninput:-webkit-autofill,input:-webkit-autofill:hover,input:-webkit-autofill:focus{-webkit-text-fill-color:var(--black);-webkit-box-shadow:0 0 0 1000px var(--white) inset;transition:background-color 9999s ease-out 0s}\n::selection{background:var(--black);color:var(--green)}\ninput,textarea,select{caret-color:var(--green)}\n::-webkit-scrollbar{width:12px;height:12px}\n::-webkit-scrollbar-track{background:var(--white)}\n::-webkit-scrollbar-thumb{background:var(--black);border:2px solid var(--white)}\n::-webkit-scrollbar-thumb:hover{background:var(--green)}
+</style>
+</head>
+<body>
+<div class="win pixel-round">
+  <header class="winbar">
+    <div class="lights" aria-hidden="true"><i class="r"></i><i class="y"></i><i class="g"></i></div>
+    <span class="winbar-path">t-dwag@blog: <b>~/admin/projects</b></span>
+  </header>
+  <nav class="nav">
+    <a href="/admin/articles">articles</a>
+    <a class="on" href="/admin/projects">projects</a>
+    <a href="/admin/messages">messages</a>
+    <a href="/admin/settings">settings</a>
+    <a href="/admin/logout">logout</a>
+  </nav>
+  <div class="main">
+    <div class="bg-layer"></div>
+    <div class="content">
+      <h1>项目管理</h1>
+      <p class="note">$ ls projects/ — sort_order 大在前 · 未上线对访客不可见</p>
+      <div style="margin:16px 0"><a class="btn" href="#" id="newBtn">+ 新建项目</a></div>
+      <table class="tbl">
+        <thead><tr><th>ID</th><th>NAME</th><th>SORT</th><th>STATUS</th><th>TAGS</th><th>ACTIONS</th></tr></thead>
+        <tbody id="rows"><tr><td colspan="6">loading…</td></tr></tbody>
+      </table>
+    </div>
+  </div>
+</div>
+<div id="formWrap" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.6);z-index:9;padding:40px;overflow:auto">
+  <div class="win pixel-round" style="max-width:720px;margin:0 auto">
+    <div class="main">
+      <h1 id="formTitle">新建项目</h1>
+      <label>NAME *</label><input type="text" id="f_name">
+      <label>SUMMARY</label><input type="text" id="f_summary">
+      <label>COVER URL</label><input type="text" id="f_cover">
+      <label>REPO URL</label><input type="text" id="f_repo">
+      <label>HOME URL</label><input type="text" id="f_home">
+      <label>DEMO URL</label><input type="text" id="f_demo">
+      <label>TAGS *（逗号分隔）</label><input type="text" id="f_tags">
+      <label>SORT ORDER（大在前）</label><input type="text" id="f_sort" value="0">
+      <label>PUBLISHED</label>
+      <select id="f_pub"><option value="true">上线</option><option value="false">下线</option></select>
+      <label>DETAIL (Markdown)</label><textarea id="f_detail" style="width:100%;border:2px solid var(--black);min-height:140px;font-family:var(--mono)"></textarea>
+      <div class="rowbar" style="margin-top:16px;display:flex;gap:10px">
+        <button class="btn" id="saveBtn" type="button">保存</button>
+        <button class="btn" id="cancelBtn" type="button" style="background:var(--white);color:var(--black);box-shadow:3px 3px 0 var(--white),5px 5px 0 var(--black)">取消</button>
+      </div>
+      <p class="note" id="formErr" style="color:var(--green);min-height:18px"></p>
+    </div>
+  </div>
+</div>
+<script>
+(function(){
+  var rows=document.getElementById('rows');
+  var editing=null;
+  function load(){
+    fetch('/api/admin/projects').then(function(r){
+      if(r.status===401){location.href='/admin/login';throw new Error('redirect');}
+      return r.json();
+    }).then(function(env){
+      var items=env.data||[];
+      if(!items.length){rows.innerHTML='<tr><td colspan="6"><span class="note"># 还没有项目</span></td></tr>';return;}
+      rows.innerHTML=items.map(function(p){
+        var st=p.published?'<span class="pill on">online</span>':'<span class="pill">offline</span>';
+        var tags=(p.tags||[]).map(function(t){return '<span class="tag">'+t+'</span>';}).join('');
+        return '<tr>'+
+          '<td>'+p.id+'</td><td>'+p.name+'</td><td>'+p.sort_order+'</td><td>'+st+'</td><td>'+tags+'</td>'+
+          '<td class="act"><a href="#" data-edit="'+p.id+'">edit</a><a href="#" data-del="'+p.id+'" data-name="'+p.name+'">delete</a></td></tr>';
+      }).join('');
+      rows.querySelectorAll('[data-edit]').forEach(function(a){a.addEventListener('click',function(e){e.preventDefault();openForm(Number(a.getAttribute('data-edit')));});});
+      rows.querySelectorAll('[data-del]').forEach(function(a){a.addEventListener('click',function(e){
+        e.preventDefault();
+        if(!confirm('确认删除项目 "'+a.getAttribute('data-name')+'"？'))return;
+        fetch('/api/admin/projects/'+a.getAttribute('data-del'),{method:'DELETE'}).then(function(r){if(r.ok)load();});
+      });});
+    }).catch(function(e){if(e.message!=='redirect')rows.innerHTML='<tr><td colspan="6">加载失败</td></tr>';});
+  }
+  function openForm(id){
+    editing=id;
+    document.getElementById('formTitle').textContent=id?'编辑项目 #'+id:'新建项目';
+    ['f_name','f_summary','f_cover','f_repo','f_home','f_demo','f_tags','f_sort','f_detail'].forEach(function(x){document.getElementById(x).value='';});
+    document.getElementById('f_pub').value='true';
+    if(id){
+      fetch('/api/admin/projects').then(function(r){return r.json();}).then(function(env){
+        var p=(env.data||[]).find(function(x){return x.id===id;});
+        if(!p)return;
+        document.getElementById('f_name').value=p.name||'';
+        document.getElementById('f_summary').value=p.summary||'';
+        document.getElementById('f_cover').value=p.cover_url||'';
+        document.getElementById('f_repo').value=p.repo_url||'';
+        document.getElementById('f_home').value=p.home_url||'';
+        document.getElementById('f_demo').value=p.demo_url||'';
+        document.getElementById('f_tags').value=(p.tags||[]).join(', ');
+        document.getElementById('f_sort').value=p.sort_order||0;
+        document.getElementById('f_pub').value=String(p.published);
+        document.getElementById('f_detail').value=p.detail_md||'';
+      });
+    }
+    document.getElementById('formWrap').style.display='block';
+  }
+  function save(){
+    var err=document.getElementById('formErr');
+    err.textContent='';
+    var body={
+      name:document.getElementById('f_name').value,
+      summary:document.getElementById('f_summary').value,
+      cover_url:document.getElementById('f_cover').value,
+      repo_url:document.getElementById('f_repo').value,
+      home_url:document.getElementById('f_home').value,
+      demo_url:document.getElementById('f_demo').value,
+      detail_md:document.getElementById('f_detail').value,
+      tags:document.getElementById('f_tags').value.split(/[,，]/).map(function(s){return s.trim();}).filter(Boolean),
+      sort_order:parseInt(document.getElementById('f_sort').value||'0',10),
+      published:document.getElementById('f_pub').value==='true'
+    };
+    if(!body.name||!body.tags.length){err.textContent='> error: 名称和标签必填';return;}
+    var url=editing?'/api/admin/projects/'+editing:'/api/admin/projects';
+    var method=editing?'PUT':'POST';
+    fetch(url,{method:method,headers:{'Content-Type':'application/json'},body:JSON.stringify(body)})
+      .then(function(r){return r.json().then(function(d){return{ok:r.ok,d:d};});})
+      .then(function(res){if(res.ok&&res.d.code===0){document.getElementById('formWrap').style.display='none';load();}else{err.textContent='> error: 保存失败';}})
+      .catch(function(){err.textContent='> error: 网络错误';});
+  }
+  document.getElementById('newBtn').addEventListener('click',function(e){e.preventDefault();openForm(null);});
+  document.getElementById('saveBtn').addEventListener('click',save);
+  document.getElementById('cancelBtn').addEventListener('click',function(){document.getElementById('formWrap').style.display='none';});
+  load();
+})();
+</script>
+</body>
+</html>

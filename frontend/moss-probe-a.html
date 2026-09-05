@@ -1,0 +1,578 @@
+<!doctype html>
+<html lang="zh-CN" data-br="soft">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description" content="候选 A · 之眼体系 完整规格探针：解剖/尺寸/落位/行为/节奏调参/落地片段。审核用。">
+  <meta name="theme-color" content="#000000">
+  <title>MOSS 之眼 · A 完整探针</title>
+  <link rel="preload" href="fonts/fusion-pixel-12px-proportional-zh_hans.subset.woff2" as="font" type="font/woff2" crossorigin>
+  <link rel="preload" href="fonts/fusion-pixel-12px-monospaced-zh_hans.subset.woff2" as="font" type="font/woff2" crossorigin>
+  <link rel="stylesheet" href="style.css">
+  <style>
+    /* ============ 之眼体系 · A 探针（ma- 前缀） ============ */
+    body.ma { background: #000; }
+    .ma-wrap { width: min(1160px, calc(100% - 48px)); margin: 0 auto; }
+
+    .ma-top { display: flex; flex-wrap: wrap; align-items: center; gap: 14px; padding: 18px 0 6px; }
+    .ma-title { margin: 0; padding: 6px 12px; color: #fff; background: #000; border: 3px solid #fff; font-family: var(--fp-mono); font-size: 14px; font-weight: 700; letter-spacing: .06em; }
+    .ma-top .tag { color: var(--green); font-family: var(--fp-mono); font-size: 12px; font-weight: 700; }
+    .ma-sub { color: rgba(255,255,255,.55); font-family: var(--fp-mono); font-size: 11px; margin: 4px 0 0; }
+
+    /* 状态栏 + 节奏调参 */
+    .ma-ctl { display: flex; flex-wrap: wrap; align-items: center; gap: 16px; margin: 12px 0 4px; padding: 12px 14px; background: #000; border: 3px solid #fff; }
+    .ma-seg { display: inline-flex; border: 3px solid #fff; background: #000; }
+    .ma-seg button { padding: 8px 16px; color: #fff; background: transparent; border: 0; border-right: 2px solid #fff; font-family: var(--fp-mono); font-size: 13px; font-weight: 700; }
+    .ma-seg button:last-child { border-right: 0; }
+    .ma-seg button:hover { color: #000; background: var(--green); }
+    body.ma-online .ma-seg [data-st="online"],
+    body.ma-think  .ma-seg [data-st="think"],
+    body.ma-sleep  .ma-seg [data-st="sleep"] { color: #000; background: var(--green); }
+    .ma-stat { color: var(--green); font-family: var(--fp-mono); font-size: 12px; font-weight: 700; min-width: 130px; }
+    .ma-knob { display: inline-flex; align-items: center; gap: 8px; font-family: var(--fp-mono); font-size: 11px; color: rgba(255,255,255,.75); }
+    .ma-knob select { color: #fff; background: #000; border: 2px solid #fff; font-family: var(--fp-mono); font-size: 11px; font-weight: 700; padding: 3px 4px; border-radius: 0; }
+    .ma-hint { color: rgba(255,255,255,.4); font-family: var(--fp-mono); font-size: 11px; margin: 0 0 20px; }
+
+    /* ============ 之眼本体 ============ */
+    .ma-orb { display: inline-block; flex: none; line-height: 0; }
+    .ma-orb svg { display: block; }
+    .ma-orb .r { fill: #fff; }
+    .ma-orb .e { fill: #00ff41; transform-box: fill-box; transform-origin: center; }
+    .ma-orb .iris { transform-box: view-box; transform-origin: 5px 5px; }
+    .ma-orb .off { } /* 偏心位移：仅 think 态 */
+    /* 时间节奏由 html[data-*] 调 */
+    :root { --d-blink: 3.4s; --d-breathe: 3.6s; --d-orbit: 1.6s; }
+    html[data-bl="fast"] { --d-blink: 2.1s; }
+    html[data-bl="slow"] { --d-blink: 6.5s; }
+    html[data-br="hard"] { --d-breathe: 2.6s; }
+    html[data-br="soft"] { --d-breathe: 5.5s; }
+    html[data-or="fast"] { --d-orbit: .9s; }
+    html[data-or="slow"] { --d-orbit: 2.6s; }
+    /* 在线：居中 + 呼吸 + 眨眼 */
+    body.ma-online .ma-orb { animation: ma-breathe var(--d-breathe) ease-in-out infinite; }
+    body.ma-online .e { animation: ma-blink var(--d-blink) infinite; }
+    /* 思考：瞳仁偏心沿环巡 */
+    body.ma-think .ma-orb { animation: ma-breathe var(--d-breathe) ease-in-out infinite; }
+    body.ma-think .e { animation: none; }
+    body.ma-think .off { transform: translate(2px, 0); }
+    body.ma-think .iris { animation: ma-orbit var(--d-orbit) steps(12) infinite; }
+    /* 休眠：全停，熄瞳转暗 */
+    body.ma-sleep .ma-orb { animation: none; opacity: .35; }
+    body.ma-sleep .iris { opacity: 0; }
+    /* 关闭开关 */
+    html[data-bl="off"] body.ma-online .e { animation: none; }
+    html[data-br="off"] body.ma-online .ma-orb, html[data-br="off"] body.ma-think .ma-orb { animation: none; }
+    @keyframes ma-breathe { 0%,100% { opacity: 1; } 50% { opacity: .72; } }
+    @keyframes ma-blink { 0%,88%,100% { transform: scaleY(1); } 91%,95% { transform: scaleY(.12); } }
+    @keyframes ma-orbit { to { transform: rotate(360deg); } }
+
+    /* CSS 小灯（winbar 专用，非 SVG） */
+    .ma-lamp { display: inline-flex; align-items: center; gap: 7px; margin-left: 14px; padding: 2px 9px 2px 7px; border: 2px solid #fff; font-family: var(--fp-mono); font-size: 11px; font-weight: 700; color: #fff; letter-spacing: .05em; }
+    .ma-lamp .dot { width: 9px; height: 9px; border: 2px solid #fff; border-radius: 50%; display: inline-block; position: relative; flex: none; }
+    .ma-lamp .dot::after { content: ''; position: absolute; inset: 1px; border-radius: 50%; background: var(--green); animation: ma-core 2.4s infinite; }
+    body.ma-sleep .ma-lamp .dot::after { background: #555; animation: none; }
+    body.ma-sleep .ma-lamp { opacity: .45; }
+    @keyframes ma-core { 0%,100% { opacity: 1; } 50% { opacity: .3; } }
+
+    /* ============ 区块 ============ */
+    .ma-sec { margin-top: 34px; }
+    .ma-sec-t { margin: 0 0 6px; color: #fff; font-family: var(--fp-mono); font-size: 15px; font-weight: 700; letter-spacing: .05em; }
+    .ma-sec-t .n { color: var(--green); }
+    .ma-sec-d { margin: 0 0 14px; color: rgba(255,255,255,.55); font-family: var(--fp-mono); font-size: 11.5px; line-height: 1.8; }
+
+    /* 1 状态速览 */
+    .ma-states { display: grid; grid-template-columns: repeat(3, 1fr); gap: 14px; }
+    @media (max-width: 820px) { .ma-states { grid-template-columns: 1fr; } }
+    .ma-state { padding: 16px; background: #000; border: 3px solid #fff; cursor: pointer; }
+    .ma-state .row1 { display: flex; align-items: center; justify-content: space-between; }
+    .ma-state .nm { font-family: var(--fp-mono); font-size: 14px; font-weight: 700; color: #fff; }
+    .ma-state .mp { color: var(--green); font-family: var(--fp-mono); font-size: 10px; }
+    .ma-state p { margin: 10px 0 0; color: rgba(255,255,255,.6); font-family: var(--fp-mono); font-size: 11px; line-height: 1.75; }
+    .ma-state p b { color: #fff; }
+
+    /* 2 解剖 */
+    .ma-anat { display: flex; flex-wrap: wrap; gap: 26px; align-items: center; padding: 18px; background: #000; border: 3px solid #fff; }
+    .ma-anat svg { background: #000; }
+    .ma-anat .leg { flex: 1; min-width: 300px; font-family: var(--fp-mono); font-size: 11.5px; color: rgba(255,255,255,.75); line-height: 2; }
+    .ma-anat .leg .w { color: #fff; }
+    .ma-anat .leg .g { color: var(--green); }
+    .ma-chip { display: inline-block; padding: 2px 8px; border: 2px solid #fff; margin-right: 6px; font-family: var(--fp-mono); font-size: 11px; font-weight: 700; }
+    .ma-chip.green { color: #000; background: var(--green); border-color: var(--green); }
+
+    /* 3 尺寸等级 */
+    .ma-scales { display: flex; flex-wrap: wrap; gap: 16px; }
+    .ma-scale { display: flex; flex-direction: column; align-items: center; gap: 8px; padding: 16px 18px; background: #000; border: 3px solid #fff; }
+    .ma-scale .sz { font-family: var(--fp-mono); font-size: 13px; font-weight: 700; color: #fff; }
+    .ma-scale .us { font-family: var(--fp-mono); font-size: 10.5px; color: var(--green); text-align: center; line-height: 1.6; }
+
+    /* 4 全站落位 */
+    .ma-win { background: #fff; border: 4px solid #000; box-shadow: 8px 8px 0 #000; margin-bottom: 18px; }
+    .ma-chatwrap { position: relative; }
+    .ma-shell .chat-window { margin-top: 0; box-shadow: 8px 8px 0 #000; }
+    .ma-shell .chat-body { position: relative; min-height: 240px; max-height: 300px; padding-bottom: 56px; }
+    .ma-corner { position: absolute; right: 12px; bottom: 12px; }
+    .ma-corner-cap { position: absolute; right: 0; bottom: -2px; transform: translateY(100%); color: rgba(255,255,255,.5); font-family: var(--fp-mono); font-size: 9.5px; }
+    .ma-msg { display: flex; align-items: flex-start; gap: 8px; }
+    .ma-msg .txt { flex: 1; min-width: 0; }
+    .ma-avatar { display: inline-block; flex: none; margin-top: 2px; }
+
+    /* ===== 思考态动作三选一（html[data-th]） ===== */
+    html[data-th="pulse"] body.ma-think .off { transform: none; }
+    html[data-th="pulse"] body.ma-think .iris { animation: none; }
+    html[data-th="pulse"] body.ma-think .e { animation: ma-pulse .5s steps(2) infinite; }
+    @keyframes ma-pulse { 0% { opacity: 1; } 100% { opacity: .12; } }
+    html[data-th="still"] body.ma-think .off { transform: none; }
+    html[data-th="still"] body.ma-think .iris { animation: none; }
+    html[data-th="still"] body.ma-think .e { animation: none; }
+
+    /* ===== 拆解演示：独立于全局状态，幅度夸张化（data-demo） ===== */
+    .ma-orb[data-demo="breathe"] { animation: ma-breathe-demo 1.6s ease-in-out infinite !important; }
+    @keyframes ma-breathe-demo { 0%, 100% { opacity: 1; } 50% { opacity: .35; } }
+    .ma-orb[data-demo="blink"] .e { animation: ma-blink .8s infinite !important; }
+    .ma-orb[data-demo="orbit"] .e { animation: none !important; }
+    .ma-orb[data-demo="orbit"] .off { transform: translate(2px, 0) !important; }
+    .ma-orb[data-demo="orbit"] .iris { animation: ma-orbit .7s steps(12) infinite !important; }
+    /* 思考态动作三选一 · 并排独立演示 */
+    .ma-orb[data-demo="orbit2"] .e { animation: none !important; }
+    .ma-orb[data-demo="orbit2"] .off { transform: translate(2px, 0) !important; }
+    .ma-orb[data-demo="orbit2"] .iris { animation: ma-orbit .9s steps(12) infinite !important; }
+    .ma-orb[data-demo="pulse2"] .off { transform: none !important; }
+    .ma-orb[data-demo="pulse2"] .iris { animation: none !important; }
+    .ma-orb[data-demo="pulse2"] .e { animation: ma-pulse .45s steps(2) infinite !important; }
+    .ma-orb[data-demo="still2"] .off { transform: none !important; }
+    .ma-orb[data-demo="still2"] .iris { animation: none !important; }
+    .ma-orb[data-demo="still2"] .e { animation: none !important; }
+
+    /* 行为拆解卡 */
+    .ma-rows3 { display: grid; grid-template-columns: repeat(3, 1fr); gap: 14px; }
+    @media (max-width: 900px) { .ma-rows3 { grid-template-columns: 1fr; } }
+    .ma-anicard { padding: 16px; background: #000; border: 3px solid #fff; }
+    .ma-anicard .a1 { display: flex; align-items: center; gap: 14px; margin-bottom: 10px; }
+    .ma-anicard .nm { font-family: var(--fp-mono); font-size: 14px; font-weight: 700; color: #fff; }
+    .ma-anicard .tag { font-family: var(--fp-mono); font-size: 10.5px; color: var(--green); }
+    .ma-anicard p { margin: 6px 0 0; color: rgba(255,255,255,.65); font-family: var(--fp-mono); font-size: 11.5px; line-height: 1.85; }
+    .ma-anicard p b { color: #fff; }
+    .ma-anicard .see { color: rgba(255,255,255,.45); font-family: var(--fp-mono); font-size: 10.5px; }
+    .ma-see { color: rgba(255,255,255,.5); font-family: var(--fp-mono); font-size: 10.5px; text-align: center; line-height: 1.6; }
+    .ma-cmp { display: flex; gap: 26px; flex-wrap: wrap; align-items: flex-end; }
+
+    /* 5 行为规格表 */
+    .ma-spec { border: 2px solid #fff; font-family: var(--fp-mono); font-size: 11px; }
+    .ma-spec .hr, .ma-spec .r { display: grid; grid-template-columns: 90px 1fr 1.2fr 1fr; border-bottom: 1px solid rgba(255,255,255,.25); }
+    .ma-spec .r:last-child { border-bottom: 0; }
+    .ma-spec .c { padding: 8px 10px; border-right: 1px solid rgba(255,255,255,.25); color: rgba(255,255,255,.8); }
+    .ma-spec .c:last-child { border-right: 0; }
+    .ma-spec .hr { color: var(--green); font-weight: 700; }
+    .ma-spec .k { color: #fff; font-weight: 700; }
+    @media (max-width: 820px) {
+      .ma-spec .hr, .ma-spec .r { grid-template-columns: 64px 1fr; }
+      .ma-spec .c:nth-child(n+3) { border-top: 1px dashed rgba(255,255,255,.2); }
+    }
+
+    /* 落地片段 */
+    .ma-code { margin: 8px 0 0; padding: 14px 16px; color: var(--green); background: #000; border: 3px solid #fff; font-family: var(--fp-mono); font-size: 11.5px; line-height: 1.8; white-space: pre; overflow-x: auto; }
+    .ma-map { margin-top: 14px; border: 2px solid #fff; font-family: var(--fp-mono); font-size: 11px; }
+    .ma-map .r { display: grid; grid-template-columns: 150px 1fr; border-bottom: 1px solid rgba(255,255,255,.25); }
+    .ma-map .r:last-child { border-bottom: 0; }
+    .ma-map .c1 { padding: 7px 10px; color: var(--green); font-weight: 700; border-right: 1px solid rgba(255,255,255,.25); }
+    .ma-map .c2 { padding: 7px 10px; color: rgba(255,255,255,.8); }
+    .ma-a11y { display: grid; gap: 8px; }
+    .ma-a11y li { color: rgba(255,255,255,.7); font-family: var(--fp-mono); font-size: 11px; line-height: 1.8; }
+    .ma-a11y b { color: #fff; }
+    .ma-foot { margin: 30px 0 46px; color: rgba(255,255,255,.5); font-family: var(--fp-mono); font-size: 11px; line-height: 1.9; }
+    .ma-foot .g { color: var(--green); }
+  </style>
+</head>
+<body class="ma ma-online">
+<div class="ma-wrap">
+
+  <header class="ma-top">
+    <span class="ma-title">候选 A · 之眼体系 — 完整探针</span>
+    <span class="tag">review only · 未改任何现有页面</span>
+  </header>
+
+  <!-- 控制条：状态 + 节奏调参 -->
+  <div class="ma-ctl">
+    <span class="ma-seg" role="group" aria-label="MOSS 状态">
+      <button type="button" data-st="online">● 在线</button>
+      <button type="button" data-st="think">◉ 思考中</button>
+      <button type="button" data-st="sleep">◌ 休眠 429</button>
+    </span>
+    <span class="ma-stat" id="maStat">● MOSS 在线</span>
+    <span class="ma-knob">眨眼
+      <select id="knobBl" aria-label="眨眼节奏">
+        <option value="fast">活泼 · 2.1s</option>
+        <option value="std" selected>标准 · 3.4s</option>
+        <option value="slow">沉稳 · 6.5s</option>
+        <option value="off">关闭</option>
+      </select>
+    </span>
+    <span class="ma-knob">呼吸
+      <select id="knobBr" aria-label="呼吸节奏">
+        <option value="hard">明显 · 2.6s</option>
+        <option value="std">标准 · 3.6s</option>
+        <option value="soft" selected>轻柔 · 5.5s ✓已锁</option>
+        <option value="off">关闭</option>
+      </select>
+    </span>
+    <span class="ma-knob">巡环速度
+      <select id="knobOr" aria-label="思考巡环速度">
+        <option value="fast">快 · 0.9s</option>
+        <option value="std" selected>中 · 1.6s</option>
+        <option value="slow">慢 · 2.6s</option>
+      </select>
+    </span>
+    <span class="ma-knob">思考态动作
+      <select id="knobTh" aria-label="思考态动作">
+        <option value="orbit" selected>巡环（绿瞳绕圈）</option>
+        <option value="pulse">脉冲（快速闪烁）</option>
+        <option value="still">静止（只靠文字）</option>
+      </select>
+    </span>
+    <button type="button" id="btnCycle" style="padding:7px 12px;color:#000;background:#fff;border:2px solid #fff;font-family:var(--fp-mono);font-size:12px;font-weight:700">自动循环三态 ▶</button>
+  </div>
+  <p class="ma-hint"># 全局状态驱动下方全部样品同步动；节奏旋钮可独立调，找到喜欢的值后我按它锁 CSS 变量。
+  「思考态动作」不用切状态，也能在拆解区对比三种演法。</p>
+
+  <!-- 0 大舞台 -->
+  <div style="display:flex;align-items:center;gap:22px;flex-wrap:wrap;margin:10px 0 0;padding:20px;background:#000;border:3px solid #fff">
+    <span class="ma-orb ma-big" data-size="88" aria-hidden="true"></span>
+    <div style="flex:1;min-width:260px">
+      <p style="margin:0;font-family:var(--fp-mono);font-size:15px;font-weight:700;color:#fff">设计心法</p>
+      <p style="margin:8px 0 0;font-family:var(--fp-mono);font-size:11.5px;color:rgba(255,255,255,.6);line-height:1.9">
+        白环 = <b style="color:#fff">硬件层</b>（MOSS 的本体、永远在）· 绿瞳 = <b style="color:var(--green)">信号层</b>（生命/注意/状态，会动）。<br>
+        状态全部只发生在绿层：<b style="color:var(--green)">居中呼吸眨眼 → 偏心巡环 → 熄灭</b>。白色环在任何状态都不消失——"本体还在，只是没电/在忙"。
+      </p>
+    </div>
+  </div>
+
+  <!-- ★ 动画拆解：先看懂三种活法 -->
+  <section class="ma-sec">
+    <h2 class="ma-sec-t"><span class="n">★</span> 动画拆解：三种"活法"各是什么</h2>
+    <p class="ma-sec-d">下面三个样品<b style="color:#fff">独立于全局状态、永远在动</b>，幅度已放大到夸张档，方便认动作。看清之后，再用顶部面板和真实尺寸样品判断日常观感。</p>
+    <div class="ma-rows3">
+      <div class="ma-anicard">
+        <div class="a1"><span class="ma-orb" data-demo="blink" data-size="66"></span><div><span class="nm">眨眼</span><br><span class="tag">已锁：标准 · 3.4s</span></div></div>
+        <p><b>看哪里</b>：绿瞳。</p>
+        <p>绿瞳瞬间合拢成一条细线，再睁开，像眨一下。站里它 = "醒着、在听"。<br>频率你已锁「活泼」档。</p>
+        <p class="see"># 演示用 0.8s 一次便于识别，真实按你选的节奏</p>
+      </div>
+      <div class="ma-anicard">
+        <div class="a1"><span class="ma-orb" data-demo="breathe" data-size="66"></span><div><span class="nm">呼吸</span><br><span class="tag">整颗明暗，非瞳孔</span></div></div>
+        <p><b>看哪里</b>：<b>整颗</b>的明暗（白环+绿瞳一起）慢慢暗下去再亮回来。</p>
+        <p>像待机灯"喘气"，表达还活着；是眨眼之间维持存在感的那层底噪。</p>
+        <p class="see"># 演示暗到 35% 让你看清；真实只暗到 72%，几乎察觉不到 = 刻意克制。可关</p>
+      </div>
+      <div class="ma-anicard">
+        <div class="a1"><span class="ma-orb" data-demo="orbit" data-size="66"></span><div><span class="nm">巡环</span><br><span class="tag">仅思考态 · 白环不动</span></div></div>
+        <p><b>看哪里</b>：<b>白环不动</b>，绿瞳贴内圈<b>一格一格绕圈</b>走。</p>
+        <p>只在"思考/检索"状态出现（聊天里 = 「正在检索…」那一刻）。像 MOSS 在找东西。</p>
+        <p class="see"># 演示 0.7s 一圈便于识别，真实按巡环速度旋钮</p>
+      </div>
+    </div>
+
+    <p class="ma-sec-d" style="margin-top:24px">
+      如果仍不确定"巡环"适不适合思考态——三种演法并排，永远在动：
+    </p>
+    <div class="ma-cmp" style="padding:14px;background:#000;border:3px dashed rgba(255,255,255,.4)">
+      <div style="text-align:center">
+        <span class="ma-orb" data-demo="orbit2" data-size="55"></span>
+        <div class="ma-see" style="margin-top:6px">巡环 · 绿瞳绕圈=在找</div>
+      </div>
+      <div style="text-align:center">
+        <span class="ma-orb" data-demo="pulse2" data-size="55"></span>
+        <div class="ma-see" style="margin-top:6px">脉冲 · 绿瞳频闪=在算</div>
+      </div>
+      <div style="text-align:center">
+        <span class="ma-orb" data-demo="still2" data-size="55"></span>
+        <div class="ma-see" style="margin-top:6px">静止 · 只靠文字表达</div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ① 状态速览 -->
+  <section class="ma-sec">
+    <h2 class="ma-sec-t"><span class="n">①</span> 三态速览（点卡片可切换全局状态）</h2>
+    <div class="ma-states">
+      <div class="ma-state" data-goto="online">
+        <div class="row1"><span class="nm">在线</span><span class="ma-orb" data-size="44"></span></div>
+        <p><b>视觉</b>：绿瞳居中 · 呼吸 + 偶眨。<br><b>触发</b>：探活正常 / 对话等待中。<br><b>潜台词</b>："我在，而且看着你。"</p>
+      </div>
+      <div class="ma-state" data-goto="think">
+        <div class="row1"><span class="nm">思考 / 检索</span><span class="ma-orb" data-size="44"></span></div>
+        <p><b>视觉</b>：瞳仁离开中心，沿环一格一格巡。<br><b>触发</b>：SSE 工具帧 / 检索中（chat.html 的「正在检索…」由它背书）。<br><b>潜台词</b>："在查，别催。"</p>
+      </div>
+      <div class="ma-state" data-goto="sleep">
+        <div class="row1"><span class="nm">休眠 · 429</span><span class="ma-orb" data-size="44"></span></div>
+        <p><b>视觉</b>：熄瞳 · 全停 · 整颗转暗。<br><b>触发</b>：月度预算耗尽（后端 429）。<br><b>潜台词</b>："能源耗尽。下月 1 日满血复活。"</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- ② 解剖 -->
+  <section class="ma-sec">
+    <h2 class="ma-sec-t"><span class="n">②</span> 解剖：11 × 11 像素网格</h2>
+    <p class="ma-sec-d">一个 11 格逻辑网格，所有尺寸都是它的整数倍放大（22/33/44/66/88px），保证像素锐利、不产生半像素模糊。</p>
+    <div class="ma-anat">
+      <span class="ma-orb" data-size="176" data-anat="1" aria-hidden="true"></span>
+      <div class="leg">
+        <p style="margin:0 0 6px;color:#fff"><span class="ma-chip green">白环</span> 描边层 · 永远在</p>
+        <p style="margin:0 0 6px"><span class="g">●</span> 外径 ≈ 4.7 格，环厚 ≈ 2 格（1px 描边在 22px 下仍可读）</p>
+        <p style="margin:0 0 6px"><span class="g">●</span> 白 = 站里"输出/结构"色（winbar 文字同为白）</p>
+        <p style="margin:0 0 12px"><span class="g">●</span> 在任何状态下都不消失 → "本体永远在"</p>
+        <p style="margin:0 0 6px;color:#fff"><span class="ma-chip" style="color:#000;background:var(--green)">绿瞳</span> 信号层 · 会动</p>
+        <p style="margin:0 0 6px"><span class="g">●</span> 瞳 3×3 格；常态居中；思考时偏心 2 格沿环巡</p>
+        <p style="margin:0 0 6px"><span class="g">●</span> 绿 = 终端绿 #00ff41，站里唯一的"活"色（光标/链接 hover）</p>
+        <p style="margin:0 0 12px"><span class="g">●</span> 呼吸/眨眼/巡环/熄灭 = 四种"活法"，全在绿层</p>
+        <p style="margin:0;color:rgba(255,255,255,.5)">非目标：不加红色独眼（红线§6）、不做外壳造型、不用渐变/圆滑抗锯齿——它必须和整站的方块像素一致。</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- ③ 尺寸等级 -->
+  <section class="ma-sec">
+    <h2 class="ma-sec-t"><span class="n">③</span> 尺寸等级（一图复用）</h2>
+    <div class="ma-scales">
+      <div class="ma-scale">
+        <span class="ma-lamp" style="margin:0"><span class="dot"></span><span>MOSS</span></span>
+        <span class="sz">9px CSS 灯</span>
+        <span class="us">winbar 路径旁<br>纯 CSS（点+环）<br>只表达有无+呼吸</span>
+      </div>
+      <div class="ma-scale">
+        <span class="ma-orb" data-size="22"></span>
+        <span class="sz">22px</span>
+        <span class="us">chat 窗头头像<br>消息前缀头像</span>
+      </div>
+      <div class="ma-scale">
+        <span class="ma-orb" data-size="33"></span>
+        <span class="sz">33px</span>
+        <span class="us">窗角驻留 mascot<br>（若启用 C 玩法）</span>
+      </div>
+      <div class="ma-scale">
+        <span class="ma-orb" data-size="44"></span>
+        <span class="sz">44px</span>
+        <span class="us">状态速览 / 大按钮<br>彩蛋开场</span>
+      </div>
+      <div class="ma-scale">
+        <span class="ma-orb" data-size="66"></span>
+        <span class="sz">66px</span>
+        <span class="us">首屏会客厅入口<br>（D6 待定）</span>
+      </div>
+    </div>
+  </section>
+
+  <!-- ④ 全站落位预览 -->
+  <section class="ma-sec ma-shell">
+    <h2 class="ma-sec-t"><span class="n">④</span> 全站落位预览（真实 winbar / chat 外壳）</h2>
+    <p class="ma-sec-d">winbar 灯在 home / posts / chat / search / article… 全部同构插入（路径文字长短自适应，灯固定贴 .winbar-path 右侧）。</p>
+
+    <!-- winbar：home -->
+    <div class="ma-win">
+      <header class="winbar">
+        <div class="winbar-lights" aria-hidden="true"><i class="r"></i><i class="y"></i><i class="g"></i></div>
+        <span class="winbar-path">t-dwag@blog: <b>~/</b></span>
+        <span class="ma-lamp"><span class="dot" aria-hidden="true"></span><span class="txt">MOSS 在线</span></span>
+        <span class="winbar-go">[go]</span>
+      </header>
+      <div style="padding:6px 16px;border-top:4px solid #000;color:rgba(0,0,0,.35);font-family:var(--fp-mono);font-size:11px">go /home — 首页 winbar</div>
+    </div>
+
+    <!-- winbar：article（动态路径） -->
+    <div class="ma-win">
+      <header class="winbar">
+        <div class="winbar-lights" aria-hidden="true"><i class="r"></i><i class="y"></i><i class="g"></i></div>
+        <span class="winbar-path">t-dwag@blog: <b>~/posts/singleflight-notes</b></span>
+        <span class="ma-lamp"><span class="dot" aria-hidden="true"></span><span class="txt">MOSS 在线</span></span>
+        <span class="winbar-go">[go]</span>
+      </header>
+      <div style="padding:6px 16px;border-top:4px solid #000;color:rgba(0,0,0,.35);font-family:var(--fp-mono);font-size:11px">go /posts/… — 文章页 winbar（路径 JS 动态，灯照常）</div>
+    </div>
+
+    <!-- chat 全窗 -->
+    <p class="ma-sec-d" style="margin-top:8px">chat 值班室：窗头 22px 头像 + 状态文字；AI 每条回复带 22px 头像；窗体内右下 33px 之眼驻留（mascot，跟状态动）。</p>
+    <div class="ma-chatwrap ma-win">
+      <div class="chat-window">
+        <div class="chat-head">
+          <span class="ma-orb ma-head" data-size="22" aria-hidden="true"></span>
+          MOSS · ~/chat
+          <span class="txt" style="margin-left:8px;color:var(--green)"></span>
+          <span class="t-right">ReAct · Eino</span>
+        </div>
+        <div class="chat-body">
+          <p class="ma-msg">
+            <span class="ma-avatar ma-orb" data-size="22" aria-hidden="true"></span>
+            <span class="txt"><span class="who" style="display:block">me$</span><span class="reply-text">Connection established. 欢迎回来，人类。这里是 MOSS 的值班室——问点 MOSS 答得上来的。</span></span>
+          </p>
+          <p class="you" style="padding-left:30px"><span class="who">you$</span> <span class="reply-text">你的技术栈是什么？</span></p>
+          <p class="ma-msg">
+            <span class="ma-avatar ma-orb" data-size="22" aria-hidden="true"></span>
+            <span class="txt"><span class="who" style="display:block">me$</span><span class="reply-text">主力 Go + PostgreSQL，前端原生像素站。MOSS 住在这栋楼里，ChatGPT 住在那朵云上——我们都有光明的未来。</span></span>
+          </p>
+          <div class="ma-corner">
+            <span class="ma-orb" data-size="33" aria-hidden="true"></span>
+            <span class="ma-corner-cap">窗角驻留 · 33px</span>
+          </div>
+        </div>
+        <div class="chat-suggestions" style="padding-top:10px;padding-bottom:10px">
+          <button type="button">他是做什么的？</button>
+          <button type="button">whoami</button>
+        </div>
+        <form class="chat-input" style="padding-top:10px;padding-bottom:10px">
+          <span class="who" aria-hidden="true">you$</span>
+          <input type="text" placeholder="输入问题，回车发送…" autocomplete="off" disabled>
+          <span class="cursor" aria-hidden="true"></span>
+        </form>
+      </div>
+    </div>
+  </section>
+
+  <!-- ⑤ 行为规格 -->
+  <section class="ma-sec">
+    <h2 class="ma-sec-t"><span class="n">⑤</span> 行为规格表（切状态看动画，对照此表审核）</h2>
+    <div class="ma-spec">
+      <div class="hr"><div class="c">状态</div><div class="c">白环（硬件层）</div><div class="c">绿瞳（信号层）</div><div class="c">触发 / 兜底文字</div></div>
+      <div class="r"><div class="c k">在线</div><div class="c">常亮白</div><div class="c">居中 · 呼吸 + 偶眨（可调节奏）</div><div class="c">探活正常 / 对话待命中 → 文字「MOSS 在线」</div></div>
+      <div class="r"><div class="c k">思考</div><div class="c">常亮白</div><div class="c">偏心 2 格 · 沿环巡（steps 12）</div><div class="c">SSE 工具帧 / 检索中 → 文字「MOSS 思考中…」</div></div>
+      <div class="r"><div class="c k">休眠</div><div class="c">转暗（opacity .35）</div><div class="c">熄灭（无瞳）</div><div class="c">429 预算耗尽 / 503 未配 Key → 台词「能源耗尽…账单请找 T-DWAG」</div></div>
+    </div>
+  </section>
+
+  <!-- ⑥ 落地片段 -->
+  <section class="ma-sec">
+    <h2 class="ma-sec-t"><span class="n">⑥</span> 落地片段预览（确定后再生成最终版）</h2>
+    <div class="ma-map">
+      <div class="r"><div class="c1">winbar 灯（9 页）</div><div class="c2">每页 .winbar-path 右侧插 1 行 HTML + 该页内联一小段「探活 + 状态机」脚本（新增；不动原逻辑）</div></div>
+      <div class="r"><div class="c1">chat 窗头 / 头像</div><div class="c2">chat.html：窗头 orb22 + 状态文字；回复渲染处加头像前缀 —— 属「需授权」项，单独确认</div></div>
+      <div class="r"><div class="c1">CSS / SVG</div><div class="c2">一份 SVG 内联串 + 一套 keyframes，可塞 style.css 尾部或各页 &lt;style&gt;（新增节，不改现有样式）</div></div>
+      <div class="r"><div class="c1">探活语义</div><div class="c2">GET /api/ai/suggestions 可达 → 在线；不可达/503 → 休眠台词；SSE 工具帧 → 思考。429 由 SSE error 帧 code 判断</div></div>
+    </div>
+    <pre class="ma-code">// 落地形态示意（winbar 灯，终版会按你拍板的文件分发）
+&lt;span class="moss-lamp" title="MOSS 驻站状态"&gt;
+  &lt;span class="moss-eye"&gt;&lt;/span&gt;
+  &lt;span class="moss-lamp-txt"&gt;● MOSS 在线&lt;/span&gt;
+&lt;/span&gt;
+
+/* 状态机只切 body[data-moss] 三个值，动画全走 CSS：
+   data-moss="online|think|sleep"  →  与探针相同的 keyframes（白环常驻/绿瞳三活法） */</pre>
+  </section>
+
+  <!-- ⑦ 无障碍 -->
+  <section class="ma-sec">
+    <h2 class="ma-sec-t"><span class="n">⑦</span> 无障碍与适配</h2>
+    <ul class="ma-a11y">
+      <li><b>不以颜色/动画单独承载信息</b>：灯旁边永远有文字（「MOSS 在线 / 思考中 / 休眠」），动画只是情绪层。</li>
+      <li><b>prefers-reduced-motion</b>：降级为文字 + 静态亮/暗（熄瞳），不播动画。站里已有同款媒体查询，直接沿用。</li>
+      <li><b>状态切换有过渡但克制</b>：白环静止不动摇，动态只在绿层，视障/分心场景影响最小。</li>
+      <li><b>尺寸上限</b>：22/33/44/66 均为 11 格整数倍，无模糊；min 用 CSS 灯（非 SVG）保证 9px 可读。</li>
+      <li><b>鼠标/键盘</b>：休眠态灯上悬停/聚焦出现台词 tooltip（T1-1），不抢页面焦点。</li>
+    </ul>
+  </section>
+
+  <p class="ma-foot">
+    <b style="color:#fff">怎么看：</b><span class="g">cd frontend && python3 -m http.server 8000</span> → 开 <span class="g">http://localhost:8000/moss-probe-a.html</span>（或直接双击）。<br>
+    <b style="color:#fff">怎么审：</b>① 切三态看①③④各处是否一致；② 用三组节奏旋钮找喜欢的眨眼/呼吸/巡环速度；③ 看 ②解剖/⑤规格/⑦无障碍 是否与你人设一致；④ 告诉我「锁了哪些参数」，我再出终版落地片段与文件清单（chat.html 属需授权项，单独再确认）。<br>
+    <span class="g"># 探针页 moss-probe-a.html 为纯新增，不进生产。</span>
+  </p>
+</div>
+
+<script>
+  // ============ A 探针脚本：之眼 SVG + 状态 + 节奏（不进生产） ============
+  (function () {
+    // 11×11 网格：白环 2.7≤d≤4.7；绿瞳 d≤1.6；anat 模式画网格与巡环轨迹
+    function orbSVG(size, anat) {
+      var ring = '', eye = '', grid = '', orbit = '', x, y, d;
+      for (y = 0; y < 11; y++) {
+        for (x = 0; x < 11; x++) {
+          d = Math.sqrt((x - 5) * (x - 5) + (y - 5) * (y - 5));
+          if (d <= 1.6) eye += '<rect x="' + x + '" y="' + y + '" width="1" height="1"/>';
+          else if (d >= 2.7 && d <= 4.7) ring += '<rect x="' + x + '" y="' + y + '" width="1" height="1"/>';
+          if (anat) grid += '<rect x="' + x + '" y="' + y + '" width="1" height="1" fill="none" stroke="rgba(255,255,255,.06)" stroke-width=".05"/>';
+        }
+      }
+      // 巡环轨迹（半径 2 的虚线圆，解剖图里可见）：用格点近似
+      if (anat) {
+        for (var a = 0; a < 24; a++) {
+          var px = 5 + 2 * Math.cos(a / 24 * 2 * Math.PI);
+          var py = 5 + 2 * Math.sin(a / 24 * 2 * Math.PI);
+          orbit += '<rect x="' + (px - .15) + '" y="' + (py - .15) + '" width=".3" height=".3" fill="rgba(0,255,65,.25)"/>';
+        }
+      }
+      return '<svg viewBox="0 0 11 11" width="' + size + '" height="' + size +
+        '" shape-rendering="crispEdges" aria-hidden="true">' +
+        (anat ? grid : '') +
+        '<g class="r">' + ring + '</g>' +
+        '<g class="iris"><g class="off"><g class="e">' + eye + '</g></g></g>' +
+        (anat ? orbit : '') +
+        '</svg>';
+    }
+
+    var orbs = document.querySelectorAll('.ma-orb');
+    for (var i = 0; i < orbs.length; i++) {
+      var el = orbs[i];
+      var size = parseInt(el.getAttribute('data-size') || '22', 10);
+      el.innerHTML = orbSVG(size, el.getAttribute('data-anat') === '1');
+    }
+
+    // 状态
+    var STAT = { online: '● MOSS 在线', think: '◉ MOSS 思考中…', sleep: '◌ MOSS 休眠 · 429' };
+    function setState(st) {
+      document.body.className = 'ma ma-' + st;
+      var txts = document.querySelectorAll('.ma-lamp .txt, .chat-head .txt, #maStat');
+      for (var i = 0; i < txts.length; i++) {
+        var t = STAT[st];
+        var isHead = txts[i].id === 'maStat';
+        txts[i].textContent = isHead ? t : t.replace(/^[●◉◌]\s*/, '');
+      }
+    }
+    var btns = document.querySelectorAll('.ma-seg button');
+    for (var j = 0; j < btns.length; j++) {
+      btns[j].addEventListener('click', function () { setState(this.getAttribute('data-st')); });
+    }
+    var cards = document.querySelectorAll('.ma-state');
+    for (var k = 0; k < cards.length; k++) {
+      cards[k].addEventListener('click', function () { setState(this.getAttribute('data-goto')); });
+    }
+
+    // 节奏旋钮 → html[data-bl|br|or]
+    function bindKnob(id, attr) {
+      var s = document.getElementById(id);
+      if (!s) return;
+      s.addEventListener('change', function () {
+        if (s.value === 'std') delete document.documentElement.dataset[attr];
+        else document.documentElement.dataset[attr] = s.value;
+      });
+    }
+    bindKnob('knobBl', 'bl');
+    bindKnob('knobBr', 'br');
+    bindKnob('knobOr', 'or');
+    bindKnob('knobTh', 'th');
+
+    // 自动循环三态（便于观察巡环只在思考态出现）
+    var cycleTimer = null;
+    var cycleBtn = document.getElementById('btnCycle');
+    var ORDER = ['online', 'think', 'sleep'];
+    function stopCycle() {
+      if (cycleTimer) { clearInterval(cycleTimer); cycleTimer = null; }
+      if (cycleBtn) cycleBtn.textContent = '自动循环三态 ▶';
+    }
+    function toggleCycle() {
+      if (cycleTimer) { stopCycle(); return; }
+      var i = 0;
+      cycleTimer = setInterval(function () { i = (i + 1) % ORDER.length; setState(ORDER[i]); }, 2400);
+      if (cycleBtn) cycleBtn.textContent = '停止循环 ■';
+    }
+    if (cycleBtn) cycleBtn.addEventListener('click', toggleCycle);
+    // 手动点状态/状态卡时停循环，避免互打架
+    for (var c = 0; c < btns.length; c++) {
+      btns[c].addEventListener('click', stopCycle);
+    }
+    for (var s = 0; s < cards.length; s++) {
+      cards[s].addEventListener('click', stopCycle);
+    }
+
+    var m = (location.search || '').match(/[?&]st=(online|think|sleep)/);
+    setState(m ? m[1] : 'online');
+  })();
+</script>
+</body>
+</html>

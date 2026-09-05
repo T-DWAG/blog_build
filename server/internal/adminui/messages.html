@@ -1,0 +1,111 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>go /admin/messages — 从气象到代码</title>
+<link rel="preload" href="/admin-assets/fonts/fusion-pixel-12px-monospaced-zh_hans.ttf.woff2" as="font" type="font/woff2" crossorigin>
+<style>
+@font-face {
+  font-family: "Fusion Pixel Mono";
+  src: url("/admin-assets/fonts/fusion-pixel-12px-monospaced-zh_hans.ttf.woff2") format("woff2");
+  font-display: block;
+}
+
+:root{--black:#000;--white:#fff;--green:#00ff41;--lt-red:#ff5f57;--lt-yellow:#febc2e;--lt-green:#28c840;
+
+--mono:"Fusion Pixel Mono","Courier New","PingFang SC",monospace}
+*{box-sizing:border-box}
+body{margin:0;min-width:320px;color:var(--black);background:var(--black);border:12px solid var(--black);font-family:var(--mono);font-size:15px;line-height:1.85;cursor:url("/admin-assets/assets/cursor_default.svg") 0 0,default}
+a,button,input,textarea,select{cursor:url("/admin-assets/assets/cursor_pointer.svg") 0 0,pointer}
+a{color:inherit;text-decoration:none}
+.pixel-round{clip-path:polygon(0 4px,2px 4px,4px 2px,4px 0,calc(100% - 4px) 0,calc(100% - 4px) 2px,calc(100% - 2px) 4px,100% 4px,100% calc(100% - 4px),calc(100% - 2px) calc(100% - 4px),calc(100% - 4px) calc(100% - 2px),calc(100% - 4px) 100%,4px 100%,4px calc(100% - 2px),2px calc(100% - 4px),0 calc(100% - 4px))}
+.win{background:var(--white);max-width:1120px;margin:0 auto;border:4px solid var(--black);box-shadow:12px 12px 0 var(--black)}
+.winbar{display:flex;align-items:center;gap:10px;padding:9px 12px;border-bottom:4px solid var(--black);font-family:var(--mono);font-size:12px}
+.lights{display:flex;gap:5px}.lights i{width:10px;height:10px;border:1px solid var(--black);display:block}
+.r{background:#ff5f57}.y{background:#febc2e}.g{background:#28c840}
+.winbar-path{margin-left:6px;white-space:nowrap;overflow:hidden}
+.nav{display:flex;flex-wrap:wrap;border-bottom:4px solid var(--black);font-family:var(--mono);font-size:13px}
+.nav a{padding:10px 16px;border-right:1px solid var(--black)}
+.nav a:hover{background:var(--black);color:var(--white)}
+.nav a.on{background:var(--black);color:var(--green)}
+.main{position:relative;overflow:hidden;background:var(--white);padding:24px}
+.main .bg-layer{position:absolute;inset:0;opacity:.5;pointer-events:none;background-image:url('/admin-assets/assets/pt_dotted.svg');background-size:32px 32px;animation:pt-flow 2.4s linear infinite}
+.main .content{position:relative;z-index:1}
+@keyframes pt-flow{from{background-position:0 0}to{background-position:32px 32px}}
+h1{font-size:18px;margin:0 0 16px}
+.msg{border:1px solid var(--black);margin-bottom:14px;padding:12px 16px}
+.msg-head{display:flex;justify-content:space-between;flex-wrap:wrap;gap:8px;font-family:var(--mono);font-size:12px;margin-bottom:6px}
+.msg-head b{font-weight:normal}
+.meta{opacity:.7}
+.content{font-size:14px}
+.acts{display:flex;gap:10px;margin-top:10px}
+.btn{border:2px solid var(--black);padding:5px 14px;font-family:var(--mono);font-size:12px;background:var(--white);color:var(--black);box-shadow:2px 2px 0 var(--black);transition:transform .12s ease,box-shadow .12s ease,color .12s ease}
+.btn:hover{transform:translate(1px,1px);box-shadow:1px 1px 0 var(--black);color:var(--green)}
+.btn:hover{transform:translate(2px,2px);box-shadow:1px 1px 0 var(--white),3px 3px 0 var(--black);color:var(--green)}
+.btn.ok{background:var(--black);color:var(--white)}
+.pill{display:inline-block;border:1px solid var(--black);padding:0 8px;font-size:11px;font-family:var(--mono)}
+.pill.on{background:var(--black);color:var(--white)}
+.note{font-family:var(--mono);font-size:12px;opacity:.7}
+/* 锁定系统色：自动填充/选中/光标/滚动条统一像素风 */\ninput:-webkit-autofill,input:-webkit-autofill:hover,input:-webkit-autofill:focus{-webkit-text-fill-color:var(--black);-webkit-box-shadow:0 0 0 1000px var(--white) inset;transition:background-color 9999s ease-out 0s}\n::selection{background:var(--black);color:var(--green)}\ninput,textarea,select{caret-color:var(--green)}\n::-webkit-scrollbar{width:12px;height:12px}\n::-webkit-scrollbar-track{background:var(--white)}\n::-webkit-scrollbar-thumb{background:var(--black);border:2px solid var(--white)}\n::-webkit-scrollbar-thumb:hover{background:var(--green)}
+</style>
+</head>
+<body>
+<div class="win pixel-round">
+  <header class="winbar">
+    <div class="lights" aria-hidden="true"><i class="r"></i><i class="y"></i><i class="g"></i></div>
+    <span class="winbar-path">t-dwag@blog: <b>~/admin/messages</b></span>
+  </header>
+  <nav class="nav">
+    <a href="/admin/articles">articles</a>
+    <a href="/admin/projects">projects</a>
+    <a class="on" href="/admin/messages">messages</a>
+    <a href="/admin/settings">settings</a>
+    <a href="/admin/logout">logout</a>
+  </nav>
+  <div class="main">
+    <div class="bg-layer"></div>
+    <div class="content">
+      <h1>留言审核</h1>
+      <p class="note"># 只有通过(approved)的留言才会出现在公开留言板 · IP/UA 仅后台可见</p>
+      <div id="list"></div>
+    </div>
+  </div>
+</div>
+<script>
+(function(){
+  var list=document.getElementById('list');
+  function pill(st){return st==='approved'?'<span class="pill on">approved</span>':st==='rejected'?'<span class="pill">rejected</span>':'<span class="pill">pending</span>';}
+  function load(){
+    fetch('/api/admin/messages').then(function(r){
+      if(r.status===401){location.href='/admin/login';throw new Error('redirect');}
+      return r.json();
+    }).then(function(env){
+      var items=env.data||[];
+      if(!items.length){list.innerHTML='<p class="note"># 暂无留言</p>';return;}
+      list.innerHTML=items.map(function(m){
+        var acts='';
+        if(m.status!=='approved')acts+='<button class="btn ok" data-id="'+m.id+'" data-a="approved">通过</button>';
+        if(m.status!=='rejected')acts+='<button class="btn" data-id="'+m.id+'" data-a="rejected">拒绝</button>';
+        acts+='<button class="btn" data-del="'+m.id+'">删除</button>';
+        return '<div class="msg">'+
+          '<div class="msg-head"><span><b>'+m.nickname+'</b> · '+pill(m.status)+'</span>'+
+          '<span class="meta">'+m.created_at+' · IP '+m.ip+' · '+(m.user_agent||'-')+'</span></div>'+
+          '<div class="content">'+m.content+'</div>'+
+          '<div class="acts">'+acts+'</div></div>';
+      }).join('');
+      list.querySelectorAll('[data-id]').forEach(function(b){b.addEventListener('click',function(){
+        fetch('/api/admin/messages/'+b.getAttribute('data-id'),{method:'PUT',headers:{'Content-Type':'application/json'},body:JSON.stringify({action:b.getAttribute('data-a')})})
+          .then(function(r){if(r.ok)load();});
+      });});
+      list.querySelectorAll('[data-del]').forEach(function(b){b.addEventListener('click',function(){
+        if(!confirm('删除这条留言？'))return;
+        fetch('/api/admin/messages/'+b.getAttribute('data-del'),{method:'DELETE'}).then(function(r){if(r.ok)load();});
+      });});
+    }).catch(function(e){if(e.message!=='redirect')list.innerHTML='<p class="note">加载失败</p>';});
+  }
+  load();
+})();
+</script>
+</body>
+</html>

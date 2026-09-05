@@ -1,0 +1,66 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>项目卡片测试</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <div class="win pixel-round" style="margin: 20px auto;">
+    <main>
+      <section class="section section-paper">
+        <div class="container">
+          <h2>项目卡片布局测试</h2>
+          
+          <div class="card-grid">
+            <!-- 测试1: 同时有repo_url和demo_url -->
+            <article class="card">
+              <span class="num">01</span>
+              <h3>AI Agent智能平台</h3>
+              <p>集成多种AI模型，提供统一接口和管理功能</p>
+              <div class="tags">
+                <span>Go</span>
+                <span>React</span>
+                <span>AI</span>
+              </div>
+              <div class="card-links">
+                <a class="card-link card-link-source" href="https://github.com/example/repo" target="_blank" rel="noreferrer" title="查看源代码">来源 ↗</a>
+                <a class="card-link card-link-demo" href="https://demo.example.com" target="_blank" rel="noreferrer" title="在线演示">demo ↗</a>
+              </div>
+            </article>
+            
+            <!-- 测试2: 只有repo_url -->
+            <article class="card">
+              <span class="num">02</span>
+              <h3>电商评价系统</h3>
+              <p>基于情感分析的智能评价管理系统</p>
+              <div class="tags">
+                <span>Python</span>
+                <span>NLP</span>
+              </div>
+              <div class="card-links">
+                <a class="card-link card-link-source" href="https://github.com/example/repo2" target="_blank" rel="noreferrer" title="查看源代码">来源 ↗</a>
+              </div>
+            </article>
+            
+            <!-- 测试3: 只有demo_url -->
+            <article class="card">
+              <span class="num">03</span>
+              <h3>短链接服务</h3>
+              <p>高性能的URL短链接生成和管理服务</p>
+              <div class="tags">
+                <span>Go</span>
+                <span>Redis</span>
+              </div>
+              <div class="card-links">
+                <a class="card-link card-link-demo" href="https://demo3.example.com" target="_blank" rel="noreferrer" title="在线演示">demo ↗</a>
+              </div>
+            </article>
+          </div>
+        </div>
+      </section>
+    </main>
+  </div>
+</body>
+</html>

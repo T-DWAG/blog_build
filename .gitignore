@@ -1,0 +1,6 @@
+preview*.png
+.shots/
+.DS_Store
+.env
+server/.env
+

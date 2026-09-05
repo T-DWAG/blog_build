@@ -1,0 +1,137 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description" content="项目：AI Agent 智能平台、电商评价系统、短链接服务。">
+  <meta name="theme-color" content="#000000">
+  <title>go /projects — 从气象到代码</title>
+  <link rel="preload" href="fonts/fusion-pixel-12px-proportional-zh_hans.subset.woff2" as="font" type="font/woff2" crossorigin>
+  <link rel="preload" href="fonts/fusion-pixel-12px-monospaced-zh_hans.subset.woff2" as="font" type="font/woff2" crossorigin>
+  <link rel="stylesheet" href="style.css">
+  <script src="api-base.js"></script>
+</head>
+<body>
+  <div class="win pixel-round">
+
+    <!-- 窗口标题栏 -->
+    <header class="winbar">
+      <div class="winbar-lights" aria-hidden="true">
+        <i class="r"></i><i class="y"></i><i class="g"></i>
+      </div>
+      <span class="winbar-path">t-dwag@blog: <b>~/projects</b></span>
+      <span class="winbar-go">[go]</span>
+    </header>
+
+    <!-- go 命令导航 -->
+    <nav class="gonav" id="gonav" aria-label="主导航">
+      <span class="gonav-prompt" aria-hidden="true">$</span>
+      <button class="gonav-toggle" type="button" aria-expanded="false" aria-controls="gonav-links">导航 ▾</button>
+      <div class="gonav-links" id="gonav-links">
+        <a href="index.html">go /home</a>
+        <a href="about.html">go /about</a>
+        <a href="posts.html">go /posts</a>
+        <a class="is-active" href="projects.html">go /projects</a>
+        <a href="guestbook.html">go /guestbook</a>
+        <a href="chat.html">go /chat</a>
+        <a href="search.html">go /search</a>
+      </div>
+    </nav>
+
+    <main>
+      <section class="section section-paper" aria-labelledby="projects-title">
+        <div class="container">
+          <p class="section-kicker">PROJECTS</p>
+          <h2 id="projects-title"><span>三个项目，一条能力链</span></h2>
+          <p class="section-intro">少，是指数级的多；清晰，胜过机巧。</p>
+
+          <div class="card-grid" id="projectsGrid">
+            <p class="ls-note"><span class="dim"># 加载中…</span></p>
+          </div>
+
+          <p class="section-intro">每个项目都尽量写清楚：<strong>原项目有什么 → 问题是什么 → 我做了什么 → 还差什么</strong>。</p>
+          <p class="ls-note" id="projectsNote"><span class="dim"># 排列可在后台 sort_order 调整</span></p>
+        </div>
+      </section>
+    </main>
+
+    <footer class="statusbar">
+      <span>© 2025 · 从气象到代码</span>
+      <span>·</span>
+      <a href="mailto:wuonchannel@gmail.com">wuonchannel@gmail.com</a>
+      <span>·</span>
+      <a href="https://github.com/T-DWAG" target="_blank" rel="noreferrer">github.com/T-DWAG</a>
+      <span>·</span>
+      <span class="end-flag">END</span>
+    </footer>
+  </div>
+
+  <script>
+    (function () {
+      var toggle = document.querySelector('.gonav-toggle');
+      var gonav = document.getElementById('gonav');
+      if (!toggle || !gonav) return;
+      toggle.addEventListener('click', function () {
+        var open = gonav.classList.toggle('is-open');
+        toggle.setAttribute('aria-expanded', String(open));
+        toggle.textContent = open ? '导航 ▴' : '导航 ▾';
+      });
+    })();
+
+    // 项目卡片：GET /api/projects
+    (function () {
+      var grid = document.getElementById('projectsGrid');
+
+      function escapeHTML(s) {
+        return String(s || '').replace(/[&<>"']/g, function (c) {
+          return ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' })[c];
+        });
+      }
+
+      fetch(window.API_BASE + '/api/projects')
+        .then(function (r) { return r.json(); })
+        .then(function (env) {
+          var items = env.data || [];
+          if (!items.length) {
+            grid.innerHTML = '<p class="ls-note"><span class="q">?</span> 还没有上线的项目</p>';
+            return;
+          }
+          grid.innerHTML = items.map(function (p, i) {
+            var num = String(i + 1).padStart(2, '0');
+            var tags = (p.tags || []).map(function (t) { return '<span>' + escapeHTML(t) + '</span>'; }).join('');
+            
+            // 左下角：来源（repo_url）
+            var sourceLink = '';
+            if (p.repo_url) {
+              sourceLink = '<a class="card-link card-link-source" href="' + escapeHTML(p.repo_url) + '" target="_blank" rel="noreferrer" title="查看源代码">来源 ↗</a>';
+            }
+            
+            // 右下角：按字段区分文案（demo_url → demo；只有 home_url → home），不写死
+            var demoLink = '';
+            if (p.demo_url) {
+              demoLink = '<a class="card-link card-link-demo" href="' + escapeHTML(p.demo_url) + '" target="_blank" rel="noreferrer" title="在线演示">demo ↗</a>';
+            } else if (p.home_url) {
+              demoLink = '<a class="card-link card-link-demo" href="' + escapeHTML(p.home_url) + '" target="_blank" rel="noreferrer" title="项目主页">home ↗</a>';
+            }
+            
+            // 如果两个链接都有，用容器包裹实现左右布局
+            var linksHTML = '';
+            if (sourceLink || demoLink) {
+              linksHTML = '<div class="card-links">' + sourceLink + demoLink + '</div>';
+            }
+            
+            return '<article class="card">' +
+              '<span class="num">' + num + '</span>' +
+              '<h3>' + escapeHTML(p.name) + '</h3>' +
+              '<p>' + escapeHTML(p.summary) + '</p>' +
+              '<div class="tags">' + tags + '</div>' +
+              linksHTML +
+              '</article>';
+          }).join('');
+        }).catch(function () {
+          grid.innerHTML = '<p class="ls-note"><span class="err">> 项目列表加载失败，稍后再试</span></p>';
+        });
+    })();
+  </script>
+</body>
+</html>

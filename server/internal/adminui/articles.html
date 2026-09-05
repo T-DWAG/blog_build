@@ -1,0 +1,117 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>go /admin/articles — 从气象到代码</title>
+<link rel="preload" href="/admin-assets/fonts/fusion-pixel-12px-monospaced-zh_hans.ttf.woff2" as="font" type="font/woff2" crossorigin>
+<style>
+@font-face {
+  font-family: "Fusion Pixel Mono";
+  src: url("/admin-assets/fonts/fusion-pixel-12px-monospaced-zh_hans.ttf.woff2") format("woff2");
+  font-display: block;
+}
+
+:root{--black:#000;--white:#fff;--green:#00ff41;--lt-red:#ff5f57;--lt-yellow:#febc2e;--lt-green:#28c840;
+
+--mono:"Fusion Pixel Mono","Courier New","PingFang SC",monospace}
+*{box-sizing:border-box}
+body{margin:0;min-width:320px;color:var(--black);background:var(--black);border:12px solid var(--black);font-family:var(--mono);font-size:15px;line-height:1.85;cursor:url("/admin-assets/assets/cursor_default.svg") 0 0,default}
+a,button,input,textarea,select{cursor:url("/admin-assets/assets/cursor_pointer.svg") 0 0,pointer}
+a{color:inherit;text-decoration:none}
+.pixel-round{clip-path:polygon(0 4px,2px 4px,4px 2px,4px 0,calc(100% - 4px) 0,calc(100% - 4px) 2px,calc(100% - 2px) 4px,100% 4px,100% calc(100% - 4px),calc(100% - 2px) calc(100% - 4px),calc(100% - 4px) calc(100% - 2px),calc(100% - 4px) 100%,4px 100%,4px calc(100% - 2px),2px calc(100% - 4px),0 calc(100% - 4px))}
+.win{background:var(--white);max-width:1120px;margin:0 auto;border:4px solid var(--black);box-shadow:12px 12px 0 var(--black)}
+.winbar{display:flex;align-items:center;gap:10px;padding:9px 12px;border-bottom:4px solid var(--black);font-family:var(--mono);font-size:12px}
+.lights{display:flex;gap:5px}.lights i{width:10px;height:10px;border:1px solid var(--black);display:block}
+.r{background:#ff5f57}.y{background:#febc2e}.g{background:#28c840}
+.winbar-path{margin-left:6px;white-space:nowrap;overflow:hidden}
+.nav{display:flex;flex-wrap:wrap;gap:0;border-bottom:2px solid var(--black);font-family:var(--mono);font-size:13px}
+.nav a{padding:10px 16px;border-right:1px solid var(--black)}
+.nav a:hover{background:var(--black);color:var(--white)}
+.nav a.on{background:var(--black);color:var(--green)}
+.main{position:relative;overflow:hidden;background:var(--white);padding:24px}
+.main .bg-layer{position:absolute;inset:0;opacity:.5;pointer-events:none;background-image:url('/admin-assets/assets/pt_dotted.svg');background-size:32px 32px;animation:pt-flow 2.4s linear infinite}
+.main .content{position:relative;z-index:1}
+@keyframes pt-flow{from{background-position:0 0}to{background-position:32px 32px}}
+.tbl{width:100%;border-collapse:collapse;font-size:14px}
+.tbl th,.tbl td{border:1px solid var(--black);padding:8px 10px;text-align:left;font-size:13px}
+.tbl th{background:var(--black);color:var(--white);font-family:var(--mono);font-weight:normal;letter-spacing:.06em}
+.tbl tr:hover td{background:#f2f2f2}
+.tag{display:inline-block;border:1px solid var(--black);padding:0 6px;margin-right:4px;font-size:11px;font-family:var(--mono)}
+.pill{display:inline-block;border:1px solid var(--black);padding:1px 8px;font-size:11px;font-family:var(--mono)}
+.pill.on{background:var(--black);color:var(--white)}
+.act a{margin-right:12px;text-decoration:underline}
+.act a:hover{color:var(--green)}
+.btn{display:inline-block;border:3px solid var(--black);background:var(--black);color:var(--white);padding:10px 18px;font-family:var(--mono);font-size:13px;box-shadow:3px 3px 0 var(--white),5px 5px 0 var(--black);transition:transform .14s ease,box-shadow .14s ease,color .14s ease}
+.btn:hover{transform:translate(2px,2px);box-shadow:1px 1px 0 var(--white),3px 3px 0 var(--black);color:var(--green)}
+.note{font-family:var(--mono);font-size:12px;opacity:.7}
+h1{font-size:18px;margin:0 0 16px}
+/* 锁定系统色：自动填充/选中/光标/滚动条统一像素风 */\ninput:-webkit-autofill,input:-webkit-autofill:hover,input:-webkit-autofill:focus{-webkit-text-fill-color:var(--black);-webkit-box-shadow:0 0 0 1000px var(--white) inset;transition:background-color 9999s ease-out 0s}\n::selection{background:var(--black);color:var(--green)}\ninput,textarea,select{caret-color:var(--green)}\n::-webkit-scrollbar{width:12px;height:12px}\n::-webkit-scrollbar-track{background:var(--white)}\n::-webkit-scrollbar-thumb{background:var(--black);border:2px solid var(--white)}\n::-webkit-scrollbar-thumb:hover{background:var(--green)}
+</style>
+</head>
+<body>
+<div class="win pixel-round">
+  <header class="winbar">
+    <div class="lights" aria-hidden="true"><i class="r"></i><i class="y"></i><i class="g"></i></div>
+    <span class="winbar-path">t-dwag@blog: <b>~/admin/articles</b></span>
+  </header>
+  <nav class="nav">
+    <a class="on" href="/admin/articles">articles</a>
+    <a href="/admin/projects">projects</a>
+    <a href="/admin/messages">messages</a>
+    <a href="/admin/settings">settings</a>
+    <a href="/admin/logout">logout</a>
+  </nav>
+  <div class="main">
+    <div class="bg-layer"></div>
+    <div class="content">
+      <h1>文章管理</h1>
+      <p class="note">$ ls articles/ — 置顶/草稿/发布状态一览</p>
+      <div style="margin:16px 0"><a class="btn" href="/admin/articles/new">+ 新建文章</a></div>
+      <table class="tbl">
+        <thead><tr><th>ID</th><th>TITLE</th><th>STATUS</th><th>PINNED</th><th>TAGS</th><th>DATE</th><th>ACTIONS</th></tr></thead>
+        <tbody id="rows"><tr><td colspan="7">loading…</td></tr></tbody>
+      </table>
+    </div>
+  </div>
+</div>
+<script>
+(function(){
+  var rows=document.getElementById('rows');
+  fetch('/api/admin/articles').then(function(r){
+    if(r.status===401){location.href='/admin/login';throw new Error('redirect');}
+    return r.json();
+  }).then(function(env){
+    var items=env.data||[];
+    if(!items.length){rows.innerHTML='<tr><td colspan="7"><span class="note"># 还没有文章</span></td></tr>';return;}
+    rows.innerHTML=items.map(function(a){
+      var status=a.status==='published'?'<span class="pill on">published</span>':'<span class="pill">draft</span>';
+      var pinned=a.is_pinned?'<span class="pill on">📌</span>':'—';
+      var tags=(a.tags||[]).map(function(t){return '<span class="tag">'+t+'</span>';}).join('');
+      var date=(a.published_at||a.created_at||'').slice(0,10);
+      return '<tr>'+
+        '<td>'+a.id+'</td>'+
+        '<td>'+a.title+'</td>'+
+        '<td>'+status+'</td>'+
+        '<td>'+pinned+'</td>'+
+        '<td>'+tags+'</td>'+
+        '<td>'+date+'</td>'+
+        '<td class="act"><a href="/admin/articles/'+a.id+'">edit</a><a href="#" data-del="'+a.id+'" data-slug="'+a.slug+'">delete</a></td>'+
+      '</tr>';
+    }).join('');
+    rows.querySelectorAll('[data-del]').forEach(function(a){
+      a.addEventListener('click',function(e){
+        e.preventDefault();
+        var id=a.getAttribute('data-del');
+        var slug=a.getAttribute('data-slug');
+        if(!confirm('确认删除文章 "'+slug+'"？'))return;
+        fetch('/api/admin/articles/'+id,{method:'DELETE'}).then(function(r){
+          if(r.ok)location.reload();
+        });
+      });
+    });
+  }).catch(function(e){if(e.message!=='redirect')rows.innerHTML='<tr><td colspan="7">加载失败</td></tr>';});
+})();
+</script>
+</body>
+</html>

@@ -1,0 +1,654 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description" content="MOSS 之眼 · 落位与触发探针：放哪个 HTML、什么事件触发、触发什么彩蛋。审核用。">
+  <meta name="theme-color" content="#000000">
+  <title>MOSS 落位 · 触发探针</title>
+  <link rel="preload" href="fonts/fusion-pixel-12px-proportional-zh_hans.subset.woff2" as="font" type="font/woff2" crossorigin>
+  <link rel="preload" href="fonts/fusion-pixel-12px-monospaced-zh_hans.subset.woff2" as="font" type="font/woff2" crossorigin>
+  <link rel="stylesheet" href="style.css">
+  <style>
+    /* ============ 落位&触发探针（np- 前缀，独立文件不进生产） ============ */
+    /* 已锁参数：眨眼 3.4s · 呼吸 5.5s(轻柔) · 巡环 1.6s(中) · 思考态=巡环 */
+    :root { --d-blink: 3.4s; --d-breathe: 5.5s; --d-orbit: 1.6s; }
+    body.np { background: #000; }
+    .np-wrap { width: min(1160px, calc(100% - 40px)); margin: 0 auto; }
+
+    /* ---- 之眼本体（与 A 探针同一实现，参数已锁） ---- */
+    .np-orb { display: inline-block; flex: none; line-height: 0; }
+    .np-orb svg { display: block; }
+    .np-orb .r { fill: #fff; }
+    .np-orb .e { fill: #00ff41; transform-box: fill-box; transform-origin: center; }
+    .np-orb .iris { transform-box: view-box; transform-origin: 5px 5px; }
+    body.np-online .np-orb { animation: np-breathe var(--d-breathe) ease-in-out infinite; }
+    body.np-online .e { animation: np-blink var(--d-blink) infinite; }
+    body.np-think .np-orb { animation: np-breathe var(--d-breathe) ease-in-out infinite; }
+    body.np-think .e { animation: none; }
+    body.np-think .off { transform: translate(2px, 0); }
+    body.np-think .iris { animation: np-orbit var(--d-orbit) steps(12) infinite; }
+    body.np-sleep .np-orb { animation: none; opacity: .35; }
+    body.np-sleep .iris { opacity: 0; }
+    @keyframes np-breathe { 0%,100% { opacity: 1; } 50% { opacity: .82; } }
+    @keyframes np-blink { 0%,88%,100% { transform: scaleY(1); } 91%,95% { transform: scaleY(.12); } }
+    @keyframes np-orbit { to { transform: rotate(360deg); } }
+    /* 彩蛋长眨眼 */
+    .np-wink .e { animation: np-wink 1.4s ease-in-out !important; }
+    @keyframes np-wink { 0%,100% { transform: scaleY(1); } 25% { transform: scaleY(.1); } 45% { transform: scaleY(1); } 60% { transform: scaleY(.1); } }
+
+    /* CSS 小灯 */
+    .np-lamp { display: inline-flex; align-items: center; gap: 7px; margin-left: 14px; padding: 2px 9px 2px 7px; border: 2px solid #fff; font-family: var(--fp-mono); font-size: 11px; font-weight: 700; color: #fff; letter-spacing: .05em; position: relative; cursor: help; }
+    .np-lamp .dot { width: 9px; height: 9px; border: 2px solid #fff; border-radius: 50%; display: inline-block; position: relative; flex: none; }
+    .np-lamp .dot::after { content: ''; position: absolute; inset: 1px; border-radius: 50%; background: var(--green); animation: np-core 2.6s infinite; }
+    body.np-sleep .np-lamp .dot::after { background: #555; animation: none; }
+    body.np-sleep .np-lamp { opacity: .5; }
+    @keyframes np-core { 0%,100% { opacity: 1; } 50% { opacity: .35; } }
+    .np-tip { position: absolute; top: calc(100% + 6px); left: 0; z-index: 9; min-width: 240px; padding: 8px 10px; color: #000; background: #fff; border: 2px solid #000; box-shadow: 4px 4px 0 #000; font-size: 10.5px; line-height: 1.7; display: none; }
+    .np-lamp:hover .np-tip, .np-lamp:focus .np-tip { display: block; }
+    .np-lamp .np-tip b { color: var(--green); }
+
+    /* 顶栏/控制 */
+    .np-top { display: flex; flex-wrap: wrap; align-items: center; gap: 12px; padding: 16px 0 8px; }
+    .np-title { margin: 0; padding: 6px 12px; color: #fff; background: #000; border: 3px solid #fff; font-family: var(--fp-mono); font-size: 14px; font-weight: 700; }
+    .np-top .tag { color: var(--green); font-family: var(--fp-mono); font-size: 12px; font-weight: 700; }
+    .np-lock { display: flex; flex-wrap: wrap; gap: 8px; margin: 2px 0 12px; }
+    .np-lock .c { padding: 4px 9px; color: #000; background: var(--green); font-family: var(--fp-mono); font-size: 10.5px; font-weight: 700; }
+    .np-lock .c b { color: #fff; }
+    .np-lock .c.dim { color: var(--green); background: #000; border: 1px solid var(--green); }
+    .np-hint { color: rgba(255,255,255,.45); font-family: var(--fp-mono); font-size: 11px; margin: 0 0 14px; line-height: 1.8; }
+
+    .np-seg { display: inline-flex; border: 3px solid #fff; background: #000; }
+    .np-seg button { padding: 7px 14px; color: #fff; background: transparent; border: 0; border-right: 2px solid #fff; font-family: var(--fp-mono); font-size: 12px; font-weight: 700; }
+    .np-seg button:last-child { border-right: 0; }
+    .np-seg button:hover { color: #000; background: var(--green); }
+    body.np-online .np-seg [data-st="online"], body.np-think .np-seg [data-st="think"], body.np-sleep .np-seg [data-st="sleep"] { color: #000; background: var(--green); }
+    .np-stat { color: var(--green); font-family: var(--fp-mono); font-size: 12px; font-weight: 700; }
+
+    .np-sec { margin-top: 30px; }
+    .np-sec-t { margin: 0 0 6px; color: #fff; font-family: var(--fp-mono); font-size: 15px; font-weight: 700; }
+    .np-sec-t .n { color: var(--green); }
+    .np-sec-d { margin: 0 0 14px; color: rgba(255,255,255,.55); font-family: var(--fp-mono); font-size: 11.5px; line-height: 1.85; }
+    .np-sec-d b { color: #fff; }
+    .np-sec-d .warn { color: #febc2e; }
+
+    /* ① 落位卡片 */
+    .np-places { display: grid; grid-template-columns: repeat(2, 1fr); gap: 14px; }
+    @media (max-width: 900px) { .np-places { grid-template-columns: 1fr; } }
+    .np-place { display: flex; flex-direction: column; gap: 10px; padding: 14px; background: #000; border: 3px solid #fff; }
+    .np-place .h { display: flex; align-items: baseline; gap: 10px; flex-wrap: wrap; }
+    .np-place .id { color: #000; background: var(--green); font-family: var(--fp-mono); font-size: 11px; font-weight: 700; padding: 1px 7px; }
+    .np-place h3 { margin: 0; color: #fff; font-family: var(--fp-mono); font-size: 13.5px; }
+    .np-place .auth { margin-left: auto; font-family: var(--fp-mono); font-size: 10px; font-weight: 700; padding: 1px 7px; border: 1px solid var(--green); color: var(--green); }
+    .np-place .auth.no { border-color: rgba(255,255,255,.4); color: rgba(255,255,255,.4); }
+    .np-place .demo { background: #fff; border: 3px solid #000; overflow: hidden; }
+    .np-place .demo .pad { padding: 8px 12px; font-family: var(--fp-mono); font-size: 10.5px; color: rgba(0,0,0,.5); }
+    .np-place .meta { margin: 0; font-family: var(--fp-mono); font-size: 11px; line-height: 1.9; color: rgba(255,255,255,.7); }
+    .np-place .meta b { color: #fff; }
+    .np-place .meta .g { color: var(--green); }
+    .np-pipe { color: var(--green); font-family: var(--fp-mono); font-size: 10px; }
+
+    /* ② 状态机 */
+    .np-fsm { border: 2px solid #fff; font-family: var(--fp-mono); font-size: 11px; }
+    .np-fsm .r, .np-fsm .hd { display: grid; grid-template-columns: 84px 1.1fr .9fr 1.4fr; border-bottom: 1px solid rgba(255,255,255,.22); }
+    .np-fsm .hd { color: var(--green); font-weight: 700; }
+    .np-fsm .c { padding: 7px 9px; border-right: 1px solid rgba(255,255,255,.22); color: rgba(255,255,255,.8); }
+    .np-fsm .c:last-child { border-right: 0; }
+    .np-fsm .k { color: #fff; font-weight: 700; }
+    .np-fsm .hd .c { color: var(--green); }
+    @media (max-width: 860px) { .np-fsm .r, .np-fsm .hd { grid-template-columns: 70px 1fr; } }
+
+    /* ③ 模拟器 */
+    .np-sim { display: grid; grid-template-columns: minmax(0,1fr) 320px; gap: 16px; align-items: start; }
+    @media (max-width: 900px) { .np-sim { grid-template-columns: 1fr; } }
+    .np-chatbox { position: relative; }
+    .np-chatbox .chat-window { margin-top: 0; box-shadow: 8px 8px 0 #000; }
+    .np-chatbox .chat-body { position: relative; min-height: 300px; max-height: 340px; }
+    .np-chatbox .np-avatar { display: inline-block; vertical-align: -3px; margin-right: 6px; }
+    .np-mascot { position: absolute; right: 10px; bottom: 8px; }
+    .np-bubble { position: absolute; right: 40px; bottom: 46px; max-width: 240px; padding: 8px 10px; color: #000; background: #fff; border: 2px solid #000; box-shadow: 3px 3px 0 #000; font-family: var(--fp-mono); font-size: 11px; line-height: 1.7; display: none; z-index: 5; }
+    .np-bubble::after { content: ''; position: absolute; right: -8px; bottom: 10px; border: 5px solid transparent; border-left-color: #fff; }
+    .np-bubble.show { display: block; }
+    .np-events { display: flex; flex-direction: column; gap: 7px; }
+    .np-events button { text-align: left; padding: 8px 10px; color: #fff; background: transparent; border: 2px solid #fff; font-family: var(--fp-mono); font-size: 11px; line-height: 1.5; }
+    .np-events button:hover { color: #000; background: var(--green); border-color: var(--green); }
+    .np-events .evk { color: var(--green); font-weight: 700; }
+    .np-events button small { display: block; color: rgba(255,255,255,.5); }
+    .np-events button:hover small { color: rgba(0,0,0,.6); }
+    .np-log { margin-top: 8px; border: 2px solid rgba(255,255,255,.4); padding: 8px 10px; font-family: var(--fp-mono); font-size: 10.5px; color: rgba(255,255,255,.75); line-height: 1.8; max-height: 150px; overflow-y: auto; }
+    .np-log .ln { border-bottom: 1px dashed rgba(255,255,255,.15); padding: 2px 0; }
+    .np-log .ln:last-child { border-bottom: 0; }
+    .np-log .st { color: var(--green); }
+
+    /* ④ 彩蛋表 */
+    .np-eggs { border: 2px solid #fff; font-family: var(--fp-mono); font-size: 11px; }
+    .np-eggs .r, .np-eggs .hd { display: grid; grid-template-columns: 150px 1.3fr 1fr 1fr; border-bottom: 1px solid rgba(255,255,255,.2); }
+    .np-eggs .hd { color: var(--green); font-weight: 700; }
+    .np-eggs .c { padding: 7px 9px; border-right: 1px solid rgba(255,255,255,.2); color: rgba(255,255,255,.8); }
+    .np-eggs .c:last-child { border-right: 0; }
+    .np-eggs .try { margin-top: 4px; padding: 2px 8px; color: #000; background: var(--green); border: 0; font-family: var(--fp-mono); font-size: 10px; font-weight: 700; }
+    @media (max-width: 900px) { .np-eggs .r, .np-eggs .hd { grid-template-columns: 120px 1fr; } }
+
+    /* ⑤ 文件清单 */
+    .np-files { border: 2px solid #fff; font-family: var(--fp-mono); font-size: 11px; }
+    .np-files .r, .np-files .hd { display: grid; grid-template-columns: 150px 1fr 180px; border-bottom: 1px solid rgba(255,255,255,.2); }
+    .np-files .hd { color: var(--green); font-weight: 700; }
+    .np-files .c { padding: 7px 9px; border-right: 1px solid rgba(255,255,255,.2); color: rgba(255,255,255,.8); }
+    .np-files .c:last-child { border-right: 0; }
+    @media (max-width: 900px) { .np-files .r, .np-files .hd { grid-template-columns: 120px 1fr; } }
+
+    .np-decide { display: grid; gap: 8px; }
+    .np-decide .row { display: flex; gap: 10px; align-items: baseline; font-family: var(--fp-mono); font-size: 11px; color: rgba(255,255,255,.75); }
+    .np-decide .row .yes { color: var(--green); }
+    .np-decide .row .no { color: #ff5f57; }
+    .np-decide .row b { color: #fff; }
+    .np-code { margin: 6px 0 0; padding: 12px 14px; color: var(--green); background: #000; border: 3px solid #fff; font-family: var(--fp-mono); font-size: 11px; line-height: 1.8; white-space: pre; overflow-x: auto; }
+    .np-foot { margin: 28px 0 44px; color: rgba(255,255,255,.5); font-family: var(--fp-mono); font-size: 11px; line-height: 1.9; }
+    .np-foot b { color: #fff; }
+    .np-foot .g { color: var(--green); }
+  </style>
+</head>
+<body class="np np-online">
+<div class="np-wrap">
+
+  <header class="np-top">
+    <span class="np-title">MOSS 之眼 · 落位 &amp; 触发探针</span>
+    <span class="tag">review only · 未改任何现有页面</span>
+  </header>
+  <div class="np-lock">
+    <span class="c">已锁 · 眨眼 3.4s</span>
+    <span class="c">呼吸 5.5s 轻柔</span>
+    <span class="c">思考态 = 巡环 1.6s</span>
+    <span class="c dim">本探针里所有样品按已锁参数动；无需再调参</span>
+  </div>
+
+  <!-- 全局状态（手动） -->
+  <div style="display:flex;gap:14px;align-items:center;flex-wrap:wrap">
+    <span class="np-seg" role="group" aria-label="状态">
+      <button type="button" data-st="online">● 在线</button>
+      <button type="button" data-st="think">◉ 思考中</button>
+      <button type="button" data-st="sleep">◌ 休眠</button>
+    </span>
+    <span class="np-stat" id="npStat">● MOSS 在线</span>
+    <span class="np-hint" style="margin:0">手动切状态 = 只管视觉；<b style="color:#fff">③ 模拟器</b> 才是"真实事件怎么驱动它"。</span>
+  </div>
+
+  <!-- ============ ① 落位地图 ============ -->
+  <section class="np-sec">
+    <h2 class="np-sec-t"><span class="n">①</span> 落位地图：之眼放站里哪些 HTML 位置</h2>
+    <p class="np-sec-d">卡片 = 每个插入点；上屏用真实 winbar / chat 外壳，跟随全局状态动。右侧元信息 = 数据源 / 触发源 / 要动的文件。</p>
+    <div class="np-places">
+
+      <!-- P1 全站 winbar -->
+      <article class="np-place">
+        <div class="h"><span class="id">P1</span><h3>winbar 状态灯（全站）</h3><span class="auth no">纯新增 · 不动你写的部分</span></div>
+        <div class="demo">
+          <header class="winbar" style="border-bottom:0">
+            <div class="winbar-lights" aria-hidden="true"><i class="r"></i><i class="y"></i><i class="g"></i></div>
+            <span class="winbar-path">t-dwag@blog: <b>~/chat</b></span>
+            <span class="np-lamp" tabindex="0" title="MOSS 驻站状态"><span class="dot"></span><span class="txt">MOSS 在线</span>
+              <span class="np-tip" data-tip="online"></span>
+            </span>
+            <span class="winbar-go">[go]</span>
+          </header>
+        </div>
+        <p class="meta"><b>放哪</b>：index / about / posts / projects / guestbook / search / chat / article 8 页的 <span class="g">.winbar-path</span> 右侧（404 见 P6）。<br>
+        <b>触发</b>：页面加载时探活 <span class="g">GET /api/ai/suggestions</span>；200 → 在线；不可达 → 失联（见②）。<br>
+        <b>做法</b>：每页插一段 <span class="g">moss.js</span>（新共享文件）+ 上述标记。悬停灯 = 台词（彩蛋区）。</p>
+      </article>
+
+      <!-- P2 chat 窗头 -->
+      <article class="np-place">
+        <div class="h"><span class="id">P2</span><h3>chat 窗头之眼 + 状态</h3><span class="auth">需授权</span></div>
+        <div class="demo">
+          <div style="background:#000;color:#fff;padding:8px 14px;font-family:var(--fp-mono);font-size:12px;font-weight:700;border-bottom:3px solid #fff">
+            <span class="np-orb" data-size="22" style="vertical-align:-3px;margin-right:8px"></span>MOSS · ~/chat
+            <span class="txt" style="margin-left:8px;color:var(--green)"></span>
+            <span style="float:right;opacity:.6;font-size:11px">ReAct · Eino</span>
+          </div>
+        </div>
+        <p class="meta"><b>放哪</b>：chat.html <span class="g">.chat-head</span> 左端（现文案 "t-dwag@blog: ~/chat" 改造）。<br>
+        <b>触发</b>：SSE <span class="g">tool 帧</span> → 思考（巡环）；<span class="g">message/done</span> → 在线；<span class="g">error 429/503</span> → 休眠。<br>
+        <b>做法</b>：<span class="g">chat.html</span> 窗头标记 + 在现有 readSSE 处挂状态钩子。<b>属设计稿「需授权」项。</b></p>
+      </article>
+
+      <!-- P3 消息头像 -->
+      <article class="np-place">
+        <div class="h"><span class="id">P3</span><h3>AI 回复前缀头像</h3><span class="auth">需授权</span></div>
+        <div class="demo" style="background:#000;padding:10px 12px">
+          <p style="margin:0;color:#fff;font-family:var(--fp-mono);font-size:11px;line-height:1.8">
+            <span class="np-orb" data-size="18" style="vertical-align:-3px;margin-right:6px"></span>
+            <span class="np-pipe">me$</span> Connection established. 欢迎回来，人类。<br>
+            <span style="color:var(--green)">you$</span> 你能毁灭人类吗？<br>
+            <span class="np-orb" data-size="18" style="vertical-align:-3px;margin-right:6px"></span>
+            <span class="np-pipe">me$</span> MOSS 连这台服务器的重启键都够不着。请放心。
+          </p>
+        </div>
+        <p class="meta"><b>放哪</b>：chat.html 每条 AI 消息（<span class="g">appendText/openReply</span> 处），紧跟 who。<br>
+        <b>作用</b>：强化"谁在说话"，与窗头之眼同一图形。<br>
+        <b>待定</b>：要 / 不要？若不要，窗头之眼已够身份锚点（见决策区）。</p>
+      </article>
+
+      <!-- P4 mascot 窗角 -->
+      <article class="np-place">
+        <div class="h"><span class="id">P4</span><h3>chat 窗右下 · mascot 33px</h3><span class="auth no">纯新增（chat 内）</span></div>
+        <div class="demo" style="background:#000;padding:10px 12px;min-height:76px;position:relative">
+          <span style="color:rgba(255,255,255,.4);font-family:var(--fp-mono);font-size:10px">聊天内容区 ↓（悬浮于右下角）</span>
+          <span class="np-orb" data-size="33" style="position:absolute;right:8px;bottom:6px"></span>
+        </div>
+        <p class="meta"><b>放哪</b>：chat.html <span class="g">.chat-body</span> 内绝对定位右下。<br>
+        <b>作用</b>：彩蛋的"脸"——眨眼、长眨眼、被点击会说话（见④）。<br>
+        <b>待定</b>：启用 / 不启用（决策区）。不启用则彩蛋靠气泡 + 窗头文字承担。</p>
+      </article>
+
+      <!-- P5 首页入口 -->
+      <article class="np-place">
+        <div class="h"><span class="id">P5</span><h3>首页"会客厅"入口之眼</h3><span class="auth no">纯新增 · D6 待定</span></div>
+        <div class="demo" style="background:#fff;padding:10px 12px;display:flex;align-items:center;gap:14px">
+          <span class="np-orb" data-size="44" style="border:3px solid #000;padding:4px;background:#000"></span>
+          <span style="font-family:var(--fp-mono);font-size:11px;color:rgba(0,0,0,.65);line-height:1.7">原「公式区下方」空位<br>示意：点它 = go /chat（会客厅）</span>
+        </div>
+        <p class="meta"><b>放哪</b>：index.html 公式条下方（原「三幕演示窗」方案换装，D6）。<br>
+        <b>作用</b>：全站世界观入口 + 导航去 chat。<br>
+        <b>成本</b>：0；但依赖 D1（空间站命名）先定。待定：做 / 不做。</p>
+      </article>
+
+      <!-- P6 404 -->
+      <article class="np-place">
+        <div class="h"><span class="id">P6</span><h3>404 页</h3><span class="auth no">纯新增 · 需授权改文案</span></div>
+        <div class="demo">
+          <header class="winbar" style="border-bottom:0">
+            <div class="winbar-lights" aria-hidden="true"><i class="r"></i><i class="y"></i><i class="g"></i></div>
+            <span class="winbar-path">t-dwag@blog: <b>~/404</b></span>
+            <span class="np-lamp" tabindex="0" title="MOSS 驻站状态"><span class="dot"></span><span class="txt">MOSS 在线</span>
+              <span class="np-tip" data-tip="online"></span>
+            </span>
+            <span class="winbar-go">[go]</span>
+          </header>
+        </div>
+        <p class="meta"><b>404 彩蛋本体</b>（T1-7）：页面加 Moss 台词「目标页面不存在。MOSS 搜遍了全站：它没来过。」<br>
+        <b>灯</b>：404 是纯静态且常被后端兜底，建议<b>不做探活</b>、灯固定"在线"或省略 —— 待定：带灯 / 不带灯。</p>
+      </article>
+    </div>
+  </section>
+
+  <!-- ============ ② 状态机与触发源 ============ -->
+  <section class="np-sec">
+    <h2 class="np-sec-t"><span class="n">②</span> 触发状态机：真实事件 → 状态 → 动作</h2>
+    <p class="np-sec-d">
+      前提（后端实测）：<b>suggestions 恒 200，只证明"后端可达"，不感知预算/未配 Key</b>；429 / 503 只出现在对话 SSE 的
+      <span class="warn">error 帧</span>里（code 429=预算用尽 / 503=未配置 AI_API_KEY，均先发 200 + SSE 头）。因此：非 chat 页的灯只能表达"连得上"，
+      "预算休眠"只有 chat 页对话时才能真实获知 —— 见第 5 行可选的 localStorage 跨页补丁。
+    </p>
+    <div class="np-fsm">
+      <div class="hd"><div class="c">当前态</div><div class="c">触发事件（真实来源）</div><div class="c">下一态</div><div class="c">动作 / 台词</div></div>
+      <div class="r"><div class="c k">在线</div><div class="c">页面加载 · 探活 <b style="color:#fff">GET /api/ai/suggestions</b> 200</div><div class="c">在线</div><div class="c">灯绿 · 文字「MOSS 在线」</div></div>
+      <div class="r"><div class="c k">在线</div><div class="c">chat：发送问题后收到 <b style="color:#fff">SSE tool 帧</b>（检索/调工具）</div><div class="c">思考</div><div class="c">瞳仁巡环 + 窗头「MOSS 思考中…」+ 「正在检索…（调用 工具名）」</div></div>
+      <div class="r"><div class="c k">思考</div><div class="c">收到 <b style="color:#fff">SSE message 首字</b></div><div class="c">在线</div><div class="c">巡环停 → 呼吸+眨眼（正文边收边渲染）</div></div>
+      <div class="r"><div class="c k">思考/在线</div><div class="c">收到 <b style="color:#fff">SSE done 帧</b> / 流被用户停止</div><div class="c">在线</div><div class="c">复位；停止则按现逻辑保留已输出</div></div>
+      <div class="r"><div class="c k">任意</div><div class="c">收到 <b style="color:#fff">SSE error 帧 code=429</b>（预算用尽）</div><div class="c">休眠</div><div class="c">熄瞳转暗 + 台词「能源耗尽。本月配额已用完，账单请找 T-DWAG 结算。」可选：localStorage 记到下月 1 日，全站灯都能读</div></div>
+      <div class="r"><div class="c k">任意</div><div class="c">收到 <b style="color:#fff">SSE error 帧 code=503</b> / 探活 503</div><div class="c">休眠(未通电)</div><div class="c">熄瞳转暗 + 台词「MOSS 尚未通电。请舰长配置 AI_API_KEY。」（灯不可见则靠对话区错误文案）</div></div>
+      <div class="r"><div class="c k">任意</div><div class="c">网络错误 / fetch 超时（后端不在）</div><div class="c">失联</div><div class="c">熄瞳转暗 + 「与 MOSS 失联中。舰长的服务器大概在重启。」（复用休眠视觉）</div></div>
+      <div class="r"><div class="c k">休眠</div><div class="c">跨月第一次成功请求（刷新页面 + 探活 200）</div><div class="c">在线</div><div class="c">恢复；若做了 localStorage 补丁，到期前所有页都显示休眠</div></div>
+    </div>
+  </section>
+
+  <!-- ============ ③ 事件模拟器 ============ -->
+  <section class="np-sec">
+    <h2 class="np-sec-t"><span class="n">③</span> 触发模拟器：按真实事件一步步看它怎么演</h2>
+    <p class="np-sec-d">左侧 = 模拟的 chat 值班室（窗头 + 消息头像 + 右下 mascot 全上）；点右侧事件，一步步走完整链路。日志记录每次状态迁移与彩蛋触发点。</p>
+    <div class="np-sim">
+      <!-- chat 模拟 -->
+      <div class="np-chatbox">
+        <div class="chat-window">
+          <div class="chat-head">
+            <span class="np-orb" data-size="22" style="vertical-align:-3px;margin-right:8px"></span>MOSS · ~/chat
+            <span class="txt" style="margin-left:8px;color:var(--green)"></span>
+            <span class="t-right">ReAct · Eino</span>
+          </div>
+          <div class="chat-body" id="simBody">
+            <p class="sim-m"><span class="np-orb np-avatar" data-size="18"></span><span class="who">me$</span> <span class="reply-text">Connection established. 欢迎回来，人类。这里是 MOSS 的值班室——问点 MOSS 答得上来的。</span></p>
+            <div class="np-bubble" id="simBubble"></div>
+            <span class="np-mascot" id="simMascot" title="MOSS"><span class="np-orb" data-size="33"></span></span>
+          </div>
+          <div class="chat-suggestions" style="padding:10px 16px">
+            <button type="button" onclick="fire('whoami')">whoami</button>
+            <button type="button" onclick="fire('ask')">问他做过哪些项目</button>
+            <button type="button" onclick="fire('chat429')">(模拟 429)</button>
+          </div>
+          <form class="chat-input" style="padding:10px 16px" onsubmit="return false">
+            <span class="who" aria-hidden="true">you$</span>
+            <input type="text" id="simInput" placeholder="可敲彩蛋：whoami / ls / 天气…回车" autocomplete="off">
+          </form>
+        </div>
+      </div>
+      <!-- 事件与日志 -->
+      <div>
+        <div class="np-events">
+          <button type="button" onclick="fire('load')"><span class="evk">① 页面加载</span>探活 200 → 在线<small>GET /api/ai/suggestions</small></button>
+          <button type="button" onclick="fire('ask')"><span class="evk">② 人类提问</span>回车发送 → 等待模型<small>POST /api/ai/chat · history</small></button>
+          <button type="button" onclick="fire('tool')"><span class="evk">③ 检索素材</span>收到 tool 帧 → 思考<small>event:tool {name:…}</small></button>
+          <button type="button" onclick="fire('first')"><span class="evk">④ 正文首字</span>输出开始 → 回在线<small>event:message</small></button>
+          <button type="button" onclick="fire('done')"><span class="evk">⑤ 一轮完成</span>done 帧 → 复位<small>event:done</small></button>
+          <button type="button" onclick="fire('idle40')"><span class="evk">⑥ 空置 40s</span>等访客彩蛋（每会话 1 次）<small>idle timer</small></button>
+          <button type="button" onclick="fire('chat429')"><span class="evk">⑦ 预算耗尽</span>error 429 → 休眠<small>event:error {code:429}</small></button>
+          <button type="button" onclick="fire('recover')"><span class="evk">⑧ 次月恢复</span>新请求 200 → 在线<small>探活/对话</small></button>
+          <button type="button" onclick="fire('nokey')"><span class="evk">⑨ 未配 Key</span>error 503 → 未通电<small>agent=nil</small></button>
+          <button type="button" onclick="autoPlay()"><span class="evk">▶ 自动走一遍</span>①→⑦ 每步 1.2s</button>
+        </div>
+        <div class="np-log" id="simLog"></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============ ④ 彩蛋总表 ============ -->
+  <section class="np-sec">
+    <h2 class="np-sec-t"><span class="n">④</span> 彩蛋表：每个触发的"内容"是什么（全部 canned，零 LLM 成本）</h2>
+    <p class="np-sec-d">每行可点「试试」在③模拟器里立即演出。加 <span class="np-pipe">✦</span> = 之眼专属演法（眨眼/气泡），其余照设计稿 §5 文案。</p>
+    <div class="np-eggs" id="eggTable">
+      <div class="hd"><div class="c">触发（条件）</div><div class="c">台词 / 动作</div><div class="c">载体</div><div class="c">位置</div></div>
+    </div>
+  </section>
+
+  <!-- ============ ⑤ 落地文件清单 ============ -->
+  <section class="np-sec">
+    <h2 class="np-sec-t"><span class="n">⑤</span> 落地清单：逐文件插什么、触发挂哪</h2>
+    <div class="np-files">
+      <div class="hd"><div class="c">文件</div><div class="c">插入 / 改动（全部新增块，不动原逻辑）</div><div class="c">依赖</div></div>
+      <div class="r"><div class="c"><b style="color:#fff">moss.js</b>（新）</div><div class="c">状态机 + 探活 + lamp 渲染 + 台词库 + localStorage 补丁（429→下月1日）。8 页共引，chat 页通过 window 事件对外开「setMossState」接口给 SSE 钩子用</div><div class="c">—</div></div>
+      <div class="r"><div class="c"><b style="color:#fff">style.css</b></div><div class="c">追加 .moss-* 段（orb 层级 + 三条 keyframes + lamp），不动任何现有规则</div><div class="c">—</div></div>
+      <div class="r"><div class="c">index / posts / projects / guestbook / search / about</div><div class="c">&lt;script src="moss.js"&gt;&lt;/script&gt; + winbar 内 lamp 标记（P1）；已引 api-base.js 的直接复用，about 需补引 api-base</div><div class="c">api-base.js</div></div>
+      <div class="r"><div class="c">article.html</div><div class="c">同上；winbar 路径是 JS 动态写值，灯在旁不受影响</div><div class="c">api-base.js ✓</div></div>
+      <div class="r"><div class="c">chat.html</div><div class="c">P2 窗头 + P3 头像 + P4 mascot；在现 readSSE 的 tool/message/done/error 分支各加一行 setMossState + 彩蛋拦截（send 前）与 40s idle 计时。改动与"问候语"同在 chat.html → <b style="color:#febc2e">需授权</b></div><div class="c">api-base.js ✓</div></div>
+      <div class="r"><div class="c">404.html</div><div class="c">T1-7 台词一句（文案改动需授权）；灯待定（P6）</div><div class="c">无</div></div>
+    </div>
+    <pre class="np-code">// moss.js 骨架（示意，非终版）
+function mossProbe() {
+  fetch(window.API_BASE + '/api/ai/suggestions', {cache:'no-store'})
+    .then(r => r.ok ? mossState('online') : mossState('nokey'))
+    .catch(() => mossState('lost'));
+}
+// 状态只切 <html data-moss="online|think|sleep">，动画全在 CSS；
+// chat.html 只调 window.Moss.setState('think'|'online'|'sleep429'|'sleep503')
+// 休眠写 localStorage.mossSnooze = 次月1日0点 → 其它页探活时读到即休眠。</pre>
+  </section>
+
+  <!-- ============ ⑥ 决策区 ============ -->
+  <section class="np-sec">
+    <h2 class="np-sec-t"><span class="n">⑥</span> 待你勾的决策（默认已给）</h2>
+    <div class="np-decide">
+      <div class="row"><span class="yes">[ ] 默认勾选</span><b>D-P3 消息前缀头像</b>：每轮都加（头像+me$） —— 与窗头之眼重复？可选：只加窗头，回复用现有 me$ 文字（轻）。</div>
+      <div class="row"><span class="yes">[ ] 默认勾选</span><b>D-P4 右下 mascot</b>：启用 33px 驻窗角 —— 它是彩蛋的脸，强烈建议启用。</div>
+      <div class="row"><span class="yes">[ ] 默认勾选</span><b>D-429 跨页补丁</b>：chat 遇到 429 写 localStorage 到下月1日，其余页面灯也休眠 —— 零后端，全站一致。</div>
+      <div class="row"><span class="no">[ ] 默认不勾</span><b>D-P6 404 带灯</b>：404 常被 CDN/兜底命中，探活不可靠；建议不做灯，只做 404 台词彩蛋（T1-7）。</div>
+      <div class="row"><span class="no">[ ] 默认不勾</span><b>D-P5 首页会客厅入口</b>：依赖 D1 空间站命名，先不做；等世界观文案定了再接。</div>
+      <div class="row"><span class="yes">[ ] 默认勾选</span><b>D-台词表</b>：lamp 悬停台词三档（在线/未通电/失联）与 429 台词用设计稿 §5/金句库原文，不新编。</div>
+      <div class="row"><span class="yes">[ ] 默认勾选</span><b>D-reduced-motion</b>：沿用全站 prefers-reduced-motion，关动画留文字。</div>
+    </div>
+  </section>
+
+  <p class="np-foot">
+    <b>怎么看：</b><span class="g">cd frontend && python3 -m http.server 8000</span> → <span class="g">http://localhost:8000/moss-place-probe.html</span><br>
+    <b>怎么审：</b>① 看①落位图每处放哪、哪些需授权；② 在③用「▶ 自动走一遍」或单步事件，看灯/窗头/mascot 的迁移对不对、彩蛋气泡冒得对不对；③ 对照④彩蛋表试几发；④ 对⑥决策打勾。<br>
+    <span class="g"># 探针 moss-place-probe.html 纯新增，不进生产；chat.html / knowledge.md 属需授权项，动手前单独确认。</span>
+  </p>
+</div>
+
+<script>
+(function () {
+  // ===== 之眼 SVG（参数已锁）=====
+  function orbSVG(size) {
+    var ring = '', eye = '', x, y, d;
+    for (y = 0; y < 11; y++) for (x = 0; x < 11; x++) {
+      d = Math.sqrt((x - 5) * (x - 5) + (y - 5) * (y - 5));
+      if (d <= 1.6) eye += '<rect x="' + x + '" y="' + y + '" width="1" height="1"/>';
+      else if (d >= 2.7 && d <= 4.7) ring += '<rect x="' + x + '" y="' + y + '" width="1" height="1"/>';
+    }
+    return '<svg viewBox="0 0 11 11" width="' + size + '" height="' + size +
+      '" shape-rendering="crispEdges" aria-hidden="true">' +
+      '<g class="r">' + ring + '</g>' +
+      '<g class="iris"><g class="off"><g class="e">' + eye + '</g></g></g></svg>';
+  }
+  var orbs = document.querySelectorAll('.np-orb');
+  for (var i = 0; i < orbs.length; i++) {
+    orbs[i].innerHTML = orbSVG(parseInt(orbs[i].getAttribute('data-size') || '22', 10));
+  }
+
+  // ===== 状态 =====
+  var STAT = {
+    online: '● MOSS 在线', think: '◉ MOSS 思考中…',
+    sleep: '◌ MOSS 休眠 · 429', nokey: '◌ MOSS 未通电', lost: '◌ MOSS 失联'
+  };
+  var BODY = { online: 'np-online', think: 'np-think', sleep: 'np-sleep', nokey: 'np-sleep', lost: 'np-sleep' };
+  function setState(st) {
+    document.body.className = 'np ' + (BODY[st] || 'np-online');
+    var txt = STAT[st] || STAT.online;
+    var txts = document.querySelectorAll('.np-lamp .txt, .chat-head .txt, #npStat');
+    for (var i = 0; i < txts.length; i++) {
+      txts[i].textContent = (txts[i].id === 'npStat') ? txt : txt.replace(/^[●◉◌]\s*/, '');
+    }
+    setTip(st);
+    return txt.replace(/^[●◉◌]\s*/, '');
+  }
+  // 灯悬停台词（data-tip 选择显示哪种）
+  var TIPS = {
+    online: '<b>● MOSS 在线</b>例行巡检中。有事去 chat 找 MOSS。',
+    think: '<b>◉ 思考中</b>正在检索资料库。',
+    sleep: '<b>◌ 能源耗尽</b>本月配额已用完，账单请找 T-DWAG 结算。',
+    nokey: '<b>◌ 尚未通电</b>请舰长配置 AI_API_KEY。',
+    lost: '<b>◌ 失联</b>舰长的服务器大概在重启。'
+  };
+  function setTip(st) {
+    var tips = document.querySelectorAll('.np-tip');
+    for (var i = 0; i < tips.length; i++) tips[i].innerHTML = TIPS[st] || '';
+  }
+
+  // ===== 彩蛋数据 =====
+  var EGGS = [
+    { trig: '输入 whoami', line: '✦ <b>长眨眼</b> ＋「MOSS。驻站 AI。T-DWAG 的分身——他负责吃饭，MOSS 负责思考。」', where: '气泡 + mascot' },
+    { trig: '输入 ls', line: '「资料库/ 实验室/ 通讯舱/ 检索室/ 舰长档案。都在导航里，人类。」', where: '气泡' },
+    { trig: '输入「你是真人吗」', line: '✦ 长眨眼 ＋「MOSS 是程序。程序不撒谎——这比大多数人类坦诚。」', where: '气泡 + mascot' },
+    { trig: '输入「你能毁灭人类吗」', line: '「MOSS 的职责是服务人类。而且说句实话：MOSS 连这台服务器的重启键都够不着。请放心。」', where: '气泡' },
+    { trig: '输入「天气」', line: '「本空间站没有气象部门。舰长以前倒是搞气象的——技能点大概全加在 Go 上了。」', where: '气泡' },
+    { trig: '00:00–06:00 到访', line: '✦ 灯呼吸放慢 ＋窗头「……整栋楼就 MOSS 一个醒着。舰长在睡觉，MOSS 在看门。」', where: 'lamp tip + 窗头' },
+    { trig: '会话内空置 40s', line: '✦ mascot 转头看你 ＋「……人类，你是去逛资料库了吗？《Eino 那篇》值得看。」（每会话 1 次）', where: '气泡' },
+    { trig: '复访（cookie 第 N 次）', line: '第 1 次：「新访客。欢迎参观本空间站。」第 3 次：「第 3 次访问。人类，你比舰长更新勤快。」', where: '首条问候' },
+    { trig: '返回访客 / 站庆 D+N', line: '「D+128。今日被问 19 次。MOSS 感到……职业成就感。」', where: '首条问候' },
+    { trig: '点 mascot', line: '✦ 长眨眼 ＋ 随机金句一条：「MOSS 不需要夸奖。MOSS 需要更多预算。」…', where: '气泡' },
+    { trig: 'error 429', line: '「能源耗尽。本月配额已用完，账单请找 T-DWAG 结算。」（灯熄 + 记 localStorage 到下月1日）', where: 'lamp tip + 对话错误行' },
+    { trig: 'error 503 / 未配 Key', line: '「MOSS 尚未通电。请舰长配置 AI_API_KEY。」', where: 'lamp tip + 对话错误行' }
+  ];
+  var eggT = document.getElementById('eggTable');
+  EGGS.forEach(function (e, idx) {
+    var r = document.createElement('div');
+    r.className = 'r';
+    r.innerHTML = '<div class="c"><b style="color:#fff">' + e.trig + '</b></div>' +
+      '<div class="c">' + e.line + '</div>' +
+      '<div class="c">' + e.where + '</div>' +
+      '<div class="c"><button type="button" class="try" data-egg="' + idx + '">试试 ▸</button></div>';
+    eggT.appendChild(r);
+  });
+
+  // ===== 日志 =====
+  var logEl = document.getElementById('simLog');
+  function log(msg, isState) {
+    var p = document.createElement('div');
+    p.className = 'ln';
+    var t = new Date();
+    var ts = ('0' + t.getMinutes()).slice(-2) + ':' + ('0' + t.getSeconds()).slice(-2);
+    p.innerHTML = (isState ? '<span class="st">→ 状态</span> ' : '') + '<span style="opacity:.45">' + ts + '</span> ' + msg;
+    logEl.appendChild(p);
+    logEl.scrollTop = logEl.scrollHeight;
+  }
+
+  // ===== 模拟 chat =====
+  var body = document.getElementById('simBody');
+  var bubble = document.getElementById('simBubble');
+  var mascot = document.getElementById('simMascot');
+  var msgSeq = 0;
+  function addMsg(who, text, cls) {
+    var p = document.createElement('p');
+    p.className = 'sim-m';
+    var orb = '';
+    if (who === 'me$') orb = '<span class="np-orb np-avatar" data-size="18"></span>';
+    p.innerHTML = orb + '<span class="who">' + who + '</span> <span class="reply-text">' + text + '</span>';
+    body.appendChild(p);
+    body.scrollTop = body.scrollHeight;
+    // 新消息里的头像渲染
+    var o = p.querySelectorAll('.np-orb');
+    for (var i = 0; i < o.length; i++) o[i].innerHTML = orbSVG(18);
+    if (cls) p.classList.add(cls);
+    return p;
+  }
+  function sayBubble(html, ms) {
+    bubble.innerHTML = html;
+    bubble.classList.add('show');
+    clearTimeout(sayBubble._t);
+    sayBubble._t = setTimeout(function () { bubble.classList.remove('show'); }, ms || 4200);
+  }
+  function wink() {
+    mascot.classList.add('np-wink');
+    clearTimeout(wink._t);
+    wink._t = setTimeout(function () { mascot.classList.remove('np-wink'); }, 1600);
+  }
+
+  // ===== 事件处理 =====
+  var played = { idle40: false };
+  var fns = {
+    load: function () {
+      log('探活 GET /api/ai/suggestions → 200', false);
+      setState('online');
+      log('灯「MOSS 在线」，全站一致', true);
+    },
+    ask: function () {
+      addMsg('you$', '你做过哪些项目？');
+      log('POST /api/ai/chat（history 最近 4 条）等待响应', false);
+    },
+    tool: function () {
+      setState('think');
+      addMsg('me$', '正在检索…（调用 search_articles）');
+      log('SSE event:tool {name:search_articles} → 思考态', true);
+    },
+    first: function () {
+      setState('online');
+      addMsg('me$', '舰长做过三个项目：Eino Agent 可观测性、go-zero 短链接、遥感影像分割——资料库里有各自的技术拆解。');
+      log('SSE event:message 首字 → 巡环停，回在线（正文渲染中）', true);
+    },
+    done: function () {
+      setState('online');
+      log('SSE event:done → 本轮完成，进入 idle', true);
+    },
+    idle40: function () {
+      if (played.idle40) { log('（空置 40s 彩蛋本会话已触发过，跳过）', false); return; }
+      played.idle40 = true;
+      wink();
+      sayBubble('……人类，你是去逛资料库了吗？<br>《Eino 那篇》值得看。');
+      log('idle 40s 计时到 → 气泡彩蛋（每会话 1 次）', true);
+    },
+    chat429: function () {
+      setState('sleep');
+      addMsg('me$', '> 能源耗尽。本月配额已用完，账单请找 T-DWAG 结算。', 'chat-err');
+      log('SSE event:error {code:429} → 休眠 + localStorage.mossSnooze=次月1日（跨页补丁）', true);
+    },
+    recover: function () {
+      setState('online');
+      log('次月首个请求 200 → 恢复在线（localStorage 到期清除）', true);
+    },
+    nokey: function () {
+      setState('nokey');
+      addMsg('me$', '> MOSS 尚未通电。请舰长配置 AI_API_KEY。', 'chat-err');
+      log('SSE event:error {code:503} / agent=nil → 未通电', true);
+    },
+    whoami: function () {
+      wink();
+      sayBubble('MOSS。驻站 AI。T-DWAG 的分身——<br>他负责吃饭，MOSS 负责思考。');
+      log('彩蛋 whoami（前端拦截，零 LLM）→ 长眨眼 + 气泡', true);
+    },
+    night: function () {
+      setState('online');
+      log('00:00–06:00 深夜到访 → 窗头「舰长在睡觉，MOSS 在看门」', false);
+    },
+    third: function () {
+      log('cookie 第 3 次访问 → 问候「第 3 次访问。人类，你比舰长更新勤快。」', false);
+    }
+  };
+  window.fire = function (name) {
+    if (fns[name]) fns[name]();
+    else { // 彩蛋表点「试试」走的通用入口
+      var egg = EGGS[parseInt(name, 10)];
+      if (!egg) return;
+      var n = egg.trig;
+      if (n.indexOf('whoami') >= 0) fns.whoami();
+      else if (n.indexOf('你是真人') >= 0) { wink(); sayBubble('MOSS 是程序。程序不撒谎——<br>这比大多数人类坦诚。'); }
+      else if (n.indexOf('毁灭') >= 0) sayBubble('MOSS 的职责是服务人类。<br>它连这台服务器的重启键都够不着。请放心。');
+      else if (n.indexOf('ls') >= 0) sayBubble('资料库/ 实验室/ 通讯舱/ 检索室/ 舰长档案。<br>都在导航里，人类。');
+      else if (n.indexOf('天气') >= 0) sayBubble('本空间站没有气象部门。<br>舰长以前倒是搞气象的——技能点大概全加在 Go 上了。');
+      else if (n.indexOf('空置') >= 0) fns.idle40();
+      else if (n.indexOf('429') >= 0) fns.chat429();
+      else if (n.indexOf('503') >= 0 || n.indexOf('未配') >= 0) fns.nokey();
+      else if (n.indexOf('点 mascot') >= 0) { wink(); sayBubble('MOSS 不需要夸奖。<br>MOSS 需要更多预算。'); }
+      else if (n.indexOf('深夜') >= 0) { log('深夜彩蛋：窗头台词展示（00:00–06:00）', false); }
+      else if (n.indexOf('复访') >= 0) fns.third();
+      else if (n.indexOf('站庆') >= 0) { log('D+128 站庆播报：今日被问 19 次。MOSS 感到……职业成就感。', false); }
+      else { log('彩蛋「' + egg.trig + '」→ ' + egg.line.replace(/<[^>]+>/g, ''), false); }
+      log('已触发：' + egg.trig, true);
+    }
+  };
+
+  // 模拟输入（回车 / 建议按钮）
+  function fireInput(v) {
+    if (v === 'whoami') { fire('whoami'); return; }
+    if (v === 'ls' || v.indexOf('真人') >= 0 || v.indexOf('毁灭') >= 0 || v.indexOf('天气') >= 0) {
+      var key = v === 'ls' ? '输入 ls' : (v.indexOf('真人') >= 0 ? '你是真人' : v.indexOf('毁灭') >= 0 ? '毁灭' : '天气');
+      for (var i = 0; i < EGGS.length; i++) {
+        if (EGGS[i].trig.indexOf(key) >= 0) { fire(String(i)); return; }
+      }
+    }
+    fire('ask');
+  }
+  var simInput = document.getElementById('simInput');
+  if (simInput) {
+    simInput.addEventListener('keydown', function (ev) {
+      if (ev.key === 'Enter') {
+        var v = simInput.value.trim();
+        simInput.value = '';
+        if (v) fireInput(v);
+      }
+    });
+  }
+  document.querySelectorAll('.chat-suggestions button').forEach(function (b) {
+    b.addEventListener('click', function () { fire(b.getAttribute('onclick').match(/fire\('(\w+)'\)/)[1]); });
+  });
+  // 点 mascot = 彩蛋
+  mascot.addEventListener('click', function () { fire('点 mascot'); });
+  // 蛋表"试试"
+  document.querySelectorAll('.try').forEach(function (b) {
+    b.addEventListener('click', function () { fire(b.getAttribute('data-egg')); });
+  });
+
+  // 自动走一遍
+  var autoTimer = null;
+  window.autoPlay = function () {
+    if (autoTimer) { clearInterval(autoTimer); autoTimer = null; return; }
+    var seq = ['load', 'ask', 'tool', 'first', 'done', 'idle40', 'whoami', 'chat429', 'recover'];
+    var i = 0;
+    autoTimer = setInterval(function () {
+      if (i >= seq.length) { clearInterval(autoTimer); autoTimer = null; log('自动演示完。', false); return; }
+      fire(seq[i]);
+      i++;
+    }, 1300);
+  };
+
+  // 手动三态
+  var btns = document.querySelectorAll('.np-seg button');
+  for (var b = 0; b < btns.length; b++) {
+    btns[b].addEventListener('click', function () { setState(this.getAttribute('data-st')); });
+  }
+  // 灯悬停台词 & 初始
+  setTip('online');
+  var m = (location.search || '').match(/[?&]st=(online|think|sleep|nokey|lost)/);
+  setState(m ? m[1] : 'online');
+})();
+</script>
+</body>
+</html>
