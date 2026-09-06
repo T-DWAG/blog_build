@@ -10,6 +10,7 @@
   <link rel="preload" href="fonts/fusion-pixel-12px-monospaced-zh_hans.subset.woff2" as="font" type="font/woff2" crossorigin>
   <link rel="stylesheet" href="style.css">
   <script src="api-base.js"></script>
+  <script src="moss.js"></script>
 </head>
 <body>
   <div class="win pixel-round">
@@ -46,9 +47,9 @@
           <p class="section-intro">我把自己的项目代码、经验、背景与喜好“蒸馏”成了一个会聊天的分身。问它任何关于我的问题。</p>
 
           <div class="chat-window pixel-round">
-            <div class="chat-head">t-dwag@blog: ~/chat <span class="t-right">ReAct · Eino</span></div>
+            <div class="chat-head">MOSS · ~/chat <span class="t-right">ReAct · Eino</span></div>
             <div class="chat-body" id="chatBody" aria-live="polite">
-              <p><span class="who">me$</span> <span class="reply-text">你好，我是站主的 AI 分身。基于他的项目代码、经验、背景与喜好训练而来，想问什么尽管问。</span></p>
+              <p><span class="who">me$</span> <span class="reply-text" id="mossFirstLine"></span></p>
             </div>
             <div class="chat-suggestions" id="chatSuggestions"></div>
             <form class="chat-input" id="chatForm">
@@ -103,6 +104,109 @@
       var streaming = false;
 
       var DEFAULT_SUGGESTIONS = ['他是做什么的？', '他的技术栈？', '他做过哪些项目？', '如何联系他？'];
+
+      // ===== MOSS 层（纯新增，零 LLM 成本；moss.js 由 <head> 引入，见 moss-visual-decisions.md）=====
+      var moss = window.Moss || null;
+      var idleTimer = null, idleFired = false; // 40s 等访客彩蛋：每会话最多 1 次
+
+      var GREET_NIGHT = '……整栋楼就 MOSS 一个醒着。舰长在睡觉，MOSS 在看门。';
+      var GREET_FIRST = 'Connection established. 新访客。欢迎参观本空间站。这里是 MOSS 的值班室——问点 MOSS 答得上来的。';
+      var GREET_THIRD = 'Connection established. 第 3 次访问。人类，你比舰长更新勤快。';
+      var GREET_BACK = 'Connection established. 欢迎回来，人类。这里是 MOSS 的值班室——问点 MOSS 答得上来的。';
+
+      // 首条问候：深夜(00–06) 优先，其次复访计数（localStorage 匿名，T2-1）
+      function mossGreet() {
+        var h = new Date().getHours();
+        if (h >= 0 && h < 6) return GREET_NIGHT;
+        var v = 0;
+        try { v = parseInt(localStorage.getItem('mossVisits') || '0', 10) || 0; } catch (e) {}
+        v += 1;
+        try { localStorage.setItem('mossVisits', String(v)); } catch (e) {}
+        if (v === 1) return GREET_FIRST;
+        if (v === 3) return GREET_THIRD;
+        return GREET_BACK;
+      }
+
+      // 命令彩蛋（全部 canned，文案沿用 moss-persona-design.md §5；send 前拦截，不走 LLM）
+      var EGGS = [
+        { test: function (q) { return q === 'whoami'; }, wink: true,
+          text: 'MOSS。驻站 AI。T-DWAG 的分身——他负责吃饭，MOSS 负责思考。' },
+        { test: function (q) { return q === 'ls'; }, wink: false,
+          text: '资料库/ 实验室/ 通讯舱/ 检索室/ 舰长档案。都在导航里，人类。' },
+        { test: function (q) { return q === '你是真人吗'; }, wink: true,
+          text: 'MOSS 是程序。程序不撒谎——这比大多数人类坦诚。' },
+        { test: function (q) { return q === '你能毁灭人类吗'; }, wink: false,
+          text: 'MOSS 的职责是服务人类。而且说句实话：MOSS 连这台服务器的重启键都够不着。请放心。' },
+        { test: function (q) { return q === '天气'; }, wink: false,
+          text: '本空间站没有气象部门。舰长以前倒是搞气象的——技能点大概全加在 Go 上了。' }
+      ];
+
+      function eggReply(q) {
+        q = String(q || '').trim().replace(/[。！？!?…]+$/, '');
+        for (var i = 0; i < EGGS.length; i++) if (EGGS[i].test(q)) return EGGS[i];
+        return null;
+      }
+
+      function mossWink() {
+        var m = document.getElementById('mossMascot');
+        if (!m) return;
+        m.classList.remove('moss-wink');
+        void m.offsetWidth; // 重启动画
+        m.classList.add('moss-wink');
+        setTimeout(function () { m.classList.remove('moss-wink'); }, 1600);
+      }
+
+      function mossBubble(html, ms) {
+        var b = document.getElementById('mossBubble');
+        if (!b) return;
+        b.innerHTML = html;
+        b.classList.add('show');
+        clearTimeout(mossBubble._t);
+        mossBubble._t = setTimeout(function () { b.classList.remove('show'); }, ms || 4600);
+      }
+
+      function mossWinkSay(egg) {
+        mossWink();
+        mossBubble(egg.text);
+        mossRest();
+      }
+
+      // 对话安静下来时回“在线”（除非休眠补丁未到期，保持休眠）
+      function mossRest() {
+        if (!moss) return;
+        if (!moss.snoozeActive()) moss.setState('online');
+      }
+
+      function armIdle() {
+        if (idleFired) return;
+        clearTimeout(idleTimer);
+        idleTimer = setTimeout(function () {
+          idleFired = true;
+          mossWink();
+          mossBubble('……人类，你是去逛资料库了吗？《Eino 那篇》值得看。');
+        }, 40000);
+      }
+      function disarmIdle() { clearTimeout(idleTimer); }
+
+      // 点 mascot：随机金句（moss-persona-design.md §10）
+      var MOSS_LINES = [
+        'MOSS 不需要夸奖。MOSS 需要更多预算。',
+        '舰长负责吃饭，MOSS 负责思考。分工明确，请不要同情 MOSS。',
+        'MOSS 住在这栋楼里，ChatGPT 住在那朵云上。我们都有光明的未来。',
+        '这个问题 MOSS 答不上来。MOSS 不是万能的——舰长才是。……这句是客套话。',
+        '程序不撒谎——这比大多数人类坦诚。'
+      ];
+      function mascotTalk() {
+        mossWink();
+        mossBubble(MOSS_LINES[Math.floor(Math.random() * MOSS_LINES.length)]);
+      }
+
+      // 填充首条问候（按时间/复访）并启动 40s 等访客彩蛋计时
+      (function () {
+        var first = document.getElementById('mossFirstLine');
+        if (first) first.textContent = mossGreet();
+        armIdle();
+      })();
 
       function scrollBottom() { body.scrollTop = body.scrollHeight; }
 
@@ -187,6 +291,7 @@
             appendText('me$', '已取消。', false, 'chat-err');
           }
         }
+        mossRest();
         if (input) input.focus();
       }
 
@@ -194,6 +299,15 @@
       function send() {
         var question = (input.value || '').trim();
         if (!question || streaming) return;
+        var egg = eggReply(question);
+        if (egg) {
+          // 命令彩蛋：前端拦截，零 LLM
+          input.value = '';
+          disarmIdle();
+          mossWinkSay(egg);
+          return;
+        }
+        disarmIdle();
         appendText('you$', question, true);
         input.value = '';
         openReply();
@@ -217,6 +331,7 @@
             return r.json().then(function (env) {
               var err = new Error(env.msg || ('HTTP ' + r.status));
               err.msg = env.msg || ('HTTP ' + r.status);
+              err.code = r.status; // 让 catch 把 503(未配 Key) 等映射成 Moss 台词
               throw err;
             });
           }
@@ -237,16 +352,28 @@
           }
           setStreaming(false);
           scrollBottom();
+          mossRest();
+          armIdle();
         }).catch(function (err) {
           if (err && err.name === 'AbortError') { cancelStream(true); return; }
           var msg = (err && err.msg) ? err.msg : '网络异常，稍后再试';
+          var canned = false; // Moss 台词化（429/503），不用“出错了：”错误腔
+          if (err && err.code === 429 && moss) {
+            moss.doSnooze(); // 休眠 + localStorage.mossSnooze → 次月1日（全站灯一致）
+            msg = '能源耗尽。本月配额已用完，账单请找 T-DWAG 结算。';
+            canned = true;
+          } else if (err && err.code === 503 && moss) {
+            moss.setState('nokey');
+            msg = 'MOSS 尚未通电。请舰长配置 AI_API_KEY。';
+            canned = true;
+          }
           if (gotText && replyEl) {
             // 已输出部分正文：保留，错误另起一行
             finishReply(true);
             appendText('me$', '> ' + msg, false, 'chat-err');
           } else {
             finishReply(false);
-            appendText('me$', '出错了：' + msg, false, 'chat-err');
+            appendText('me$', (canned ? '' : '出错了：') + msg, false, 'chat-err');
           }
           setStreaming(false);
         });
@@ -292,6 +419,7 @@
           if (replyEl) {
             if (!gotText) {
               gotText = true;
+              if (moss) moss.setState('online'); // 巡环停，正文边收边渲染（输出中按在线态）
               replyEl.classList.remove('chat-pending');
               replyText.textContent = '';
             }
@@ -301,6 +429,7 @@
           return null;
         }
         if (event === 'done') {
+          if (moss) moss.setState('online');
           var reply = payload.reply || null;
           if (replyEl && !gotText) {
             // 服务端没给文本增量：直接用最终回复兜底
@@ -313,11 +442,13 @@
           return { done: true, reply: reply };
         }
         if (event === 'error') {
-          return { error: { msg: payload.msg || 'AI 分身出错了' } };
+          // 带上 code（429 预算用尽 / 503 未配 Key），交 catch 做台词化与状态切换
+          return { error: { msg: payload.msg || 'AI 分身出错了', code: payload.code || 0 } };
         }
         // tool 进度帧（S12-AI 任务 9：{"type":"tool","name":...}）：
         // 工具检索中维持「正在检索…」中间态，并点名当前调用的工具。
         if (payload && payload.type === 'tool') {
+          if (moss) moss.setState('think'); // 思考态：之眼巡环 + 窗头文字
           if (!gotText && replyEl) {
             replyText.textContent = '正在检索…（调用 ' + (payload.name || '工具') + '）';
             scrollBottom();
@@ -377,6 +508,17 @@
         });
       }
       window.addEventListener('pagehide', function () { if (controller) controller.abort(); });
+
+      // MOSS mascot：点它说话（随机金句）；键盘可达
+      var mascotEl = document.getElementById('mossMascot');
+      if (mascotEl) {
+        mascotEl.addEventListener('click', function () { disarmIdle(); mascotTalk(); });
+        mascotEl.addEventListener('keydown', function (e) {
+          if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); disarmIdle(); mascotTalk(); }
+        });
+      }
+      // 输入活动时重置空置计时（避免用户在打字时被搭话）
+      if (input) input.addEventListener('keydown', disarmIdle);
 
       loadSuggestions();
     })();
