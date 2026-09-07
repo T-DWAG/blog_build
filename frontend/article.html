@@ -5,7 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <meta name="description" content="文章详情。">
   <meta name="theme-color" content="#000000">
-  <title>go /posts — 从气象到代码</title>
+  <title>go /article — T-Dwag</title>
   <link rel="preload" href="fonts/fusion-pixel-12px-proportional-zh_hans.subset.woff2" as="font" type="font/woff2" crossorigin>
   <link rel="preload" href="fonts/fusion-pixel-12px-monospaced-zh_hans.subset.woff2" as="font" type="font/woff2" crossorigin>
   <link rel="stylesheet" href="style.css">
@@ -101,7 +101,7 @@
       }
 
       pathEl.textContent = '~/posts/' + slug;
-      document.title = 'go /posts/' + slug + ' — 从气象到代码';
+      document.title = 'go /posts/' + slug + ' — T-Dwag';
 
       fetch(window.API_BASE + '/api/articles/' + encodeURIComponent(slug))
         .then(function (r) {
@@ -116,7 +116,7 @@
           var tags = (a.tags || []).map(function (t) {
             return '<a class="term-link" href="posts.html?tag=' + encodeURIComponent(t) + '">#' + escapeHTML(t) + '</a>';
           }).join(' ');
-          document.title = a.title + ' — 从气象到代码';
+          document.title = a.title + ' — T-Dwag';
           var bodyHTML;
           if (window.marked) {
             window.marked.setOptions({ breaks: true, gfm: true });
