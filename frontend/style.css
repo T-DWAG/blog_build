@@ -846,3 +846,364 @@ h2 {
   border: 3px solid var(--black);
 }
 
+
+/* ============================================================
+   MOSS 住客 · 桌宠（之眼浮球 · 全站常驻）纯新增段
+   形态：白环绿瞳之眼（白环=本体永远在；绿瞳=状态会动）
+   住法：fixed 视口右下；可拖到任意位置（放下即留，双击回岗）；
+         空置打盹 / 深夜趴睡(z) / 戳它说话 / 按"房间"搭话
+   状态：html[data-moss=online|think|sleep|nokey|lost] 由 moss.js 切
+   已锁：眨眼 3.4s · 呼吸 5.5s
+   ============================================================ */
+:root { --d-blink: 3.4s; --d-breathe: 5.5s; }
+
+/* ---- 住客容器：视口右下常驻，可拖 ---- */
+.moss-pet {
+  position: fixed;
+  right: 20px;
+  bottom: 18px;
+  z-index: 900;
+  cursor: grab;
+  user-select: none;
+  -webkit-user-select: none;
+  touch-action: none;
+  transition: left .4s ease, top .4s ease;
+}
+.moss-pet.moss-press { cursor: grabbing; transition: none !important; }
+.moss-pet * { pointer-events: none; }
+
+/* ---- 漂浮（“活着”的基础动效；犯困/深夜会放缓）---- */
+.moss-pet-bob { display: inline-block; animation: moss-bob 4.2s ease-in-out infinite; }
+.moss-pet.moss-press .moss-pet-bob,
+.moss-pet.moss-dozing .moss-pet-bob { animation: none; }
+.moss-pet.moss-night .moss-pet-bob { animation: moss-bob 6.5s ease-in-out infinite; }
+@keyframes moss-bob { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-4px); } }
+
+/* ---- 托盘：黑底+白描边+硬阴影，黑白背景上都看得清白环 ---- */
+.moss-plate {
+  display: block;
+  padding: 5px;
+  background: var(--black);
+  border: 2px solid var(--white);
+  box-shadow: 4px 4px 0 var(--black);
+  line-height: 0;
+}
+.moss-pet .moss-orb { display: block; }
+
+/* ---- zZ（深夜趴睡）---- */
+.moss-z {
+  position: absolute;
+  right: -8px;
+  top: -10px;
+  display: none;
+  color: var(--white);
+  font: 700 13px/1 var(--font-mono);
+}
+.moss-pet.moss-night .moss-z { display: block; animation: moss-z 3s ease-in-out infinite; }
+@keyframes moss-z {
+  0%, 100% { opacity: 0; transform: translate(0, 0); }
+  30% { opacity: 1; }
+  70% { opacity: 1; transform: translate(-4px, -5px); }
+  90% { opacity: 0; transform: translate(-6px, -8px); }
+}
+
+/* ---- 气泡（说话）---- */
+.moss-bubble {
+  position: absolute;
+  bottom: calc(100% + 14px);
+  right: -8px;
+  z-index: 901;
+  display: none;
+  min-width: 150px;
+  max-width: 260px;
+  padding: 8px 10px;
+  color: var(--black);
+  background: var(--white);
+  border: 2px solid var(--black);
+  box-shadow: 4px 4px 0 var(--black);
+  font: 700 11px/1.75 var(--font-mono);
+}
+.moss-bubble.show { display: block; animation: moss-pop .16s steps(2) both; }
+@keyframes moss-pop { from { transform: translateY(4px); opacity: 0; } to { transform: none; opacity: 1; } }
+.moss-bubble::after {
+  content: '';
+  position: absolute;
+  right: 16px;
+  bottom: -9px;
+  border: 5px solid transparent;
+  border-top-color: var(--black);
+}
+.moss-bubble::before {
+  content: '';
+  position: absolute;
+  right: 18px;
+  bottom: -5px;
+  border: 3px solid transparent;
+  border-top-color: var(--white);
+}
+
+/* ---- 之眼（11×11：白环 + 绿瞳）---- */
+.moss-orb { display: inline-block; flex: none; line-height: 0; }
+.moss-orb svg { display: block; }
+.moss-orb .moss-r { fill: #fff; }
+/* 第一分支：在线=绿瞳；默认/不在线=白瞳（本体还在，只是没通电） */
+.moss-orb .moss-e { fill: #fff; transform-box: fill-box; transform-origin: center; }
+html[data-moss="online"] .moss-e,
+html[data-moss="think"] .moss-e { fill: var(--green); }
+.moss-orb .moss-iris { transform-box: view-box; transform-origin: 5px 5px; }
+/* 在线：呼吸(整颗)+眨眼 */
+html[data-moss="online"] .moss-orb { animation: moss-breathe var(--d-breathe) ease-in-out infinite; }
+html[data-moss="online"] .moss-e { animation: moss-blink var(--d-blink) infinite; }
+/* 思考：仍在线（绿），呼吸照旧、不眨眼；眼神交给 JS */
+html[data-moss="think"] .moss-orb { animation: moss-breathe var(--d-breathe) ease-in-out infinite; }
+html[data-moss="think"] .moss-e { animation: none; }
+/* 不在线：整体转暗 + 停动画（白瞳还在，眼神仍可跟） */
+html[data-moss="sleep"] .moss-pet,
+html[data-moss="nokey"] .moss-pet,
+html[data-moss="lost"] .moss-pet,
+html[data-moss="pending"] .moss-pet { opacity: .45; }
+html[data-moss="sleep"] .moss-pet .moss-orb,
+html[data-moss="nokey"] .moss-pet .moss-orb,
+html[data-moss="lost"] .moss-pet .moss-orb,
+html[data-moss="pending"] .moss-pet .moss-orb,
+html[data-moss="sleep"] .moss-pet .moss-pet-bob,
+html[data-moss="nokey"] .moss-pet .moss-pet-bob,
+html[data-moss="lost"] .moss-pet .moss-pet-bob,
+html[data-moss="pending"] .moss-pet .moss-pet-bob { animation: none; }
+@keyframes moss-breathe { 0%, 100% { opacity: 1; } 50% { opacity: .82; } }
+@keyframes moss-blink { 0%, 88%, 100% { transform: scaleY(1); } 91%, 95% { transform: scaleY(.12); } }
+
+/* ---- 空置打盹：瞳孔半闭（必须压过 online 的 blink，否则绿瞳看起来一直睁着） ---- */
+.moss-pet.moss-dozing .moss-e,
+html[data-moss="online"] .moss-pet.moss-dozing .moss-e,
+html[data-moss="think"] .moss-pet.moss-dozing .moss-e {
+  animation: none !important;
+  transform: scaleY(.15) !important;
+}
+.moss-pet.moss-dozing { opacity: .8; }
+
+/* ---- 彩蛋：长眨眼 ---- */
+.moss-wink .moss-e { animation: moss-wink 1.4s ease-in-out !important; }
+@keyframes moss-wink {
+  0%, 100% { transform: scaleY(1); }
+  25% { transform: scaleY(.1); }
+  45% { transform: scaleY(1); }
+  60% { transform: scaleY(.1); }
+}
+
+/* ---- 窄屏：住客略小 ---- */
+@media (max-width: 700px) {
+  .moss-pet { right: 12px; bottom: 10px; }
+  .moss-pet .moss-plate { padding: 4px; }
+}
+
+/* ============================================================
+   MOSS 住客 · 交互打磨（简洁 · 前端质感，纯新增）
+   —— 只精修剩下的几个交互，不加戏 ——
+   ============================================================ */
+/* 状态/位移切换都柔和（不硬切、不瞬移） */
+.moss-pet { transition: left .45s cubic-bezier(.22, .8, .3, 1), top .45s cubic-bezier(.22, .8, .3, 1), opacity .8s ease; }
+.moss-pet.moss-drag { transition: none !important; }
+
+/* 抓起瞬间：轻微下压 + 瞳孔瞪圆（“不情愿地被提起来”） */
+.moss-pet.moss-press { transform: scale(.94); }
+.moss-pet.moss-press .moss-e { animation: none !important; transform: scaleY(1.3); }
+
+/* 放下：小回弹一下，干净收尾 */
+.moss-pet.moss-settle { animation: moss-settle .32s ease-out both; }
+@keyframes moss-settle { 0% { transform: translateY(-3px) scaleY(1.04); } 100% { transform: none; } }
+
+/* 眼神跟随：各状态同一套平滑（think 不再巡环抢 transform） */
+.moss-orb .moss-off { transition: transform .45s ease; }
+
+/* 悬停：轻抬 1px + 影子收紧（克制的“注意到你了”） */
+.moss-pet:hover .moss-plate { transform: translateY(-1px); }
+.moss-plate { transition: transform .18s ease; }
+
+/* 气泡：淡入 + 上浮半步，收尾干净 */
+.moss-bubble.show { animation: moss-pop .18s steps(4) both; }
+@keyframes moss-pop {
+  from { transform: translateY(4px) scale(.97); opacity: 0; }
+  to { transform: none; opacity: 1; }
+}
+
+/* ============================================================
+   MOSS 直连对话框 · 复古 CRT 磷光终端（纯新增段）
+   —— 去掉 mac 交通灯，纯绿磷光 + 扫描线 + DOS 窗框 ——
+   ============================================================ */
+.moss-dlg {
+  position: fixed;
+  inset: 0;
+  z-index: 960;
+  display: none;
+  align-items: flex-start;
+  justify-content: center;
+  padding: 7vh 16px 16px;
+}
+.moss-dlg.open { display: flex; }
+.moss-dlg-backdrop {
+  position: absolute;
+  inset: 0;
+  background: rgba(0, 0, 0, .72);
+  z-index: 0;
+}
+
+/* 窗口：绿磷光玻璃壳 */
+.moss-dlg-win {
+  position: relative;
+  z-index: 1;
+  width: min(620px, calc(100vw - 32px));
+  color: var(--green);
+  background: radial-gradient(ellipse at 50% 0%, #06190c 0%, #000 75%);
+  border: 2px solid var(--green);
+  box-shadow:
+    inset 0 0 0 1px rgba(0, 255, 65, .18),
+    0 0 0 3px rgba(0, 255, 65, .06),
+    8px 8px 0 rgba(0, 0, 0, .6);
+  font-family: var(--font-mono);
+  text-shadow: 0 0 3px rgba(0, 255, 65, .4);
+}
+/* 扫描线 */
+.moss-dlg-win::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  z-index: 8;
+  pointer-events: none;
+  background: repeating-linear-gradient(
+    0deg,
+    rgba(0, 255, 65, .045) 0 1px,
+    transparent 1px 3px
+  );
+}
+
+/* 标题栏：DOS 味，纯文字 + 光标块 */
+.moss-dlg-head {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 7px 12px;
+  border-bottom: 2px solid var(--green);
+  background: rgba(0, 255, 65, .05);
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: .06em;
+  white-space: nowrap;
+}
+.moss-dlg-title { overflow: hidden; text-overflow: ellipsis; }
+.moss-dlg-blink {
+  display: inline-block;
+  margin-left: 4px;
+  color: var(--green);
+  animation: moss-dlg-cursor 1.05s steps(1) infinite;
+}
+@keyframes moss-dlg-cursor { 50% { opacity: 0; } }
+.moss-dlg-status { margin-left: auto; opacity: .85; font-size: 11px; }
+.moss-dlg-close {
+  padding: 0 7px;
+  color: var(--green);
+  background: #000;
+  border: 2px solid var(--green);
+  font-family: var(--font-mono);
+  font-size: 12px;
+  font-weight: 700;
+  line-height: 1.4;
+  border-radius: 0;
+  cursor: pointer;
+  text-shadow: none;
+}
+.moss-dlg-close:hover { color: #000; background: var(--green); }
+
+/* 消息区（磷光文本） */
+.moss-dlg-body {
+  position: relative;
+  z-index: 2;
+  padding: 12px 16px;
+  min-height: 200px;
+  max-height: min(46vh, 340px);
+  overflow-y: auto;
+  font-size: 12px;
+  line-height: 1.9;
+  color: #d3ffdd;
+}
+.moss-dlg-body p { margin: 0 0 9px; white-space: pre-wrap; word-break: break-word; }
+.moss-dlg-who { color: var(--green); font-weight: 700; }
+.moss-dlg-text { color: #d3ffdd; }
+.moss-dlg-youline .moss-dlg-who,
+.moss-dlg-youline .moss-dlg-text { color: #a8ffbe; }  /* 人类的话：更亮的青绿 */
+.moss-dlg-pending .moss-dlg-text { opacity: .5; }
+.moss-dlg-err { color: var(--green); font-weight: 700; }
+
+/* 快捷提问 chips */
+.moss-dlg-chips {
+  position: relative;
+  z-index: 2;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  padding: 8px 14px;
+  border-top: 2px solid rgba(0, 255, 65, .3);
+}
+.moss-dlg-chips button {
+  padding: 3px 10px;
+  color: var(--green);
+  background: transparent;
+  border: 2px solid rgba(0, 255, 65, .55);
+  font-family: var(--font-mono);
+  font-size: 11px;
+  font-weight: 700;
+  border-radius: 0;
+  cursor: pointer;
+  text-shadow: none;
+}
+.moss-dlg-chips button:hover { color: #000; background: var(--green); border-color: var(--green); }
+
+/* 输入行 */
+.moss-dlg-input {
+  position: relative;
+  z-index: 2;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 8px 14px;
+  border-top: 2px solid var(--green);
+  font-size: 13px;
+}
+.moss-dlg-you { color: var(--green); font-weight: 700; }
+.moss-dlg-input input {
+  flex: 1;
+  min-width: 0;
+  color: #d3ffdd;
+  background: transparent;
+  border: 0;
+  border-bottom: 2px solid rgba(0, 255, 65, .5);
+  font-family: var(--font-mono);
+  font-size: 13px;
+  padding: 3px 2px;
+  border-radius: 0;
+  caret-color: var(--green);
+  text-shadow: 0 0 3px rgba(0, 255, 65, .4);
+}
+.moss-dlg-input input:focus { outline: none; border-bottom-color: var(--green); }
+.moss-dlg-input input:disabled { opacity: .5; }
+.moss-dlg-input input::placeholder { color: rgba(0, 255, 65, .35); }
+.moss-dlg-stop {
+  padding: 3px 10px;
+  color: var(--green);
+  background: transparent;
+  border: 2px solid rgba(0, 255, 65, .55);
+  font-family: var(--font-mono);
+  font-size: 12px;
+  font-weight: 700;
+  line-height: 1.2;
+  border-radius: 0;
+  cursor: pointer;
+  text-shadow: none;
+}
+.moss-dlg-stop:hover { color: #000; background: var(--green); }
+
+@media (max-width: 700px) {
+  .moss-dlg { padding: 4vh 10px 10px; }
+  .moss-dlg-win { width: calc(100vw - 20px); }
+  .moss-dlg-status { display: none; }
+}
