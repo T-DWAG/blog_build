@@ -482,6 +482,9 @@
     if (dlgCtrl) { dlgCtrl.abort(); dlgCtrl = null; }
     if (dlg) dlg.classList.remove('open');
     if (dlgStreaming) { dlgStreaming = false; if (dlgStop) dlgStop.hidden = true; if (dlgInput) dlgInput.disabled = false; }
+    // 关闭时若还有未收尾的流式段落，一并清掉，避免下次打开后新对话误写入旧节点
+    if (dlgReply) { if (dlgReply.parentNode) dlgReply.parentNode.removeChild(dlgReply); dlgReply = null; }
+    dlgGotText = false;
   }
 
   function buildDlg() {
