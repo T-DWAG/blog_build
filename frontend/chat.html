@@ -127,26 +127,6 @@
         return GREET_BACK;
       }
 
-      // 命令彩蛋（全部 canned，文案沿用 moss-persona-design.md §5；send 前拦截，不走 LLM）
-      var EGGS = [
-        { test: function (q) { return q === 'whoami'; }, wink: true,
-          text: 'MOSS。驻站 AI。T-DWAG 的分身——他负责吃饭，MOSS 负责思考。' },
-        { test: function (q) { return q === 'ls'; }, wink: false,
-          text: '资料库/ 实验室/ 通讯舱/ 检索室/ 舰长档案。都在导航里，人类。' },
-        { test: function (q) { return q === '你是真人吗'; }, wink: true,
-          text: 'MOSS 是程序。程序不撒谎——这比大多数人类坦诚。' },
-        { test: function (q) { return q === '你能毁灭人类吗'; }, wink: false,
-          text: 'MOSS 的职责是服务人类。而且说句实话：MOSS 连这台服务器的重启键都够不着。请放心。' },
-        { test: function (q) { return q === '天气'; }, wink: false,
-          text: '本空间站没有气象部门。舰长以前倒是搞气象的——技能点大概全加在 Go 上了。' }
-      ];
-
-      function eggReply(q) {
-        q = String(q || '').trim().replace(/[。！？!?…]+$/, '');
-        for (var i = 0; i < EGGS.length; i++) if (EGGS[i].test(q)) return EGGS[i];
-        return null;
-      }
-
       function mossWink() {
         var m = document.getElementById('mossMascot');
         if (!m) return;
@@ -163,12 +143,6 @@
         b.classList.add('show');
         clearTimeout(mossBubble._t);
         mossBubble._t = setTimeout(function () { b.classList.remove('show'); }, ms || 4600);
-      }
-
-      function mossWinkSay(egg) {
-        mossWink();
-        mossBubble(egg.text);
-        mossRest();
       }
 
       // 对话安静下来时回“在线”（除非休眠补丁未到期，保持休眠）
@@ -299,14 +273,6 @@
       function send() {
         var question = (input.value || '').trim();
         if (!question || streaming) return;
-        var egg = eggReply(question);
-        if (egg) {
-          // 命令彩蛋：前端拦截，零 LLM
-          input.value = '';
-          disarmIdle();
-          mossWinkSay(egg);
-          return;
-        }
         disarmIdle();
         appendText('you$', question, true);
         input.value = '';

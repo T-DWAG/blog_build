@@ -424,18 +424,6 @@
   var dlgReply = null;         // 流式输出中的段落
   var dlgGotText = false;
   var DLG_DEFAULT_SUG = ['他是做什么的？', '他的技术栈？', '他做过哪些项目？', '如何联系他？'];
-  var DLG_EGGS = [
-    { test: function (q) { return q === 'whoami'; },
-      text: 'MOSS。驻站 AI。T-DWAG 的分身——他负责吃饭，MOSS 负责思考。' },
-    { test: function (q) { return q === 'ls'; },
-      text: '资料库/ 实验室/ 通讯舱/ 检索室/ 舰长档案。都在导航里，人类。' },
-    { test: function (q) { return q === '你是真人吗'; },
-      text: 'MOSS 是程序。程序不撒谎——这比大多数人类坦诚。' },
-    { test: function (q) { return q === '你能毁灭人类吗'; },
-      text: 'MOSS 的职责是服务人类。而且说句实话：MOSS 连这台服务器的重启键都够不着。请放心。' },
-    { test: function (q) { return q === '天气'; },
-      text: '本空间站没有气象部门。舰长以前倒是搞气象的——技能点大概全加在 Go 上了。' }
-  ];
 
   function dlgLine(who, text, cls) {
     var p = document.createElement('p');
@@ -534,7 +522,6 @@
         ? '……整栋楼就 MOSS 一个醒着。舰长在睡觉，MOSS 在看门。'
         : 'Connection established. 这里是 MOSS 的直连频道——问点 MOSS 答得上来的。';
       dlgLine('me$', greet);
-      dlgLine('me$', '彩蛋：whoami · ls · 天气。（本窗口免费，不占预算）');
     }
     dlgChipsInit();
 
@@ -584,16 +571,6 @@
   function dlgSend() {
     var q = (dlgInput.value || '').trim();
     if (!q || dlgStreaming) return;
-    var norm = q.replace(/[。！？!?…]+$/, '');
-    for (var i = 0; i < DLG_EGGS.length; i++) {
-      if (DLG_EGGS[i].test(norm)) {
-        dlgInput.value = '';
-        dlgLine('you$', q, 'moss-dlg-youline');
-        wink();
-        dlgLine('me$', DLG_EGGS[i].text);
-        return;
-      }
-    }
     dlgLine('you$', q, 'moss-dlg-youline');
     dlgInput.value = '';
     var pending = dlgPending();
