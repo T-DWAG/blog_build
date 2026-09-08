@@ -32,6 +32,8 @@ func New(cfg config.Config, st *store.Store, lim *ratelimit.Window, ag agent.Ser
 var allowedOrigins = map[string]bool{
 	"http://127.0.0.1:8000":    true,
 	"http://localhost:8000":    true,
+	"http://127.0.0.1:8001":    true,
+	"http://localhost:8001":    true,
 	"https://T-DWAG.github.io": true,
 }
 

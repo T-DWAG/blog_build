@@ -38,6 +38,11 @@ label{display:block;font-family:var(--mono);font-size:12px;margin:14px 0 4px}
 input,textarea{width:100%;border:2px solid var(--black);background:var(--white);padding:8px 10px;font-family:var(--mono);font-size:14px;color:var(--black);outline:none}
 textarea{min-height:90px;resize:vertical}
 input:focus,textarea:focus{box-shadow:4px 4px 0 var(--black)}
+.field-row{display:flex;flex-wrap:wrap;align-items:center;gap:10px}
+.field-row input,.field-row textarea{flex:1 1 240px;width:auto}
+.field-row textarea{align-self:flex-start;min-height:56px;resize:vertical}
+.field-hint{flex:0 1 auto;font-family:var(--mono);font-size:12px;color:#666;white-space:nowrap}
+.field-hint-block{font-family:var(--mono);font-size:12px;color:#666;margin:4px 0 0}
 .btn{border:2px solid var(--black);background:var(--black);color:var(--white);padding:8px 20px;font-family:var(--mono);font-size:13px;margin-top:8px}
 .btn:hover{transform:translate(2px,2px);box-shadow:1px 1px 0 var(--white),3px 3px 0 var(--black);color:var(--green)}
 .note{font-family:var(--mono);font-size:12px;opacity:.7}
@@ -75,19 +80,24 @@ input,textarea,select{caret-color:var(--green)}
 
     <h2 style="font-size:16px;margin:0 0 4px">PERSONA · AI 人格</h2>
     <p class="note"># 决定 AI 分身怎么说话（role 身份 / style 风格 / fallback 没素材时）</p>
-    <label>ROLE（身份）</label><input type="text" id="p_role" placeholder="站主的 AI 分身，以第一人称回答">
-    <label>STYLE（风格）</label><input type="text" id="p_style" placeholder="简洁、克制，以证据说话">
-    <label>FALLBACK（素材外内容怎么答）</label><input type="text" id="p_fallback" placeholder="素材里没有的内容，明确说不知道，不编造">
+    <label>ROLE（身份）</label>
+    <div class="field-row"><input type="text" id="p_role"><span class="field-hint"># 站主的 AI 分身，以第一人称回答</span></div>
+    <label>STYLE（风格）</label>
+    <div class="field-row"><input type="text" id="p_style"><span class="field-hint"># 简洁、克制，以证据说话</span></div>
+    <label>FALLBACK（素材外内容怎么答）</label>
+    <div class="field-row"><textarea id="p_fallback"></textarea><span class="field-hint"># 素材里没有的内容，明确说不知道，不编造</span></div>
 
     <hr style="border:none;border-top:2px solid var(--black);margin:24px 0">
     <h2 style="font-size:16px;margin:0 0 4px">AI 限额</h2>
     <p class="note"># 每月允许的对话次数（0 = 当月全部拒绝）</p>
-    <label>BUDGET / MONTH</label><input type="text" id="ai_budget" placeholder="10">
+    <label>BUDGET / MONTH</label>
+    <div class="field-row"><input type="text" id="ai_budget"><span class="field-hint"># 默认 10，例如 10</span></div>
 
     <hr style="border:none;border-top:2px solid var(--black);margin:24px 0">
     <h2 style="font-size:16px;margin:0 0 4px">SUGGESTIONS · 常用问题</h2>
     <p class="note"># 访客点一下就发问的按钮，每行一条</p>
-    <textarea id="suggestions" placeholder="他是做什么的？&#10;他的技术栈？"></textarea>
+    <textarea id="suggestions"></textarea>
+    <p class="field-hint-block"># 例如：他是做什么的？<br>他的技术栈？</p>
 
     <button class="btn" id="saveBtn" type="button">保存设置</button>
     <p class="err" id="saveErr"></p>
@@ -111,20 +121,14 @@ input,textarea,select{caret-color:var(--green)}
       return r.json();
     }).then(function(env){
       var d=env.data||{};
-      try{
-        var p=JSON.parse(d.persona||'{}');
-        document.getElementById('p_role').value=p.role||'';
-        document.getElementById('p_style').value=p.style||'';
-        document.getElementById('p_fallback').value=p.fallback||'';
-      }catch(e){}
-      try{
-        var ai=JSON.parse(d.ai||'{}');
-        document.getElementById('ai_budget').value=ai.budget_per_month!=null?ai.budget_per_month:'';
-      }catch(e){}
-      try{
-        var su=JSON.parse(d.suggestions||'[]');
-        document.getElementById('suggestions').value=(su||[]).join('\n');
-      }catch(e){}
+      var p=d.persona||{};
+      document.getElementById('p_role').value=p.role||'';
+      document.getElementById('p_style').value=p.style||'';
+      document.getElementById('p_fallback').value=p.fallback||'';
+      var ai=d.ai||{};
+      document.getElementById('ai_budget').value=ai.budget_per_month!=null?ai.budget_per_month:'';
+      var su=d.suggestions||[];
+      document.getElementById('suggestions').value=(su||[]).join('\n');
     }).catch(function(e){if(e.message!=='redirect')saveErr.textContent='> error: 加载失败';});
   }
   function put(key,value){

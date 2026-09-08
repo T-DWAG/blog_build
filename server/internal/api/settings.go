@@ -9,8 +9,9 @@ import (
 	"github.com/T-DWAG/blog_build/server/internal/store"
 )
 
-// GetSettings GET /api/admin/settings 返回四个可写 key。
+// GetSettings GET /api/admin/settings 返回四个可写 key。不缓存：避免回显拿到浏览器旧快存。
 func (s *Server) GetSettings(c *gin.Context) {
+	c.Writer.Header().Set("Cache-Control", "no-store")
 	settings, err := s.st.GetSettings(c.Request.Context())
 	if err != nil {
 		WriteErr(c.Writer, http.StatusInternalServerError, http.StatusInternalServerError, "internal error")
@@ -39,8 +40,9 @@ func (s *Server) PutSettings(c *gin.Context) {
 	WriteOK(c.Writer, map[string]bool{"ok": true})
 }
 
-// Suggestions GET /api/ai/suggestions 公开，读 KeySuggestions。
+// Suggestions GET /api/ai/suggestions 公开，读 KeySuggestions。不缓存：管理员在后台改完后，访客侧下一次拉取得到新値，无需硬刷新。
 func (s *Server) Suggestions(c *gin.Context) {
+	c.Writer.Header().Set("Cache-Control", "no-store")
 	settings, err := s.st.GetSettings(c.Request.Context())
 	if err != nil {
 		WriteErr(c.Writer, http.StatusInternalServerError, http.StatusInternalServerError, "internal error")
