@@ -11,6 +11,7 @@
   <link rel="stylesheet" href="style.css">
   <script src="api-base.js"></script>
   <script src="moss.js"></script>
+  <script src="vendor/term-intro.js"></script>
 </head>
 <body>
   <div class="win pixel-round">
@@ -233,6 +234,11 @@
           list.innerHTML = head + '<p class="ls-note"><span class="err">> 文章加载失败，稍后再试</span></p>';
         });
     })();
+  </script>
+
+  <script>
+    // 进场：黑屏封面(t-dwag@blog + moss) → 主标题解码 → 滚动揭示
+    TermIntro.intro({ once: true });
   </script>
 </body>
 </html>
