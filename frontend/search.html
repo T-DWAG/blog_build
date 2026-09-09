@@ -103,7 +103,7 @@
       }
       var html = '<div class="ls">';
       arts.forEach(function (a) {
-        html += '<a class="ls-row" href="articles/' + esc(a.slug) + '.html"><span>文章</span><span class="ls-dot">::</span>' +
+        html += '<a class="ls-row" href="article.html?slug=' + encodeURIComponent(a.slug) + '"><span>文章</span><span class="ls-dot">::</span>' +
           '<span style="grid-column:span 2">' + esc(a.title) + '</span><span class="ls-name" style="grid-column:auto">go →</span></a>';
       });
       projs.forEach(function (p) {
