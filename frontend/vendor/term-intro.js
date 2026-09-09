@@ -338,10 +338,10 @@
       document.documentElement.classList.remove('ti-lock');
       try { window.scrollTo(0, 0); } catch (e) { }   // 揭开前保证回到页顶
       ov.classList.add('ti-boot-out');
-      later(function () {
-        if (ov.parentNode) ov.parentNode.removeChild(ov);
-        if (opts.onDone) opts.onDone();
-      }, 560);
+      later(function () { if (ov.parentNode) ov.parentNode.removeChild(ov); }, 560);
+      // 淡出一开始就启动解码（下一帧），藏在黑幕下开演，避免“静态→标题闪没→才开始”
+      var doneCb = opts.onDone;
+      if (doneCb) { opts.onDone = null; later(doneCb, 0); }
     }
 
     // 逐字打字：text 写进 node
