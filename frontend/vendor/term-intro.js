@@ -1,9 +1,17 @@
-/* term-intro.js — 终端解码进场动画（纯手写，零依赖）
- * 1) 终端块逐行浮现  2) 主标题"乱码解码"逐字锁定(两端→中间)
- * 3) 摘要逐词上浮  4) 按钮弹入  5) 下方 kicker/h2/intro 滚动逐词揭示
- * 无障碍：prefers-reduced-motion 直接跳过；会话内 once 只播一次；点击任意处跳过。
+/* term-intro.js — 进场：macOS 风终端登录 → 进度条 → MOSS 欢迎 → 解码首页（纯手写，零依赖）
+ * 全屏黑幕盖住首页，演完再揭开：
+ *   ① Mac 红绿灯终端窗打字问候 + 英文提示（type "/login" and press Enter）
+ *   ② 手动输入 /login 回车（输错走 bash 报错，可重输）
+ *   ③ 终端绿像素进度条跑满 → ④ MOSS 放大居中 + 终端绿 "welcome back!"
+ *   ⑤ 淡出揭首页，随后主标题"乱码解码"逐字锁定(两端→中间)/摘要逐词上浮/按钮弹入
+ * 滚动时 kicker/h2/intro 逐词揭示。
+ * 交互：点击不跳过——必须手动输入 /login 回车走完整流程；Esc 或标题栏红灯可随时跳过。
+ * 无障碍：会话内 once 只播一次。
+ *         prefers-reduced-motion：默认仍播（RESPECT_REDUCED=false 可调），避免系统“减少动态效果”把开场整个掐掉。
+ * 调试：?intro=replay 强制重播（清 once 标记）。
  * 用法：
- *   TermIntro.run({ once:true, onDone:fn })       // 进场
+ *   TermIntro.intro({ once:true, onDone:fn })     // 完整进场（登录门 + 解码）
+ *   TermIntro.run({ once:true, onDone:fn })       // 只播解码（不弹登录门）
  *   TermIntro.initScrollReveal()                  // 滚动揭示（每次进页都可用）
  */
 (function () {
@@ -12,6 +20,10 @@
 
   var GLYPHS = '!@#$%&*<>?/\\|{}[]=+-_^~01';
   var reduced = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)');
+  // 进场动画是否尊重系统“减少动态效果”：
+  //   false（默认）= 始终播放（本场景短、可 Esc/点击跳过，站点主题动画）
+  //   true         = prefers-reduced-motion 时整段不播（无障碍优先）
+  var RESPECT_REDUCED = false;
 
   function randGlyph() { return GLYPHS[(Math.random() * GLYPHS.length) | 0]; }
 
@@ -30,11 +42,47 @@
       '.ti-fade{opacity:0;transform:translateY(16px);transition:opacity .5s ease,transform .5s ease}' +
       '.ti-fade.ti-on{opacity:1;transform:none}' +
       '.ti-em-glow{color:#eafff2!important;text-shadow:0 0 14px rgba(0,255,65,.95),0 0 30px rgba(0,255,65,.55)!important}' +
-      '#ti-boot{position:fixed;inset:0;background:#000;z-index:2147483646;display:flex;align-items:center;justify-content:center;font-family:"Fusion Pixel Mono","Fusion Pixel",monospace;transition:opacity .35s ease}' +
-      '#ti-boot.ti-boot-out{opacity:0}' +
-      '.ti-boot-inner{font-size:clamp(16px,4vw,22px);line-height:1.8;color:#00ff41;text-shadow:0 0 12px rgba(0,255,65,.35)}' +
-      '.ti-boot-text{white-space:pre}' +
-      '.ti-boot-cursor{display:inline-block;width:.6em;height:1.1em;margin-left:3px;background:#00ff41;vertical-align:text-bottom;animation:ti-blink 1s steps(2,start) infinite}' +
+      '#ti-boot{position:fixed;inset:0;z-index:2147483646;display:flex;align-items:center;justify-content:center;overflow:hidden;background:radial-gradient(ellipse at center,rgba(0,255,65,.05) 0%,transparent 62%),#000;font-family:"Fusion Pixel Mono","Fusion Pixel",monospace;transition:opacity .35s ease}' +
+      '#ti-boot.ti-boot-out{opacity:0;pointer-events:none}' +
+      'html.ti-lock,html.ti-lock body{overflow:hidden}' +
+      '.ti-win{width:min(620px,92vw);background:#000;border:1px solid rgba(255,255,255,.2);border-radius:10px;overflow:hidden;box-shadow:0 0 0 1px rgba(255,255,255,.04),0 34px 90px rgba(0,0,0,.9);transition:opacity .28s ease,transform .28s ease}' +
+      '.ti-win.ti-win-out{opacity:0;transform:scale(.93) translateY(8px)}' +
+      '.ti-tb{position:relative;display:flex;align-items:center;height:34px;padding:0 12px;flex:none;background:#202020;border-bottom:1px solid rgba(255,255,255,.1)}' +
+      '.ti-lts{display:flex;gap:8px;align-items:center}' +
+      '.ti-lts i{display:flex;align-items:center;justify-content:center;width:12px;height:12px;border-radius:50%;font-style:normal}' +
+      '.ti-lts i::after{content:"";opacity:0;font:700 10px/1 monospace;color:rgba(0,0,0,.62)}' +
+      '.ti-lts:hover i::after{opacity:1}' +
+      '.ti-lts .ti-r{background:radial-gradient(circle at 32% 28%,#ffa49d,#ff5f57 55%,#d9453c);cursor:pointer}' +
+      '.ti-lts .ti-r::after{content:"\u00d7"}' +
+      '.ti-lts .ti-y{background:radial-gradient(circle at 32% 28%,#ffe08a,#febc2e 55%,#dc9e16)}' +
+      '.ti-lts .ti-y::after{content:"\u2212"}' +
+      '.ti-lts .ti-g{background:radial-gradient(circle at 32% 28%,#7ae682,#28c840 55%,#1da031)}' +
+      '.ti-lts .ti-g::after{content:"+"}' +
+      '.ti-tt{position:absolute;left:64px;right:64px;text-align:center;font-size:11px;color:rgba(255,255,255,.5);letter-spacing:.4px;pointer-events:none;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}' +
+      '.ti-bd{padding:20px 24px 22px;font-size:clamp(13px,3.4vw,15px);line-height:1.8;color:#00ff41;text-shadow:0 0 9px rgba(0,255,65,.3)}' +
+      '.ti-log{white-space:pre-wrap;word-break:break-word}' +
+      '.ti-log .ti-dim{color:rgba(255,255,255,.52);text-shadow:none}' +
+      '.ti-log .ti-err{color:#00ff41;font-weight:700}' +
+      '.ti-pr{white-space:pre-wrap;word-break:break-all}' +
+      '.ti-buf{display:inline-block;background:transparent;border:0;outline:0;padding:0;margin:0;font-family:inherit;line-height:inherit;color:#eafff2;caret-color:transparent;min-width:1.2em}' +
+      '@media (pointer:coarse){.ti-buf{font-size:16px}}' +
+      '.ti-cursor{display:inline-block;width:.58em;height:1.02em;margin-left:2px;background:#00ff41;vertical-align:-.12em;animation:ti-blink 1s steps(2,start) infinite}' +
+      '.ti-bar{display:none;align-items:center;gap:12px;margin-top:10px}' +
+      '.ti-bar.on{display:flex}' +
+      '.ti-track{position:relative;flex:1;height:11px;max-width:min(330px,62%);background:rgba(0,255,65,.07);border:1px solid rgba(0,255,65,.55);padding:1px}' +
+      '.ti-fill{display:block;height:100%;width:0;background:repeating-linear-gradient(90deg,#00ff41 0 5px,#00932c 5px 8px);box-shadow:0 0 10px rgba(0,255,65,.7)}' +
+      '.ti-pct{color:rgba(255,255,255,.6);font-size:11px;min-width:2.6em;text-align:right}' +
+      '.ti-scene{position:fixed;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:30px;opacity:0;transition:opacity .5s ease;pointer-events:none}' +
+      '.ti-scene.on{opacity:1}' +
+      '.ti-scene .ti-glow{position:absolute;left:50%;top:50%;width:min(480px,88vw);height:min(480px,88vw);transform:translate(-50%,-58%);background:radial-gradient(closest-side,rgba(0,255,65,.14),transparent 70%);pointer-events:none}' +
+      '.ti-scene .ti-orb{position:relative;line-height:0;animation:ti-bob 3.4s ease-in-out infinite}' +
+      '.ti-scene .ti-orb svg{filter:drop-shadow(0 0 22px rgba(0,255,65,.55))}' +
+      '.ti-scene .moss-r{fill:#fff}' +
+      '.ti-scene .moss-e{fill:#00ff41}' +
+      '.ti-wl{opacity:0;transition:opacity .7s ease .25s;font-size:clamp(22px,5vw,34px);font-weight:700;color:#00ff41;text-shadow:0 0 16px rgba(0,255,65,.95),0 0 46px rgba(0,255,65,.4);letter-spacing:2px}' +
+      '.ti-scene.on .ti-wl{opacity:1}' +
+      '.ti-skip{position:fixed;left:50%;bottom:16px;transform:translateX(-50%);font-size:11px;color:rgba(255,255,255,.22);letter-spacing:.5px;pointer-events:none}' +
+      '@keyframes ti-bob{50%{transform:translateY(-10px)}}' +
       '@keyframes ti-blink{50%{opacity:0}}';
     document.head.appendChild(st);
   }
@@ -98,7 +146,7 @@
   function run(opts) {
     opts = opts || {};
     injectCSS();
-    if (reduced && reduced.matches) { if (opts.onDone) opts.onDone(); return { skip: function () { } }; }
+    if (RESPECT_REDUCED && reduced && reduced.matches) { if (opts.onDone) opts.onDone(); return { skip: function () { } }; }
     if (opts.once) {
       try { if (sessionStorage.getItem('ti-played')) { if (opts.onDone) opts.onDone(); return { skip: function () { } }; } } catch (e) { }
     }
@@ -209,87 +257,218 @@
     return { skip: skip };
   }
 
-  // 黑屏封面：打两行字 → 淡出
+  // Moss 之眼 SVG：优先复用 moss.js 暴露的 Moss.orb，否则复刻同一 11×11 网格
+  function mossSVG(size) {
+    if (window.Moss && typeof window.Moss.orb === 'function') return window.Moss.orb(size);
+    size = parseInt(size, 10) || 44;
+    var ring = '', eye = '', x, y, d;
+    for (y = 0; y < 11; y++) {
+      for (x = 0; x < 11; x++) {
+        d = Math.sqrt((x - 5) * (x - 5) + (y - 5) * (y - 5));
+        if (d <= 1.6) eye += '<rect x="' + x + '" y="' + y + '" width="1" height="1"/>';
+        else if (d >= 2.7 && d <= 4.7) ring += '<rect x="' + x + '" y="' + y + '" width="1" height="1"/>';
+      }
+    }
+    return '<svg viewBox="0 0 11 11" width="' + size + '" height="' + size + '" shape-rendering="crispEdges" aria-hidden="true">' +
+      '<g class="moss-r">' + ring + '</g><g class="moss-iris"><g class="moss-off"><g class="moss-e">' + eye + '</g></g></g></svg>';
+  }
+
+  // ============================================================
+  // 进场门：macOS 风终端窗(红绿灯 + 居中标题)
+  //   打字问候 + 英文提示 → 手输 /login 回车(输错 bash 报错) →
+  //   终端绿像素进度条 → MOSS 放大欢迎(welcome back!) → 淡出揭首页
+  // ============================================================
   function boot(opts) {
     opts = opts || {};
     injectCSS();
-    if (reduced && reduced.matches) { if (opts.onDone) opts.onDone(); return { skip: function () { } }; }
+    if (RESPECT_REDUCED && reduced && reduced.matches) { if (opts.onDone) opts.onDone(); return; }
 
-    var lines = opts.lines || ['t-dwag@blog', '> moss online · sup?'];
     var ov = document.createElement('div');
     ov.id = 'ti-boot';
-    ov.innerHTML = '<div class="ti-boot-inner"><span class="ti-boot-text"></span><span class="ti-boot-cursor" aria-hidden="true"></span></div>';
+    ov.innerHTML =
+      '<div class="ti-win">' +
+        '<div class="ti-tb">' +
+          '<div class="ti-lts" aria-hidden="true"><i class="ti-r"></i><i class="ti-y"></i><i class="ti-g"></i></div>' +
+          '<span class="ti-tt">t-dwag@blog — bash — 80×24</span>' +
+        '</div>' +
+        '<div class="ti-bd">' +
+          '<div class="ti-log"></div>' +
+          '<div class="ti-pr" style="display:none"><span class="ti-ps"></span><input class="ti-buf" type="text" maxlength="40" autocapitalize="off" autocorrect="off" autocomplete="off" spellcheck="false" enterkeyhint="go" aria-label="type /login and press enter"><span class="ti-cursor"></span></div>' +
+          '<div class="ti-bar"><span class="ti-track"><i class="ti-fill"></i></span><span class="ti-pct">0%</span></div>' +
+        '</div>' +
+      '</div>' +
+      '<div class="ti-scene">' +
+        '<div class="ti-glow"></div>' +
+        '<div class="ti-orb" aria-hidden="true"></div>' +
+        '<div class="ti-wl">welcome back!</div>' +
+      '</div>' +
+      '<div class="ti-skip">press esc or click the red ● to skip</div>';
     document.body.appendChild(ov);
+    document.documentElement.classList.add('ti-lock');   // 开场期间锁页面滚动（黑幕不拦截滚轮，不锁会滚走）
 
-    var textEl = ov.querySelector('.ti-boot-text');
-    var text = lines.join('\n');
-    var done = false;
+    var logEl = ov.querySelector('.ti-log');
+    var prEl = ov.querySelector('.ti-pr');
+    var psEl = ov.querySelector('.ti-ps');
+    var bufEl = ov.querySelector('.ti-buf');
+    var winEl = ov.querySelector('.ti-win');
+    var barEl = ov.querySelector('.ti-bar');
+    var fillEl = ov.querySelector('.ti-fill');
+    var pctEl = ov.querySelector('.ti-pct');
+    var sceneEl = ov.querySelector('.ti-scene');
+    var orbEl = ov.querySelector('.ti-orb');
+    var redEl = ov.querySelector('.ti-lts .ti-r');
+
+    var done = false;    // 整段结束（完成或跳过）
+    var locked = true;   // 提示符出现前忽略键盘
     var timers = [];
+    function later(fn, ms) { timers.push(setTimeout(fn, ms)); }
 
-    function finish() {
+    var PS1 = 't-dwag@blog:~$ ';
+    var GREET = '> welcome to t-dwag@blog.';
+    var HINT = 'type "/login" and press Enter to enter the site.';
+    var ORB = Math.max(88, Math.min(124, Math.floor((window.innerWidth || 400) / 5)));
+
+    function reveal() {
       if (done) return;
       done = true;
+      locked = true;
       timers.forEach(clearTimeout);
-      document.removeEventListener('click', onClick);
+      timers.length = 0;
+      document.removeEventListener('keydown', onEsc);
+      document.documentElement.classList.remove('ti-lock');
+      try { window.scrollTo(0, 0); } catch (e) { }   // 揭开前保证回到页顶
       ov.classList.add('ti-boot-out');
-      setTimeout(function () { if (ov.parentNode) ov.parentNode.removeChild(ov); if (opts.onDone) opts.onDone(); }, 380);
+      later(function () {
+        if (ov.parentNode) ov.parentNode.removeChild(ov);
+        if (opts.onDone) opts.onDone();
+      }, 560);
     }
-    function skipBoot() { if (done) return; if (opts.onSkip) opts.onSkip(); finish(); }
-    function onClick() { skipBoot(); }
-    document.addEventListener('click', onClick);
 
-    var i = 0;
-    (function type() {
-      if (done) return;
-      i++;
-      textEl.textContent = text.slice(0, i);
-      if (i < text.length) { timers.push(setTimeout(type, 36)); }
-      else { timers.push(setTimeout(finish, 360)); }
-    })();
+    // 逐字打字：text 写进 node
+    function typeText(node, text, cb, ms) {
+      var i = 0;
+      ms = ms || 24;
+      (function step() {
+        if (done) { node.textContent = text; if (cb) cb(); return; }
+        i++;
+        node.textContent = text.slice(0, i);
+        if (i < text.length) later(step, ms);
+        else if (cb) cb();
+      })();
+    }
 
-    return { skip: skipBoot };
+    function addLine(text, cls) {
+      var d = document.createElement('div');
+      d.className = 'ti-line' + (cls ? ' ' + cls : '');
+      d.textContent = text;
+      logEl.appendChild(d);
+      return d;
+    }
+
+    // 阶段① 问候 + 英文提示 + 交互提示符
+    function stageIntro() {
+      typeText(addLine(''), GREET, function () {
+        addLine(HINT, 'ti-dim');
+        later(function () {
+          psEl.textContent = PS1;
+          prEl.style.display = 'block';
+          locked = false;   // 开放输入：真 <input>，手机点它弹软键盘
+          syncSize();
+          focusBuf();
+        }, 240);
+      }, 26);
+    }
+
+    // —— 输入框辅助：宽度跟随内容 / 获取焦点（手机唤起软键盘）——
+    function syncSize() { bufEl.style.width = (bufEl.value.length + 1) + 'ch'; }
+    function focusBuf() {
+      try { bufEl.focus({ preventScroll: true }); } catch (e) { try { bufEl.focus(); } catch (e2) { } }
+    }
+
+    // 阶段② /login 校验
+    function submit() {
+      if (locked) return;
+      var raw = (bufEl.value || '').trim();
+      bufEl.value = '';
+      syncSize();
+      if (!raw) return;
+      if (raw !== '/login') {
+        addLine(PS1 + raw);
+        addLine('-bash: ' + raw + ': command not found', 'ti-err');
+        focusBuf();
+        return;
+      }
+      locked = true;
+      addLine(PS1 + raw);
+      prEl.style.display = 'none';
+      // 阶段③ 进度条
+      typeText(addLine(''), '> authenticating…', function () {
+        barEl.classList.add('on');
+        var p = 0;
+        (function tick() {
+          p += 10;
+          fillEl.style.width = p + '%';
+          pctEl.textContent = p + '%';
+          if (p >= 100) later(sceneIn, 160);
+          else later(tick, 85);
+        })();
+      }, 22);
+    }
+
+    // 阶段④ MOSS 欢迎场景（放大居中 + welcome back!）
+    function sceneIn() {
+      winEl.classList.add('ti-win-out');
+      later(function () {
+        winEl.style.display = 'none';
+        barEl.classList.remove('on');
+        orbEl.innerHTML = mossSVG(ORB);
+        sceneEl.classList.add('on');
+        later(reveal, 2200);
+      }, 320);
+    }
+
+    // 交互：点击不跳过整段；Esc 随时跳过；红灯(=关闭窗口)跳过
+    function onEsc(ev) { if (ev.key === 'Escape') { ev.preventDefault(); reveal(); } }
+    document.addEventListener('keydown', onEsc);
+    bufEl.addEventListener('keydown', function (ev) { if (ev.key === 'Enter') { ev.preventDefault(); submit(); } });
+    bufEl.addEventListener('input', function () { if (locked) { bufEl.value = ''; } syncSize(); });
+    ov.querySelector('.ti-bd').addEventListener('click', function () { if (!done && !locked) focusBuf(); });
+    if (redEl) redEl.addEventListener('click', function (ev) { ev.stopPropagation(); reveal(); });
+    later(stageIntro, 300);
   }
 
-  // 完整进场：封面 → 解码 → 滚动揭示
+  // 完整进场：登录门(mac 终端 → /login → 进度条 → MOSS 欢迎) → 解码 → 滚动揭示
   function intro(opts) {
     opts = opts || {};
     injectCSS();
     initScrollReveal();
-    if (reduced && reduced.matches) { if (opts.onDone) opts.onDone(); return { skip: function () { } }; }
+    try { if (/[?&]intro=replay/.test(location.search)) sessionStorage.removeItem('ti-played'); } catch (e) { }
+    if (RESPECT_REDUCED && reduced && reduced.matches) { if (opts.onDone) opts.onDone(); return; }
     if (opts.once) {
-      try { if (sessionStorage.getItem('ti-played')) { if (opts.onDone) opts.onDone(); return { skip: function () { } }; } } catch (e) { }
+      try {
+        if (sessionStorage.getItem('ti-played')) {
+          if (opts.onDone) opts.onDone(); return;
+        }
+      } catch (e) { }
     }
 
-    var skipped = false;
-    var finished = false;
-    var phase = 'boot';
-    var bootH = null, runH = null;
-
     function finishOnce() {
-      if (finished) return;
-      finished = true;
       if (opts.once) { try { sessionStorage.setItem('ti-played', '1'); } catch (e) { } }
       if (opts.onDone) opts.onDone();
     }
 
-    bootH = boot({
-      lines: opts.lines,
-      onSkip: function () { skipped = true; },
-      onDone: function () {
-        if (skipped) { finishOnce(); return; }   // 封面阶段点击跳过 → 整个进场都跳过
-        phase = 'run';
-        runH = run({ once: false, onDone: finishOnce });
-      }
-    });
-
-    return {
-      skip: function () { if (phase === 'boot') bootH.skip(); else if (runH) runH.skip(); }
-    };
+    try {
+      boot({
+        onDone: function () { run({ once: false, onDone: finishOnce }); }
+      });
+    } catch (err) {
+      if (opts.onDone) opts.onDone();  // 兜底：异常也不卡住页面
+    }
   }
 
   function initScrollReveal() {
     injectCSS();
-    if (reduced && reduced.matches) return;
+    if (RESPECT_REDUCED && reduced && reduced.matches) return;
     if (window.TermIntro._sr) return;
     window.TermIntro._sr = true;
 
