@@ -4,3 +4,7 @@ preview*.png
 .env
 server/.env
 
+# 本地评审草稿（不纳入版本库）
+article-share-review.md
+homepage-review-batch1.md
+
