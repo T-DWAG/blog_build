@@ -3,116 +3,61 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <meta name="description" content="技术文章列表：并发、缓存、安全、一致性、Agent 工程。">
-  <meta name="theme-color" content="#000000">
-  <title>go /posts — T-Dwag</title>
-  <link rel="preload" href="fonts/fusion-pixel-12px-proportional-zh_hans.subset.woff2" as="font" type="font/woff2" crossorigin>
-  <link rel="preload" href="fonts/fusion-pixel-12px-monospaced-zh_hans.subset.woff2" as="font" type="font/woff2" crossorigin>
+  <meta name="description" content="技术思考">
+  <meta name="theme-color" content="#03100a">
+  <title>posts — T-Dwag</title>
+  <link rel="preload" href="fonts/pixel-core.woff2" as="font" type="font/woff2" crossorigin>
+  <link rel="stylesheet" href="fonts/fonts.css">
   <link rel="stylesheet" href="style.css">
+  <link rel="stylesheet" href="moss.css">
   <script src="api-base.js"></script>
+  <script src="site.js"></script>
   <script src="moss.js"></script>
 </head>
 <body>
-  <div class="win pixel-round">
-
-    <!-- 窗口标题栏 -->
-    <header class="winbar">
-      <div class="winbar-lights" aria-hidden="true">
-        <i class="r"></i><i class="y"></i><i class="g"></i>
-      </div>
-      <span class="winbar-path">t-dwag@blog: <b>~/posts</b></span>
-      <span class="winbar-go">[go]</span>
-    </header>
-
-    <!-- go 命令导航 -->
-    <nav class="gonav" id="gonav" aria-label="主导航">
-      <span class="gonav-prompt" aria-hidden="true">$</span>
-      <button class="gonav-toggle" type="button" aria-expanded="false" aria-controls="gonav-links">导航 ▾</button>
-      <div class="gonav-links" id="gonav-links">
-        <a href="index.html">go /home</a>
-        <a href="about.html">go /about</a>
-        <a class="is-active" href="posts.html">go /posts</a>
-        <a href="projects.html">go /projects</a>
-        <a href="guestbook.html">go /guestbook</a>
-        <a href="chat.html">go /chat</a>
-        <a href="search.html">go /search</a>
-      </div>
+  <div class="app">
+    <nav class="side" aria-label="主导航">
+      <a class="brand" href="index.html">t-dwag<i>@blog</i></a>
+      <div class="navs"><a class="nv" href="index.html">home</a><a class="nv" href="about.html">about</a><a class="nv" href="posts.html" aria-current="page">posts</a><a class="nv" href="projects.html">projects</a><a class="nv" href="guestbook.html">guestbook</a><a class="nv" href="chat.html">chat</a><a class="nv" href="search.html">search</a></div>
+      <div class="ext"><a href="mailto:wuonchannel@gmail.com">mail ↗</a><a href="https://github.com/T-DWAG" target="_blank" rel="noreferrer">github ↗</a></div>
     </nav>
-
-    <main>
-      <section class="section section-paper" aria-labelledby="posts-title">
-        <div class="container">
-          <p class="section-kicker">POSTS</p>
-          <h2 id="posts-title"><span>技术思考</span></h2>
-          <p class="section-intro">Documentation is for users.</p>
-
-          <!-- 搜索入口 -->
-          <p class="ls-note"><span class="p">$</span> <a class="term-link" href="search.html">go /search</a> — 按标题 / 正文 / 项目标题搜索</p>
-
-          <div class="ls" id="postsList">
-            <div class="ls-head"><span>PERMS</span><span>OWNER</span><span>SIZE</span><span>DATE</span><span>NAME</span></div>
-            <p class="ls-note"><span class="dim"># 加载中…</span></p>
-          </div>
-          <p class="ls-note" id="postsNote"><span class="dim">A system you can't observe is a system you can't own.</span></p>
-        </div>
-      </section>
-    </main>
-
-    <footer class="statusbar">
-      <span>© 2026 · 持续探索的数字游民 T-Dwag</span>
-      <span>·</span>
-      <a href="mailto:wuonchannel@gmail.com">wuonchannel@gmail.com</a>
-      <span>·</span>
-      <a href="https://github.com/T-DWAG" target="_blank" rel="noreferrer">github.com/T-DWAG</a>
-      <span>·</span>
-      <span class="end-flag">END</span>
-    </footer>
+    <div class="main">
+      <main class="page">
+      <header class="head">
+        <p class="meta" id="postsMeta">ls ~/posts</p>
+        <h1>技术思考</h1>
+        <p class="lede">A system you can't observe is a system you can't own.</p>
+      </header>
+      <div class="rows" id="postsList"><p class="meta" style="padding:8px">加载中…</p></div>
+      <p class="meta" style="margin-top:20px"><a href="search.html">search →</a></p>
+      </main>
+      <footer class="foot"><a href="mailto:wuonchannel@gmail.com">wuonchannel@gmail.com</a><a href="https://github.com/T-DWAG" target="_blank" rel="noreferrer">github.com/T-DWAG</a><span>© 2026 T-Dwag</span></footer>
+    </div>
+    <aside class="ai" id="ai" aria-label="MOSS">
+      <header class="ai-head"><span class="moss-orb" data-moss-orb="44" aria-hidden="true"></span><span class="ai-name">MOSS<small>问我关于他的任何事</small></span><span class="ai-st" id="aiSt">连接中</span></header>
+      <div class="chat-body" id="chatBody" aria-live="polite"><p><span class="who">me$</span> <span class="reply-text" id="mossFirstLine"></span></p></div>
+      <div class="chat-suggestions" id="chatSuggestions"></div>
+      <form class="cmd chat-input" id="chatForm">
+        <span class="who" aria-hidden="true">you$</span>
+        <input type="text" id="chatInput" placeholder="输入问题，回车发送" autocomplete="off" aria-label="向 MOSS 提问">
+        <button type="button" id="chatStop" class="chat-stop" hidden>停止</button>
+      </form>
+    </aside>
   </div>
-
+  <script src="chat-panel.js"></script>
+  <script src="panel-status.js"></script>
   <script>
     (function () {
-      var toggle = document.querySelector('.gonav-toggle');
-      var gonav = document.getElementById('gonav');
-      if (!toggle || !gonav) return;
-      toggle.addEventListener('click', function () {
-        var open = gonav.classList.toggle('is-open');
-        toggle.setAttribute('aria-expanded', String(open));
-        toggle.textContent = open ? '导航 ▴' : '导航 ▾';
-      });
-    })();
-
-    // 文章列表：接 GET /api/articles，支持 ?tag=
-    (function () {
       var list = document.getElementById('postsList');
-      var head = '<div class="ls-head"><span>PERMS</span><span>OWNER</span><span>SIZE</span><span>DATE</span><span>NAME</span></div>';
-      var params = new URLSearchParams(location.search);
-      var tag = params.get('tag') || '';
-      var url = window.API_BASE + '/api/articles' + (tag ? ('?tag=' + encodeURIComponent(tag)) : '');
-
-      function escapeHTML(s) {
-        return String(s || '').replace(/[&<>"']/g, function (c) {
-          return ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' })[c];
-        });
-      }
-
-      fetch(url)
-        .then(function (r) { return r.json(); })
-        .then(function (env) {
-          var items = env.data || [];
-          if (!items.length) {
-            list.innerHTML = head + '<p class="ls-note"><span class="q">?</span> ' + (tag ? '没有带标签 “' + escapeHTML(tag) + '” 的文章' : '还没有发布的文章') + '</p>';
-            return;
-          }
-          list.innerHTML = head + items.map(function (a) {
-            var date = (a.published_at || a.created_at || '').slice(0, 10) || '---------';
-            var size = Math.max(1, Math.round((a.content_md || '').length / 1024)) + 'k';
-            return '<a class="ls-row" href="article.html?slug=' + encodeURIComponent(a.slug) + '">' +
-              '<span>-rw-r--r--</span><span>t-dwag</span><span>' + size + '</span><span>' + date + '</span>' +
-              '<span class="ls-name">' + escapeHTML(a.title) + (a.is_pinned ? ' 📌' : '') + '</span></a>';
-          }).join('');
-        }).catch(function () {
-          list.innerHTML = head + '<p class="ls-note"><span class="err">> 文章列表加载失败，稍后再试</span></p>';
-        });
+      var tag = new URLSearchParams(location.search).get('tag') || '';
+      if (tag) document.getElementById('postsMeta').textContent = 'ls ~/posts --tag ' + tag;
+      $api('/api/articles' + (tag ? '?tag=' + encodeURIComponent(tag) : '')).then(function (env) {
+        var d = env.data || [];
+        if (!d.length) { list.innerHTML = '<p class="meta" style="padding:8px">' + (tag ? '没有带标签 “' + $esc(tag) + '” 的文章' : '还没有发布的文章') + '</p>'; return; }
+        list.innerHTML = d.map(function (a) {
+          return '<a class="row" href="article.html?slug=' + encodeURIComponent(a.slug) + '"><span class="meta">' + $day(a) + '</span><span>' + $esc(a.title) + (a.is_pinned ? ' <span class="ps">*</span>' : '') + '</span><span class="go-arrow">→</span></a>';
+        }).join('');
+      }).catch(function () { list.innerHTML = '<p class="meta err" style="padding:8px">文章列表加载失败，稍后再试</p>'; });
     })();
   </script>
 </body>

@@ -34,9 +34,9 @@
       mermaid.initialize({
         startOnLoad: false,
         theme: 'base',
-        fontFamily: '"Fusion Pixel", "Fusion Pixel Full", "PingFang SC", "Microsoft YaHei", sans-serif',
+        fontFamily: '"Pixel", "Pixel Rest", "PingFang SC", "Microsoft YaHei", sans-serif',
         themeVariables: {
-          fontFamily: '"Fusion Pixel", "Fusion Pixel Full", "PingFang SC", "Microsoft YaHei", sans-serif',
+          fontFamily: '"Pixel", "Pixel Rest", "PingFang SC", "Microsoft YaHei", sans-serif',
           fontSize: '14px',
           primaryColor: '#ffffff',
           primaryTextColor: '#000000',

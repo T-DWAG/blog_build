@@ -42,7 +42,7 @@
       '.ti-fade{opacity:0;transform:translateY(16px);transition:opacity .5s ease,transform .5s ease}' +
       '.ti-fade.ti-on{opacity:1;transform:none}' +
       '.ti-em-glow{color:#eafff2!important;text-shadow:0 0 14px rgba(0,255,65,.95),0 0 30px rgba(0,255,65,.55)!important}' +
-      '#ti-boot{position:fixed;inset:0;z-index:2147483646;display:flex;align-items:center;justify-content:center;overflow:hidden;background:radial-gradient(ellipse at center,rgba(0,255,65,.05) 0%,transparent 62%),#000;font-family:"Fusion Pixel Mono","Fusion Pixel",monospace;transition:opacity .35s ease}' +
+      '#ti-boot{position:fixed;inset:0;z-index:2147483646;display:flex;align-items:center;justify-content:center;overflow:hidden;background:radial-gradient(ellipse at center,rgba(0,255,65,.05) 0%,transparent 62%),#000;font-family:"Pixel","Pixel Rest",monospace;transition:opacity .35s ease}' +
       '#ti-boot.ti-boot-out{opacity:0;pointer-events:none}' +
       'html.ti-lock,html.ti-lock body{overflow:hidden}' +
       '.ti-win{width:min(620px,92vw);background:#000;border:1px solid rgba(255,255,255,.2);border-radius:10px;overflow:hidden;box-shadow:0 0 0 1px rgba(255,255,255,.04),0 34px 90px rgba(0,0,0,.9);transition:opacity .28s ease,transform .28s ease}' +
@@ -201,7 +201,7 @@
     }
 
     // ④ 按钮弹入
-    var btn = document.querySelector('.pixel-button');
+    var btn = document.querySelector('.hero .go');
     if (btn) {
       btn.classList.remove('ti-fade', 'ti-on');   // 重播时复位
       btn.classList.add('ti-fade');
@@ -458,9 +458,9 @@
     }
 
     try {
-      boot({
-        onDone: function () { run({ once: false, onDone: finishOnce }); }
-      });
+      var next = function () { run({ once: false, onDone: finishOnce }); };
+      // 优先 CRT 曲面屏进场（WebGL）；不可用时回退到原 DOM 终端窗
+      if (!(window.CrtBoot && window.CrtBoot.start({ onDone: next }))) boot({ onDone: next });
     } catch (err) {
       if (opts.onDone) opts.onDone();  // 兜底：异常也不卡住页面
     }
@@ -472,12 +472,12 @@
     if (window.TermIntro._sr) return;
     window.TermIntro._sr = true;
 
-    var targets = document.querySelectorAll('.section-kicker, .section h2, .section .section-intro, .formula-strip');
+    var targets = document.querySelectorAll('.pane');
     var list = [];
     targets.forEach(function (el) {
       if (el.closest && el.closest('.hero')) return;
       var spans;
-      if (el.classList.contains('formula-strip')) { el.classList.add('ti-fade'); spans = [el]; }
+      if (el.classList.contains('pane')) { el.classList.add('ti-fade'); spans = [el]; }
       else spans = splitWords(el);
       el.__ti = spans;
       list.push(el);

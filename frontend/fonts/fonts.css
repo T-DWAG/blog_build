@@ -1,0 +1,22 @@
+/*
+  Pixel — 全站唯一字体（缝合像素字体 Fusion Pixel 12px · 等宽 · 简体）
+  取用：<link rel="stylesheet" href="fonts/fonts.css">，然后  font-family: var(--pixel);
+  两个文件，按需加载：
+    pixel-core.woff2  GB2312 + 常用标点（约 230KB）→ 日常文字全部落在这里
+    pixel-rest.woff2  其余生僻字（约 670KB）      → 只有出现生僻字时浏览器才会去取
+  字体只有一个字重，不要加粗（font-synthesis:none 防止浏览器伪粗体糊掉像素）。
+  层级靠：字号 / 反白 / 暗色，不靠粗细。像素整数倍：12 · 24 · 36 · 48。
+*/
+@font-face {
+  font-family: "Pixel";
+  src: url("pixel-core.woff2") format("woff2");
+  font-display: swap;
+}
+@font-face {
+  font-family: "Pixel Rest";
+  src: url("pixel-rest.woff2") format("woff2");
+  font-display: swap;
+}
+:root {
+  --pixel: "Pixel", "Pixel Rest", "PingFang SC", "Microsoft YaHei", monospace;
+}

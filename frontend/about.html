@@ -3,135 +3,69 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <meta name="description" content="T-Dwag · 持续探索的数字游民 · AI 应用后端与 Agent 工程化">
-  <meta name="theme-color" content="#000000">
-  <title>go /about — T-Dwag</title>
-  <link rel="preload" href="fonts/fusion-pixel-12px-proportional-zh_hans.subset.woff2" as="font" type="font/woff2" crossorigin>
-  <link rel="preload" href="fonts/fusion-pixel-12px-monospaced-zh_hans.subset.woff2" as="font" type="font/woff2" crossorigin>
+  <meta name="description" content="关于 T-Dwag">
+  <meta name="theme-color" content="#03100a">
+  <title>about — T-Dwag</title>
+  <link rel="preload" href="fonts/pixel-core.woff2" as="font" type="font/woff2" crossorigin>
+  <link rel="stylesheet" href="fonts/fonts.css">
   <link rel="stylesheet" href="style.css">
+  <link rel="stylesheet" href="moss.css">
   <script src="api-base.js"></script>
+  <script src="site.js"></script>
   <script src="moss.js"></script>
 </head>
 <body>
-  <div class="win pixel-round">
-
-    <!-- 窗口标题栏 -->
-    <header class="winbar">
-      <div class="winbar-lights" aria-hidden="true">
-        <i class="r"></i><i class="y"></i><i class="g"></i>
-      </div>
-      <span class="winbar-path">t-dwag@blog: <b>~/about</b></span>
-      <span class="winbar-go">[go]</span>
-    </header>
-
-    <!-- go 命令导航 -->
-    <nav class="gonav" id="gonav" aria-label="主导航">
-      <span class="gonav-prompt" aria-hidden="true">$</span>
-      <button class="gonav-toggle" type="button" aria-expanded="false" aria-controls="gonav-links">导航 ▾</button>
-      <div class="gonav-links" id="gonav-links">
-        <a href="index.html">go /home</a>
-        <a class="is-active" href="about.html">go /about</a>
-        <a href="posts.html">go /posts</a>
-        <a href="projects.html">go /projects</a>
-        <a href="guestbook.html">go /guestbook</a>
-        <a href="chat.html">go /chat</a>
-        <a href="search.html">go /search</a>
-      </div>
+  <div class="app">
+    <nav class="side" aria-label="主导航">
+      <a class="brand" href="index.html">t-dwag<i>@blog</i></a>
+      <div class="navs"><a class="nv" href="index.html">home</a><a class="nv" href="about.html" aria-current="page">about</a><a class="nv" href="posts.html">posts</a><a class="nv" href="projects.html">projects</a><a class="nv" href="guestbook.html">guestbook</a><a class="nv" href="chat.html">chat</a><a class="nv" href="search.html">search</a></div>
+      <div class="ext"><a href="mailto:wuonchannel@gmail.com">mail ↗</a><a href="https://github.com/T-DWAG" target="_blank" rel="noreferrer">github ↗</a></div>
     </nav>
+    <div class="main">
+      <main class="page">
+      <header class="head">
+        <p class="meta">whoami</p>
+        <h1>从气象，走到后端，再走到 Agent。</h1>
+        <p class="lede">不是追热点式转行，而是把领域数据理解、后端工程与 AI 落地，串成一条连续的能力链。</p>
+      </header>
 
-    <main>
-      <!-- type Me struct -->
-      <section class="section section-paper" aria-labelledby="me-title">
-        <div class="container">
-          <p class="section-kicker">ABOUT · WHOAMI</p>
-          <h2 id="me-title"><span>关于我</span></h2>
-          <div class="me-block">
-            <pre>type Me struct {
-    Name      string   // T-Dwag
-    Location  string   // Chengdu
-    Stack     []string // Go, Python, Vue, PostgreSQL, Redis, ES,Eino,Kratos,go-zero
-    Focus     string   // AI 应用后端 / Agent 工程化
-    Mindset   string   // 边界 · 证据 · 持续行动
-}
-
-func main() {
-    fmt.Println(me.Summary()) // “持续探索的数字游民 T-Dwag”</pre>
-          </div>
-        </div>
+      <section class="pane"><span class="pt">profile</span>
+        <dl class="kv">
+          <dt>name</dt><dd>T-Dwag</dd>
+          <dt>base</dt><dd>成都</dd>
+          <dt>focus</dt><dd>AI 应用后端 / Agent 工程化</dd>
+          <dt>stack</dt><dd>Go · Python · Vue · PostgreSQL · Redis · ES · Eino · Kratos · go-zero</dd>
+          <dt>mindset</dt><dd>边界 · 证据 · 持续行动</dd>
+        </dl>
       </section>
 
-      <!-- 转型路径 -->
-      <section class="section section-ink" aria-labelledby="journey-title">
-        <div class="container">
-          <p class="section-kicker">THE JOURNEY</p>
-          <h2 id="journey-title"><span>转型路径：能力是叠加出来的</span></h2>
-          <p class="section-intro">不是追热点式转行，而是把领域数据理解、后端工程能力与 AI 落地，串成一条连续的能力链。</p>
-
-          <div class="card-grid">
-            <article class="card">
-              <span class="num">01</span>
-              <h3>气象与数据处理</h3>
-              <p>接触 Python、数据分析与模型应用，形成先判断数据是否可靠、再选择技术方案的习惯。</p>
-              <div class="tags"><span>Python</span><span>数据分析</span><span>遥感</span><span>数据质量</span></div>
-            </article>
-            <article class="card">
-              <span class="num">02</span>
-              <h3>Go 后端工程</h3>
-              <p>意识到数据要落地，还需要稳定的接口、数据库、缓存与部署能力。通过短链接和评价系统建立后端知识体系。</p>
-              <div class="tags"><span>Go</span><span>MySQL</span><span>Redis</span><span>Elasticsearch</span></div>
-            </article>
-            <article class="card">
-              <span class="num">03</span>
-              <h3>AI Agent 工程化</h3>
-              <p>研究 Eino Agent 编排、RAG、MCP 与 A2A，把传统后端原则带进 AI 系统：参数校验、超时、幂等、权限与评估。</p>
-              <div class="tags"><span>Eino</span><span>RAG</span><span>MCP</span><span>A2A</span></div>
-            </article>
-          </div>
-
-          <p class="section-intro">我的方向不是从气象突然跳到 AI，而是从领域数据处理走到后端工程，再走到 AI 应用落地。</p>
-        </div>
+      <section class="pane"><span class="pt">path</span>
+        <ol class="steps">
+          <li><h3>气象与数据处理</h3><p>接触 Python、数据分析与模型应用，形成先判断数据是否可靠、再选技术方案的习惯。</p></li>
+          <li><h3>Go 后端工程</h3><p>数据要落地，需要稳定的接口、数据库、缓存与部署。通过短链接和评价系统建立后端知识体系。</p></li>
+          <li><h3>AI Agent 工程化</h3><p>研究 Eino 编排、RAG、MCP 与 A2A，把参数校验、超时、幂等、权限与评估带进 AI 系统。</p></li>
+        </ol>
       </section>
 
-      <!-- 联系 -->
-      <section class="section section-paper" aria-labelledby="contact-title">
-        <div class="container">
-          <p class="section-kicker">CONTACT</p>
-          <h2 id="contact-title"><span>联系我</span></h2>
-          <p class="section-intro">
-            坐标成都，正在寻求更具挑战性的 AI 应用后端 / Agent 工程化岗位。<br>
-            如有合适机会，欢迎通过
-            <a href="mailto:wuonchannel@gmail.com"><strong style="text-decoration:underline">wuonchannel@gmail.com</strong></a>
-            或
-            <a href="https://github.com/T-DWAG" target="_blank" rel="noreferrer"><strong style="text-decoration:underline">github.com/T-DWAG</strong></a>
-            联系我。
-          </p>
-          <p class="ls-note"><span class="p">$</span> <a class="term-link" href="index.html">cd ~</a><span class="cursor" aria-hidden="true"></span></p>
-        </div>
+      <section class="pane"><span class="pt">contact</span>
+        <p>正在寻找更有挑战的 AI 应用后端 / Agent 工程化岗位。<br>
+        <a href="mailto:wuonchannel@gmail.com">wuonchannel@gmail.com</a> · <a href="https://github.com/T-DWAG" target="_blank" rel="noreferrer">github.com/T-DWAG</a></p>
       </section>
-    </main>
-
-    <footer class="statusbar">
-      <span>© 2026 · 持续探索的数字游民 T-Dwag</span>
-      <span>·</span>
-      <a href="mailto:wuonchannel@gmail.com">wuonchannel@gmail.com</a>
-      <span>·</span>
-      <a href="https://github.com/T-DWAG" target="_blank" rel="noreferrer">github.com/T-DWAG</a>
-      <span>·</span>
-      <span class="end-flag">END</span>
-    </footer>
+      </main>
+      <footer class="foot"><a href="mailto:wuonchannel@gmail.com">wuonchannel@gmail.com</a><a href="https://github.com/T-DWAG" target="_blank" rel="noreferrer">github.com/T-DWAG</a><span>© 2026 T-Dwag</span></footer>
+    </div>
+    <aside class="ai" id="ai" aria-label="MOSS">
+      <header class="ai-head"><span class="moss-orb" data-moss-orb="44" aria-hidden="true"></span><span class="ai-name">MOSS<small>问我关于他的任何事</small></span><span class="ai-st" id="aiSt">连接中</span></header>
+      <div class="chat-body" id="chatBody" aria-live="polite"><p><span class="who">me$</span> <span class="reply-text" id="mossFirstLine"></span></p></div>
+      <div class="chat-suggestions" id="chatSuggestions"></div>
+      <form class="cmd chat-input" id="chatForm">
+        <span class="who" aria-hidden="true">you$</span>
+        <input type="text" id="chatInput" placeholder="输入问题，回车发送" autocomplete="off" aria-label="向 MOSS 提问">
+        <button type="button" id="chatStop" class="chat-stop" hidden>停止</button>
+      </form>
+    </aside>
   </div>
-
-  <script>
-    (function () {
-      var toggle = document.querySelector('.gonav-toggle');
-      var gonav = document.getElementById('gonav');
-      if (!toggle || !gonav) return;
-      toggle.addEventListener('click', function () {
-        var open = gonav.classList.toggle('is-open');
-        toggle.setAttribute('aria-expanded', String(open));
-        toggle.textContent = open ? '导航 ▴' : '导航 ▾';
-      });
-    })();
-  </script>
+  <script src="chat-panel.js"></script>
+  <script src="panel-status.js"></script>
 </body>
 </html>
