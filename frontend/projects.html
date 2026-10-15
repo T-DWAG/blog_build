@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <meta name="description" content="项目">
+  <meta name="description" content="Projects">
   <meta name="theme-color" content="#03100a">
   <title>projects — T-Dwag</title>
   <link rel="preload" href="fonts/pixel-core.woff2" as="font" type="font/woff2" crossorigin>
@@ -16,7 +16,7 @@
 </head>
 <body>
   <div class="app">
-    <nav class="side" aria-label="主导航">
+    <nav class="side" aria-label="Main">
       <a class="brand" href="index.html">t-dwag<i>@blog</i></a>
       <div class="navs"><a class="nv" href="index.html">home</a><a class="nv" href="about.html">about</a><a class="nv" href="posts.html">posts</a><a class="nv" href="projects.html" aria-current="page">projects</a><a class="nv" href="guestbook.html">guestbook</a><a class="nv" href="chat.html">chat</a><a class="nv" href="search.html">search</a></div>
       <div class="ext"><a href="mailto:wuonchannel@gmail.com">mail ↗</a><a href="https://github.com/T-DWAG" target="_blank" rel="noreferrer">github ↗</a></div>
@@ -25,21 +25,21 @@
       <main class="page">
       <header class="head">
         <p class="meta">ls ~/projects</p>
-        <h1>项目</h1>
-        <p class="lede">每一个都是一次把想法压进工程约束里的练习。</p>
+        <h1>Projects</h1>
+        <p class="lede">Each one is an exercise in pressing an idea into engineering constraints.</p>
       </header>
-      <div id="projGrid"><p class="meta">加载中…</p></div>
+      <div id="projGrid"><p class="meta">loading…</p></div>
       </main>
       <footer class="foot"><a href="mailto:wuonchannel@gmail.com">wuonchannel@gmail.com</a><a href="https://github.com/T-DWAG" target="_blank" rel="noreferrer">github.com/T-DWAG</a><span>© 2026 T-Dwag</span></footer>
     </div>
     <aside class="ai" id="ai" aria-label="MOSS">
-      <header class="ai-head"><span class="moss-orb" data-moss-orb="44" aria-hidden="true"></span><span class="ai-name">MOSS<small>问我关于他的任何事</small></span><span class="ai-st" id="aiSt">连接中</span></header>
+      <header class="ai-head"><span class="moss-orb" data-moss-orb="44" aria-hidden="true"></span><span class="ai-name">MOSS<small>ask me anything about him</small></span><span class="ai-st" id="aiSt">connecting</span></header>
       <div class="chat-body" id="chatBody" aria-live="polite"><p><span class="who">me$</span> <span class="reply-text" id="mossFirstLine"></span></p></div>
       <div class="chat-suggestions" id="chatSuggestions"></div>
       <form class="cmd chat-input" id="chatForm">
         <span class="who" aria-hidden="true">you$</span>
-        <input type="text" id="chatInput" placeholder="输入问题，回车发送" autocomplete="off" aria-label="向 MOSS 提问">
-        <button type="button" id="chatStop" class="chat-stop" hidden>停止</button>
+        <input type="text" id="chatInput" placeholder="ask something, press enter" autocomplete="off" aria-label="Ask MOSS">
+        <button type="button" id="chatStop" class="chat-stop" hidden>stop</button>
       </form>
     </aside>
   </div>
@@ -50,16 +50,16 @@
       var grid = document.getElementById('projGrid');
       $api('/api/projects').then(function (env) {
         var d = env.data || [];
-        if (!d.length) { grid.innerHTML = '<p class="meta">还没有项目</p>'; return; }
+        if (!d.length) { grid.innerHTML = '<p class="meta">no projects yet</p>'; return; }
         grid.innerHTML = d.map(function (p, i) {
           var tags = (p.tags || []).map(function (t) { return '<span>' + $esc(t) + '</span>'; }).join('');
           var l = '';
-          if (p.repo_url) l += '<a href="' + $esc(p.repo_url) + '" target="_blank" rel="noreferrer">源码 ↗</a>';
+          if (p.repo_url) l += '<a href="' + $esc(p.repo_url) + '" target="_blank" rel="noreferrer">source ↗</a>';
           if (p.demo_url) l += '<a href="' + $esc(p.demo_url) + '" target="_blank" rel="noreferrer">demo ↗</a>';
-          else if (p.home_url) l += '<a href="' + $esc(p.home_url) + '" target="_blank" rel="noreferrer">主页 ↗</a>';
+          else if (p.home_url) l += '<a href="' + $esc(p.home_url) + '" target="_blank" rel="noreferrer">home ↗</a>';
           return '<article class="item"><h3><span class="meta">' + String(i + 1).padStart(2, '0') + '</span>' + $esc(p.name) + '</h3><p>' + $esc(p.summary) + '</p><div class="tags">' + tags + '</div>' + (l ? '<div class="links">' + l + '</div>' : '') + '</article>';
         }).join('');
-      }).catch(function () { grid.innerHTML = '<p class="meta err">项目列表加载失败，稍后再试</p>'; });
+      }).catch(function () { grid.innerHTML = '<p class="meta err">failed to load projects, try again later</p>'; });
     })();
   </script>
 </body>

@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <meta name="description" content="技术思考">
+  <meta name="description" content="Writing">
   <meta name="theme-color" content="#03100a">
   <title>posts — T-Dwag</title>
   <link rel="preload" href="fonts/pixel-core.woff2" as="font" type="font/woff2" crossorigin>
@@ -16,7 +16,7 @@
 </head>
 <body>
   <div class="app">
-    <nav class="side" aria-label="主导航">
+    <nav class="side" aria-label="Main">
       <a class="brand" href="index.html">t-dwag<i>@blog</i></a>
       <div class="navs"><a class="nv" href="index.html">home</a><a class="nv" href="about.html">about</a><a class="nv" href="posts.html" aria-current="page">posts</a><a class="nv" href="projects.html">projects</a><a class="nv" href="guestbook.html">guestbook</a><a class="nv" href="chat.html">chat</a><a class="nv" href="search.html">search</a></div>
       <div class="ext"><a href="mailto:wuonchannel@gmail.com">mail ↗</a><a href="https://github.com/T-DWAG" target="_blank" rel="noreferrer">github ↗</a></div>
@@ -25,22 +25,22 @@
       <main class="page">
       <header class="head">
         <p class="meta" id="postsMeta">ls ~/posts</p>
-        <h1>技术思考</h1>
+        <h1>Writing</h1>
         <p class="lede">A system you can't observe is a system you can't own.</p>
       </header>
-      <div class="rows" id="postsList"><p class="meta" style="padding:8px">加载中…</p></div>
+      <div class="rows" id="postsList"><p class="meta" style="padding:8px">loading…</p></div>
       <p class="meta" style="margin-top:20px"><a href="search.html">search →</a></p>
       </main>
       <footer class="foot"><a href="mailto:wuonchannel@gmail.com">wuonchannel@gmail.com</a><a href="https://github.com/T-DWAG" target="_blank" rel="noreferrer">github.com/T-DWAG</a><span>© 2026 T-Dwag</span></footer>
     </div>
     <aside class="ai" id="ai" aria-label="MOSS">
-      <header class="ai-head"><span class="moss-orb" data-moss-orb="44" aria-hidden="true"></span><span class="ai-name">MOSS<small>问我关于他的任何事</small></span><span class="ai-st" id="aiSt">连接中</span></header>
+      <header class="ai-head"><span class="moss-orb" data-moss-orb="44" aria-hidden="true"></span><span class="ai-name">MOSS<small>ask me anything about him</small></span><span class="ai-st" id="aiSt">connecting</span></header>
       <div class="chat-body" id="chatBody" aria-live="polite"><p><span class="who">me$</span> <span class="reply-text" id="mossFirstLine"></span></p></div>
       <div class="chat-suggestions" id="chatSuggestions"></div>
       <form class="cmd chat-input" id="chatForm">
         <span class="who" aria-hidden="true">you$</span>
-        <input type="text" id="chatInput" placeholder="输入问题，回车发送" autocomplete="off" aria-label="向 MOSS 提问">
-        <button type="button" id="chatStop" class="chat-stop" hidden>停止</button>
+        <input type="text" id="chatInput" placeholder="ask something, press enter" autocomplete="off" aria-label="Ask MOSS">
+        <button type="button" id="chatStop" class="chat-stop" hidden>stop</button>
       </form>
     </aside>
   </div>
@@ -53,11 +53,11 @@
       if (tag) document.getElementById('postsMeta').textContent = 'ls ~/posts --tag ' + tag;
       $api('/api/articles' + (tag ? '?tag=' + encodeURIComponent(tag) : '')).then(function (env) {
         var d = env.data || [];
-        if (!d.length) { list.innerHTML = '<p class="meta" style="padding:8px">' + (tag ? '没有带标签 “' + $esc(tag) + '” 的文章' : '还没有发布的文章') + '</p>'; return; }
+        if (!d.length) { list.innerHTML = '<p class="meta" style="padding:8px">' + (tag ? 'no posts tagged “' + $esc(tag) + '”' : 'no posts yet') + '</p>'; return; }
         list.innerHTML = d.map(function (a) {
           return '<a class="row" href="article.html?slug=' + encodeURIComponent(a.slug) + '"><span class="meta">' + $day(a) + '</span><span>' + $esc(a.title) + (a.is_pinned ? ' <span class="ps">*</span>' : '') + '</span><span class="go-arrow">→</span></a>';
         }).join('');
-      }).catch(function () { list.innerHTML = '<p class="meta err" style="padding:8px">文章列表加载失败，稍后再试</p>'; });
+      }).catch(function () { list.innerHTML = '<p class="meta err" style="padding:8px">failed to load posts, try again later</p>'; });
     })();
   </script>
 </body>

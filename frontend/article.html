@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <meta name="description" content="文章详情">
+  <meta name="description" content="Article">
   <meta name="theme-color" content="#03100a">
   <title>article — T-Dwag</title>
   <link rel="preload" href="fonts/pixel-core.woff2" as="font" type="font/woff2" crossorigin>
@@ -19,25 +19,25 @@
 </head>
 <body>
   <div class="app">
-    <nav class="side" aria-label="主导航">
+    <nav class="side" aria-label="Main">
       <a class="brand" href="index.html">t-dwag<i>@blog</i></a>
       <div class="navs"><a class="nv" href="index.html">home</a><a class="nv" href="about.html">about</a><a class="nv" href="posts.html" aria-current="page">posts</a><a class="nv" href="projects.html">projects</a><a class="nv" href="guestbook.html">guestbook</a><a class="nv" href="chat.html">chat</a><a class="nv" href="search.html">search</a></div>
       <div class="ext"><a href="mailto:wuonchannel@gmail.com">mail ↗</a><a href="https://github.com/T-DWAG" target="_blank" rel="noreferrer">github ↗</a></div>
     </nav>
     <div class="main">
       <main class="page">
-      <div id="articleBox"><header class="head"><p class="meta">cat</p><h1>加载中…</h1></header></div>
+      <div id="articleBox"><header class="head"><p class="meta">cat</p><h1>loading…</h1></header></div>
       </main>
       <footer class="foot"><a href="mailto:wuonchannel@gmail.com">wuonchannel@gmail.com</a><a href="https://github.com/T-DWAG" target="_blank" rel="noreferrer">github.com/T-DWAG</a><span>© 2026 T-Dwag</span></footer>
     </div>
     <aside class="ai" id="ai" aria-label="MOSS">
-      <header class="ai-head"><span class="moss-orb" data-moss-orb="44" aria-hidden="true"></span><span class="ai-name">MOSS<small>问我关于他的任何事</small></span><span class="ai-st" id="aiSt">连接中</span></header>
+      <header class="ai-head"><span class="moss-orb" data-moss-orb="44" aria-hidden="true"></span><span class="ai-name">MOSS<small>ask me anything about him</small></span><span class="ai-st" id="aiSt">connecting</span></header>
       <div class="chat-body" id="chatBody" aria-live="polite"><p><span class="who">me$</span> <span class="reply-text" id="mossFirstLine"></span></p></div>
       <div class="chat-suggestions" id="chatSuggestions"></div>
       <form class="cmd chat-input" id="chatForm">
         <span class="who" aria-hidden="true">you$</span>
-        <input type="text" id="chatInput" placeholder="输入问题，回车发送" autocomplete="off" aria-label="向 MOSS 提问">
-        <button type="button" id="chatStop" class="chat-stop" hidden>停止</button>
+        <input type="text" id="chatInput" placeholder="ask something, press enter" autocomplete="off" aria-label="Ask MOSS">
+        <button type="button" id="chatStop" class="chat-stop" hidden>stop</button>
       </form>
     </aside>
   </div>
@@ -47,24 +47,24 @@
     (function () {
       var box = document.getElementById('articleBox');
       function lost(msg) {
-        box.innerHTML = '<header class="head"><p class="meta">404</p><h1>未找到该文章</h1></header><p class="err">' + $esc(msg) + '</p><p style="margin-top:20px"><a href="posts.html">返回文章列表</a></p>';
+        box.innerHTML = '<header class="head"><p class="meta">404</p><h1>Not found</h1></header><p class="err">' + $esc(msg) + '</p><p style="margin-top:20px"><a href="posts.html">back to posts</a></p>';
       }
       var slug = (new URLSearchParams(location.search).get('slug') || '').trim();
-      if (!slug) { lost('缺少文章标识（slug）'); return; }
+      if (!slug) { lost('missing article slug'); return; }
       document.title = slug + ' — T-Dwag';
       $api('/api/articles/' + encodeURIComponent(slug)).then(function (env) {
         var a = env && env.data;
-        if (!a) { lost('这篇文章不存在，或已被下线'); return; }
+        if (!a) { lost('this post does not exist, or was taken down'); return; }
         var tags = (a.tags || []).map(function (t) { return '<a href="posts.html?tag=' + encodeURIComponent(t) + '">#' + $esc(t) + '</a>'; }).join(' ');
         document.title = a.title + ' — T-Dwag';
         var html;
         if (window.marked) { window.marked.setOptions({ breaks: true, gfm: true }); html = window.marked.parse(a.content_md || ''); }
         else html = '<pre>' + $esc(a.content_md) + '</pre>';
-        box.innerHTML = '<header class="head"><p class="meta">' + $day(a) + (a.is_pinned ? ' · 置顶' : '') + (tags ? ' · ' + tags : '') + '</p><h1>' + $esc(a.title) + '</h1></header>' +
-          '<div class="article-body">' + html + '</div><p style="margin-top:48px"><a href="posts.html">← 返回文章列表</a></p>';
+        box.innerHTML = '<header class="head"><p class="meta">' + $day(a) + (a.is_pinned ? ' · pinned' : '') + (tags ? ' · ' + tags : '') + '</p><h1>' + $esc(a.title) + '</h1></header>' +
+          '<div class="article-body">' + html + '</div><p style="margin-top:48px"><a href="posts.html">← back to posts</a></p>';
         var body = box.querySelector('.article-body');
         if (window.renderMermaidBlocks && body) window.renderMermaidBlocks(body);
-      }).catch(function () { lost('文章加载失败，稍后再试'); });
+      }).catch(function () { lost('failed to load, try again later'); });
     })();
   </script>
 </body>

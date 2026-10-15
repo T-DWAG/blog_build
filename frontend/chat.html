@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <meta name="description" content="AI 分身">
+  <meta name="description" content="AI avatar">
   <meta name="theme-color" content="#03100a">
   <title>chat — T-Dwag</title>
   <link rel="preload" href="fonts/pixel-core.woff2" as="font" type="font/woff2" crossorigin>
@@ -16,7 +16,7 @@
 </head>
 <body>
   <div class="app">
-    <nav class="side" aria-label="主导航">
+    <nav class="side" aria-label="Main">
       <a class="brand" href="index.html">t-dwag<i>@blog</i></a>
       <div class="navs"><a class="nv" href="index.html">home</a><a class="nv" href="about.html">about</a><a class="nv" href="posts.html">posts</a><a class="nv" href="projects.html">projects</a><a class="nv" href="guestbook.html">guestbook</a><a class="nv" href="chat.html" aria-current="page">chat</a><a class="nv" href="search.html">search</a></div>
       <div class="ext"><a href="mailto:wuonchannel@gmail.com">mail ↗</a><a href="https://github.com/T-DWAG" target="_blank" rel="noreferrer">github ↗</a></div>
@@ -25,31 +25,31 @@
       <main class="page">
       <header class="head">
         <p class="meta">MOSS · ReAct · Eino</p>
-        <h1>AI 分身</h1>
-        <p class="lede">我把项目代码、经验、背景与喜好蒸馏成了一个会聊天的分身。它就在每个页面的右侧，随时可问。</p>
+        <h1>Ask MOSS</h1>
+        <p class="lede">An avatar distilled from my code, experience, background and taste. It lives on the right of every page.<br><span class="dim">我把自己蒸馏成了一个会聊天的分身，问什么都行。</span></p>
       </header>
-      <section class="pane"><span class="pt">可以问</span>
+      <section class="pane"><span class="pt">try asking</span>
         <div class="rows">
-          <a class="row ask" href="#"><span class="meta">01</span><span>他是做什么的？</span><span class="go-arrow">→</span></a>
-          <a class="row ask" href="#"><span class="meta">02</span><span>他的技术栈？</span><span class="go-arrow">→</span></a>
-          <a class="row ask" href="#"><span class="meta">03</span><span>他做过哪些项目？</span><span class="go-arrow">→</span></a>
-          <a class="row ask" href="#"><span class="meta">04</span><span>如何联系他？</span><span class="go-arrow">→</span></a>
+          <a class="row ask" href="#"><span class="meta">01</span><span>What does he do?</span><span class="go-arrow">→</span></a>
+          <a class="row ask" href="#"><span class="meta">02</span><span>What is his stack?</span><span class="go-arrow">→</span></a>
+          <a class="row ask" href="#"><span class="meta">03</span><span>What has he built?</span><span class="go-arrow">→</span></a>
+          <a class="row ask" href="#"><span class="meta">04</span><span>How to reach him?</span><span class="go-arrow">→</span></a>
         </div>
       </section>
-      <section class="pane"><span class="pt">说明</span>
-        <p class="dim">检索素材时显示“正在检索…”，正文流式输出，可随时停止。回答基于公开的项目与经历，不代表实时状态。窄屏下右栏收起，点右下角的 MOSS 打开对话。</p>
+      <section class="pane"><span class="pt">notes</span>
+        <p class="dim">Sources are looked up first, then the answer streams in; stop any time. Answers are based on public projects and history, not live state. On narrow screens the side panel folds away: tap MOSS in the corner instead.</p>
       </section>
       </main>
       <footer class="foot"><a href="mailto:wuonchannel@gmail.com">wuonchannel@gmail.com</a><a href="https://github.com/T-DWAG" target="_blank" rel="noreferrer">github.com/T-DWAG</a><span>© 2026 T-Dwag</span></footer>
     </div>
     <aside class="ai" id="ai" aria-label="MOSS">
-      <header class="ai-head"><span class="moss-orb" data-moss-orb="44" aria-hidden="true"></span><span class="ai-name">MOSS<small>问我关于他的任何事</small></span><span class="ai-st" id="aiSt">连接中</span></header>
+      <header class="ai-head"><span class="moss-orb" data-moss-orb="44" aria-hidden="true"></span><span class="ai-name">MOSS<small>ask me anything about him</small></span><span class="ai-st" id="aiSt">connecting</span></header>
       <div class="chat-body" id="chatBody" aria-live="polite"><p><span class="who">me$</span> <span class="reply-text" id="mossFirstLine"></span></p></div>
       <div class="chat-suggestions" id="chatSuggestions"></div>
       <form class="cmd chat-input" id="chatForm">
         <span class="who" aria-hidden="true">you$</span>
-        <input type="text" id="chatInput" placeholder="输入问题，回车发送" autocomplete="off" aria-label="向 MOSS 提问">
-        <button type="button" id="chatStop" class="chat-stop" hidden>停止</button>
+        <input type="text" id="chatInput" placeholder="ask something, press enter" autocomplete="off" aria-label="Ask MOSS">
+        <button type="button" id="chatStop" class="chat-stop" hidden>stop</button>
       </form>
     </aside>
   </div>

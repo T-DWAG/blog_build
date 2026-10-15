@@ -14,7 +14,7 @@
       var gotText = false;     // 是否已收到首个文本增量
       var streaming = false;
 
-      var DEFAULT_SUGGESTIONS = ['他是做什么的？', '他的技术栈？', '他做过哪些项目？', '如何联系他？'];
+      var DEFAULT_SUGGESTIONS = ['What does he do?', 'What is his stack?', 'What has he built?', 'How to reach him?'];
 
       // ===== MOSS 层（纯新增，零 LLM 成本；moss.js 由 <head> 引入，见 moss-visual-decisions.md）=====
       var moss = window.Moss || null;
@@ -132,7 +132,7 @@
         replyEl.appendChild(document.createTextNode(' '));
         replyText = document.createElement('span');
         replyText.className = 'reply-text';
-        replyText.textContent = '正在检索…';
+        replyText.textContent = 'searching…';
         replyEl.appendChild(replyText);
         replyEl.appendChild(cursorSpan());
         body.appendChild(replyEl);
@@ -168,7 +168,7 @@
         if (replyEl) {
           if (gotText) {
             // 已输出部分正文：保留并标注中断
-            replyText.textContent += manual ? '（已停止）' : '（中断）';
+            replyText.textContent += manual ? ' [stopped]' : ' [interrupted]';
             finishReply(true);
           } else {
             // 只有“正在检索…”占位：直接移除并提示
@@ -327,14 +327,14 @@
         if (payload && payload.type === 'tool') {
           if (moss) moss.setState('think'); // 思考态：之眼巡环 + 窗头文字
           if (!gotText && replyEl) {
-            replyText.textContent = '正在检索…（调用 ' + (payload.name || '工具') + '）';
+            replyText.textContent = 'searching… (calling ' + (payload.name || 'tool') + ')';
             scrollBottom();
           }
           return null;
         }
         // 其它未知事件：回到“正在检索…”占位
         if (!gotText && replyEl) {
-          replyText.textContent = payload.msg || '正在检索…';
+          replyText.textContent = payload.msg || 'searching…';
           scrollBottom();
         }
         return null;

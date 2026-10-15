@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <meta name="description" content="全站搜索">
+  <meta name="description" content="Search the site">
   <meta name="theme-color" content="#03100a">
   <title>search — T-Dwag</title>
   <link rel="preload" href="fonts/pixel-core.woff2" as="font" type="font/woff2" crossorigin>
@@ -16,7 +16,7 @@
 </head>
 <body>
   <div class="app">
-    <nav class="side" aria-label="主导航">
+    <nav class="side" aria-label="Main">
       <a class="brand" href="index.html">t-dwag<i>@blog</i></a>
       <div class="navs"><a class="nv" href="index.html">home</a><a class="nv" href="about.html">about</a><a class="nv" href="posts.html">posts</a><a class="nv" href="projects.html">projects</a><a class="nv" href="guestbook.html">guestbook</a><a class="nv" href="chat.html">chat</a><a class="nv" href="search.html" aria-current="page">search</a></div>
       <div class="ext"><a href="mailto:wuonchannel@gmail.com">mail ↗</a><a href="https://github.com/T-DWAG" target="_blank" rel="noreferrer">github ↗</a></div>
@@ -25,23 +25,23 @@
       <main class="page">
       <header class="head">
         <p class="meta">grep -r ~/</p>
-        <h1>搜索</h1>
-        <p class="lede">文章标题、正文、项目标题。</p>
+        <h1>Search</h1>
+        <p class="lede">Article titles, article bodies, project names.</p>
       </header>
       <form class="cmd" id="searchForm"><span class="ps">$</span><input type="search" id="searchInput" placeholder="grep -r 'singleflight'" autocomplete="off" autofocus></form>
-      <p class="meta" id="searchHint" style="margin-top:14px">回车搜索</p>
+      <p class="meta" id="searchHint" style="margin-top:14px">press enter to search</p>
       <div id="searchResults" class="rows" style="margin-top:24px;border:0"></div>
       </main>
       <footer class="foot"><a href="mailto:wuonchannel@gmail.com">wuonchannel@gmail.com</a><a href="https://github.com/T-DWAG" target="_blank" rel="noreferrer">github.com/T-DWAG</a><span>© 2026 T-Dwag</span></footer>
     </div>
     <aside class="ai" id="ai" aria-label="MOSS">
-      <header class="ai-head"><span class="moss-orb" data-moss-orb="44" aria-hidden="true"></span><span class="ai-name">MOSS<small>问我关于他的任何事</small></span><span class="ai-st" id="aiSt">连接中</span></header>
+      <header class="ai-head"><span class="moss-orb" data-moss-orb="44" aria-hidden="true"></span><span class="ai-name">MOSS<small>ask me anything about him</small></span><span class="ai-st" id="aiSt">connecting</span></header>
       <div class="chat-body" id="chatBody" aria-live="polite"><p><span class="who">me$</span> <span class="reply-text" id="mossFirstLine"></span></p></div>
       <div class="chat-suggestions" id="chatSuggestions"></div>
       <form class="cmd chat-input" id="chatForm">
         <span class="who" aria-hidden="true">you$</span>
-        <input type="text" id="chatInput" placeholder="输入问题，回车发送" autocomplete="off" aria-label="向 MOSS 提问">
-        <button type="button" id="chatStop" class="chat-stop" hidden>停止</button>
+        <input type="text" id="chatInput" placeholder="ask something, press enter" autocomplete="off" aria-label="Ask MOSS">
+        <button type="button" id="chatStop" class="chat-stop" hidden>stop</button>
       </form>
     </aside>
   </div>
@@ -58,15 +58,15 @@
         e.preventDefault();
         var q = input.value.trim();
         if (!q) { out.innerHTML = ''; return; }
-        hint.textContent = '搜索中…';
+        hint.textContent = 'searching…';
         $api('/api/search?q=' + encodeURIComponent(q)).then(function (env) {
           var d = env.data || {}, a = d.articles || [], p = d.projects || [];
-          hint.textContent = (a.length + p.length) + ' 条结果';
+          hint.textContent = (a.length + p.length) + ' results';
           if (!a.length && !p.length) { out.innerHTML = '<p class="err">grep: no matches: ' + $esc(q) + '</p>'; return; }
           out.innerHTML = '<div style="border-top:1px dashed var(--line)">' +
-            a.map(function (x) { return row('文章', 'article.html?slug=' + encodeURIComponent(x.slug), x.title); }).join('') +
-            p.map(function (x) { return row('项目', 'projects.html', x.name); }).join('') + '</div>';
-        }).catch(function () { hint.textContent = ''; out.innerHTML = '<p class="err">搜索接口不可用，稍后再试</p>'; });
+            a.map(function (x) { return row('article', 'article.html?slug=' + encodeURIComponent(x.slug), x.title); }).join('') +
+            p.map(function (x) { return row('project', 'projects.html', x.name); }).join('') + '</div>';
+        }).catch(function () { hint.textContent = ''; out.innerHTML = '<p class="err">search is unavailable, try again later</p>'; });
       });
     })();
   </script>

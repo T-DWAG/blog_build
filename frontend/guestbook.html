@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <meta name="description" content="留言板">
+  <meta name="description" content="Guestbook">
   <meta name="theme-color" content="#03100a">
   <title>guestbook — T-Dwag</title>
   <link rel="preload" href="fonts/pixel-core.woff2" as="font" type="font/woff2" crossorigin>
@@ -16,7 +16,7 @@
 </head>
 <body>
   <div class="app">
-    <nav class="side" aria-label="主导航">
+    <nav class="side" aria-label="Main">
       <a class="brand" href="index.html">t-dwag<i>@blog</i></a>
       <div class="navs"><a class="nv" href="index.html">home</a><a class="nv" href="about.html">about</a><a class="nv" href="posts.html">posts</a><a class="nv" href="projects.html">projects</a><a class="nv" href="guestbook.html" aria-current="page">guestbook</a><a class="nv" href="chat.html">chat</a><a class="nv" href="search.html">search</a></div>
       <div class="ext"><a href="mailto:wuonchannel@gmail.com">mail ↗</a><a href="https://github.com/T-DWAG" target="_blank" rel="noreferrer">github ↗</a></div>
@@ -25,12 +25,12 @@
       <main class="page">
       <header class="head">
         <p class="meta">~/guestbook</p>
-        <h1>留言</h1>
-        <p class="lede">想法、建议，或者只是打个招呼。提交后需站主审核才会展示。</p>
+        <h1>Guestbook</h1>
+        <p class="lede">Thoughts, suggestions, or just hello. Messages appear after review.</p>
       </header>
       <form id="gbForm" novalidate>
-        <label class="field"><span>昵称</span><input type="text" name="nickname" maxlength="24" placeholder="怎么称呼你" required></label>
-        <label class="field"><span>内容</span><textarea name="content" maxlength="500" placeholder="写下你的留言…" required></textarea></label>
+        <label class="field"><span>name</span><input type="text" name="nickname" maxlength="24" placeholder="what should I call you" required></label>
+        <label class="field"><span>message</span><textarea name="content" maxlength="500" placeholder="say something…" required></textarea></label>
         <button class="go" type="submit">go send</button>
         <p class="meta" id="gbNote" style="margin-top:14px"></p>
       </form>
@@ -39,13 +39,13 @@
       <footer class="foot"><a href="mailto:wuonchannel@gmail.com">wuonchannel@gmail.com</a><a href="https://github.com/T-DWAG" target="_blank" rel="noreferrer">github.com/T-DWAG</a><span>© 2026 T-Dwag</span></footer>
     </div>
     <aside class="ai" id="ai" aria-label="MOSS">
-      <header class="ai-head"><span class="moss-orb" data-moss-orb="44" aria-hidden="true"></span><span class="ai-name">MOSS<small>问我关于他的任何事</small></span><span class="ai-st" id="aiSt">连接中</span></header>
+      <header class="ai-head"><span class="moss-orb" data-moss-orb="44" aria-hidden="true"></span><span class="ai-name">MOSS<small>ask me anything about him</small></span><span class="ai-st" id="aiSt">connecting</span></header>
       <div class="chat-body" id="chatBody" aria-live="polite"><p><span class="who">me$</span> <span class="reply-text" id="mossFirstLine"></span></p></div>
       <div class="chat-suggestions" id="chatSuggestions"></div>
       <form class="cmd chat-input" id="chatForm">
         <span class="who" aria-hidden="true">you$</span>
-        <input type="text" id="chatInput" placeholder="输入问题，回车发送" autocomplete="off" aria-label="向 MOSS 提问">
-        <button type="button" id="chatStop" class="chat-stop" hidden>停止</button>
+        <input type="text" id="chatInput" placeholder="ask something, press enter" autocomplete="off" aria-label="Ask MOSS">
+        <button type="button" id="chatStop" class="chat-stop" hidden>stop</button>
       </form>
     </aside>
   </div>
@@ -58,22 +58,22 @@
       function load() {
         $api('/api/messages').then(function (env) {
           var d = env.data || [];
-          if (!d.length) { list.innerHTML = '<p class="meta">还没有留言，来抢沙发。</p>'; return; }
+          if (!d.length) { list.innerHTML = '<p class="meta">no messages yet. be the first.</p>'; return; }
           list.innerHTML = d.map(function (m) {
             return '<article class="msg"><p class="meta">' + $esc(m.nickname) + ' · ' + $esc((m.created_at || '').slice(0, 16)) + '</p><p>' + $esc(m.content) + '</p></article>';
           }).join('');
-        }).catch(function () { list.innerHTML = '<p class="meta err">留言加载失败，稍后再试</p>'; });
+        }).catch(function () { list.innerHTML = '<p class="meta err">failed to load messages, try again later</p>'; });
       }
       form.addEventListener('submit', function (e) {
         e.preventDefault();
         var n = form.nickname.value.trim(), c = form.content.value.trim();
-        if (!n || !c) { say('昵称和内容都要填', true); return; }
+        if (!n || !c) { say('name and message are both required', true); return; }
         $api('/api/messages', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ nickname: n, content: c }) })
           .then(function (env) {
-            if (env.code === 0) { say('已提交，等待站主审核后展示。'); form.content.value = ''; }
-            else if (env.code === 429) say('一分钟内只能提交一条，稍后再试', true);
-            else say(env.msg || '提交失败', true);
-          }).catch(function () { say('网络错误，稍后再试', true); });
+            if (env.code === 0) { say('sent. it will show up after review.'); form.content.value = ''; }
+            else if (env.code === 429) say('one message per minute, try again shortly', true);
+            else say(env.msg || 'failed to send', true);
+          }).catch(function () { say('network error, try again later', true); });
       });
       load();
     })();

@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <meta name="description" content="T-Dwag · AI Agent 工程化 · 后端工程师">
+  <meta name="description" content="T-Dwag · AI Agent engineering · backend engineer">
   <meta name="theme-color" content="#03100a">
   <title>T-Dwag</title>
   <link rel="preload" href="fonts/pixel-core.woff2" as="font" type="font/woff2" crossorigin>
@@ -16,7 +16,7 @@
 </head>
 <body>
   <div class="app">
-    <nav class="side" aria-label="主导航">
+    <nav class="side" aria-label="Main">
       <a class="brand" href="index.html">t-dwag<i>@blog</i></a>
       <div class="navs"><a class="nv" href="index.html" aria-current="page">home</a><a class="nv" href="about.html">about</a><a class="nv" href="posts.html">posts</a><a class="nv" href="projects.html">projects</a><a class="nv" href="guestbook.html">guestbook</a><a class="nv" href="chat.html">chat</a><a class="nv" href="search.html">search</a></div>
       <div class="ext"><a href="mailto:wuonchannel@gmail.com">mail ↗</a><a href="https://github.com/T-DWAG" target="_blank" rel="noreferrer">github ↗</a></div>
@@ -24,38 +24,38 @@
     <div class="main">
       <main class="page">
       <section class="hero">
-        <p class="meta">T-Dwag · 成都 · AI 应用后端 / Agent 工程化</p>
-        <h1 class="hero-title">AI 的最后一段路，<br><em>是工程。</em></h1>
-        <p class="hero-summary">主业让系统跑稳，副业让 Agent 跑对。<br>总在安静的裂缝变成巨响之前，盯着它。</p>
+        <p class="meta">T-Dwag · Chengdu · AI backend / Agent engineering</p>
+        <h1 class="hero-title">The last mile of AI<br><em>is engineering.</em></h1>
+        <p class="hero-summary">AI 的最后一段路，是工程。<br>Born in the weather, hardened in the backend, now breathing in the agents. Always watching for the quiet crack before the loud break.</p>
         <a class="go" href="posts.html">go /posts</a>
       </section>
 
       <section class="pane"><span class="pt">formula</span>
         <p class="formula">
-          <span>后端工程<small>稀缺的底气</small></span><b>+</b>
-          <span>Agent 理解<small>清醒的边界</small></span><b>=</b>
-          <span class="rev">AI 工程化<small>团队的答案</small></span>
+          <span>Backend<small>后端工程 · 稀缺的底气</small></span><b>+</b>
+          <span>Agent sense<small>Agent 理解 · 清醒的边界</small></span><b>=</b>
+          <span class="rev">AI engineering<small>AI 工程化 · 团队的答案</small></span>
         </p>
       </section>
 
-      <section class="pane"><span class="pt">latest<a href="posts.html">全部 →</a></span>
-        <div class="rows" id="latest"><p class="meta" style="padding:8px 12px">加载中…</p></div>
+      <section class="pane"><span class="pt">latest<a href="posts.html">all →</a></span>
+        <div class="rows" id="latest"><p class="meta" style="padding:8px 12px">loading…</p></div>
       </section>
 
-      <section class="pane"><span class="pt">projects<a href="projects.html">全部 →</a></span>
+      <section class="pane"><span class="pt">projects<a href="projects.html">all →</a></span>
         <div class="items" id="featured"></div>
       </section>
       </main>
       <footer class="foot"><a href="mailto:wuonchannel@gmail.com">wuonchannel@gmail.com</a><a href="https://github.com/T-DWAG" target="_blank" rel="noreferrer">github.com/T-DWAG</a><span>© 2026 T-Dwag</span></footer>
     </div>
     <aside class="ai" id="ai" aria-label="MOSS">
-      <header class="ai-head"><span class="moss-orb" data-moss-orb="44" aria-hidden="true"></span><span class="ai-name">MOSS<small>问我关于他的任何事</small></span><span class="ai-st" id="aiSt">连接中</span></header>
+      <header class="ai-head"><span class="moss-orb" data-moss-orb="44" aria-hidden="true"></span><span class="ai-name">MOSS<small>ask me anything about him</small></span><span class="ai-st" id="aiSt">connecting</span></header>
       <div class="chat-body" id="chatBody" aria-live="polite"><p><span class="who">me$</span> <span class="reply-text" id="mossFirstLine"></span></p></div>
       <div class="chat-suggestions" id="chatSuggestions"></div>
       <form class="cmd chat-input" id="chatForm">
         <span class="who" aria-hidden="true">you$</span>
-        <input type="text" id="chatInput" placeholder="输入问题，回车发送" autocomplete="off" aria-label="向 MOSS 提问">
-        <button type="button" id="chatStop" class="chat-stop" hidden>停止</button>
+        <input type="text" id="chatInput" placeholder="ask something, press enter" autocomplete="off" aria-label="Ask MOSS">
+        <button type="button" id="chatStop" class="chat-stop" hidden>stop</button>
       </form>
     </aside>
   </div>
@@ -79,7 +79,7 @@
       function items(list) {
         return list.map(function (p, i) {
           var tags = (p.tags || []).map(function (t) { return '<span>' + $esc(t) + '</span>'; }).join('');
-          var link = p.repo_url ? '<div class="links"><a href="' + $esc(p.repo_url) + '" target="_blank" rel="noreferrer">源码 ↗</a></div>' : '';
+          var link = p.repo_url ? '<div class="links"><a href="' + $esc(p.repo_url) + '" target="_blank" rel="noreferrer">source ↗</a></div>' : '';
           return '<article class="item clamp"><h3><span class="meta">0' + (i + 1) + '</span>' + $esc(p.name) + '</h3><p>' + $esc(p.summary) + '</p><div class="tags">' + tags + '</div>' + link + '</article>';
         }).join('');
       }
@@ -92,11 +92,11 @@
       var latest = document.getElementById('latest');
       $api('/api/articles').then(function (env) {
         var d = ((env && env.data) || []).slice(0, 4);
-        if (!d.length) { latest.innerHTML = '<p class="meta" style="padding:8px 12px">还没有发布的文章</p>'; return; }
+        if (!d.length) { latest.innerHTML = '<p class="meta" style="padding:8px 12px">no posts yet</p>'; return; }
         latest.innerHTML = d.map(function (a) {
           return '<a class="row" href="article.html?slug=' + encodeURIComponent(a.slug) + '"><span class="meta">' + $day(a) + '</span><span>' + $esc(a.title) + '</span><span class="go-arrow">→</span></a>';
         }).join('');
-      }).catch(function () { latest.innerHTML = '<p class="meta err" style="padding:8px">文章加载失败，稍后再试</p>'; });
+      }).catch(function () { latest.innerHTML = '<p class="meta err" style="padding:8px">failed to load posts, try again later</p>'; });
     })();
   </script>
   <script>TermIntro.intro({ once: true });</script>

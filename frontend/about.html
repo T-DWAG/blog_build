@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <meta name="description" content="关于 T-Dwag">
+  <meta name="description" content="About T-Dwag">
   <meta name="theme-color" content="#03100a">
   <title>about — T-Dwag</title>
   <link rel="preload" href="fonts/pixel-core.woff2" as="font" type="font/woff2" crossorigin>
@@ -16,7 +16,7 @@
 </head>
 <body>
   <div class="app">
-    <nav class="side" aria-label="主导航">
+    <nav class="side" aria-label="Main">
       <a class="brand" href="index.html">t-dwag<i>@blog</i></a>
       <div class="navs"><a class="nv" href="index.html">home</a><a class="nv" href="about.html" aria-current="page">about</a><a class="nv" href="posts.html">posts</a><a class="nv" href="projects.html">projects</a><a class="nv" href="guestbook.html">guestbook</a><a class="nv" href="chat.html">chat</a><a class="nv" href="search.html">search</a></div>
       <div class="ext"><a href="mailto:wuonchannel@gmail.com">mail ↗</a><a href="https://github.com/T-DWAG" target="_blank" rel="noreferrer">github ↗</a></div>
@@ -25,43 +25,43 @@
       <main class="page">
       <header class="head">
         <p class="meta">whoami</p>
-        <h1>从气象，走到后端，再走到 Agent。</h1>
-        <p class="lede">不是追热点式转行，而是把领域数据理解、后端工程与 AI 落地，串成一条连续的能力链。</p>
+        <h1>From weather,<br>to backend,<br>to agents.</h1>
+        <p class="lede">Not a jump on a trend. A single chain: domain data, backend engineering, then AI in production.<br><span class="dim">不是追热点式转行，而是一条连续的能力链。</span></p>
       </header>
 
       <section class="pane"><span class="pt">profile</span>
         <dl class="kv">
           <dt>name</dt><dd>T-Dwag</dd>
-          <dt>base</dt><dd>成都</dd>
-          <dt>focus</dt><dd>AI 应用后端 / Agent 工程化</dd>
+          <dt>base</dt><dd>Chengdu</dd>
+          <dt>focus</dt><dd>AI application backend / Agent engineering</dd>
           <dt>stack</dt><dd>Go · Python · Vue · PostgreSQL · Redis · ES · Eino · Kratos · go-zero</dd>
-          <dt>mindset</dt><dd>边界 · 证据 · 持续行动</dd>
+          <dt>mindset</dt><dd>Boundaries · Evidence · Follow-through</dd>
         </dl>
       </section>
 
       <section class="pane"><span class="pt">path</span>
         <ol class="steps">
-          <li><h3>气象与数据处理</h3><p>接触 Python、数据分析与模型应用，形成先判断数据是否可靠、再选技术方案的习惯。</p></li>
-          <li><h3>Go 后端工程</h3><p>数据要落地，需要稳定的接口、数据库、缓存与部署。通过短链接和评价系统建立后端知识体系。</p></li>
-          <li><h3>AI Agent 工程化</h3><p>研究 Eino 编排、RAG、MCP 与 A2A，把参数校验、超时、幂等、权限与评估带进 AI 系统。</p></li>
+          <li><h3>Meteorology &amp; data</h3><p>Python, data analysis, model use. The habit of asking whether the data is reliable before choosing the tech.</p></li>
+          <li><h3>Go backend</h3><p>Data has to land somewhere: stable APIs, databases, caches, deployment. Built the foundation through a short-link service and a review system.</p></li>
+          <li><h3>Agent engineering</h3><p>Eino orchestration, RAG, MCP, A2A. Bringing validation, timeouts, idempotency, permissions and evaluation into AI systems.</p></li>
         </ol>
       </section>
 
       <section class="pane"><span class="pt">contact</span>
-        <p>正在寻找更有挑战的 AI 应用后端 / Agent 工程化岗位。<br>
+        <p>Based in Chengdu. Looking for harder problems in AI application backends and agent engineering.<br><span class="dim">正在寻找更有挑战的 AI 应用后端 / Agent 工程化岗位。</span><br>
         <a href="mailto:wuonchannel@gmail.com">wuonchannel@gmail.com</a> · <a href="https://github.com/T-DWAG" target="_blank" rel="noreferrer">github.com/T-DWAG</a></p>
       </section>
       </main>
       <footer class="foot"><a href="mailto:wuonchannel@gmail.com">wuonchannel@gmail.com</a><a href="https://github.com/T-DWAG" target="_blank" rel="noreferrer">github.com/T-DWAG</a><span>© 2026 T-Dwag</span></footer>
     </div>
     <aside class="ai" id="ai" aria-label="MOSS">
-      <header class="ai-head"><span class="moss-orb" data-moss-orb="44" aria-hidden="true"></span><span class="ai-name">MOSS<small>问我关于他的任何事</small></span><span class="ai-st" id="aiSt">连接中</span></header>
+      <header class="ai-head"><span class="moss-orb" data-moss-orb="44" aria-hidden="true"></span><span class="ai-name">MOSS<small>ask me anything about him</small></span><span class="ai-st" id="aiSt">connecting</span></header>
       <div class="chat-body" id="chatBody" aria-live="polite"><p><span class="who">me$</span> <span class="reply-text" id="mossFirstLine"></span></p></div>
       <div class="chat-suggestions" id="chatSuggestions"></div>
       <form class="cmd chat-input" id="chatForm">
         <span class="who" aria-hidden="true">you$</span>
-        <input type="text" id="chatInput" placeholder="输入问题，回车发送" autocomplete="off" aria-label="向 MOSS 提问">
-        <button type="button" id="chatStop" class="chat-stop" hidden>停止</button>
+        <input type="text" id="chatInput" placeholder="ask something, press enter" autocomplete="off" aria-label="Ask MOSS">
+        <button type="button" id="chatStop" class="chat-stop" hidden>stop</button>
       </form>
     </aside>
   </div>
