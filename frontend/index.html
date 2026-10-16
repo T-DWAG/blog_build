@@ -26,7 +26,7 @@
       <section class="hero">
         <p class="meta">T-Dwag · Chengdu · AI backend / Agent engineering</p>
         <h1 class="hero-title">The last mile of AI<br><em>is engineering.</em></h1>
-        <p class="hero-summary">AI 的最后一段路，是工程。<br>Born in the weather, hardened in the backend, now breathing in the agents. Always watching for the quiet crack before the loud break.</p>
+        <p class="hero-summary">Born in the weather, hardened in the backend, now breathing in the agents.<br>Always watching for the quiet crack before the loud break.<span class="zh">AI 的最后一段路，是工程。</span></p>
         <a class="go" href="posts.html">go /posts</a>
       </section>
 
@@ -66,15 +66,15 @@
   <script>
     (function () {
       var FALLBACK = [
-        { name: 'Eino Agent 可观测性', repo_url: 'https://github.com/T-DWAG/agent-observability',
-          summary: '面向 Agent 应用的可观测组件：回调机制无侵入接入，采集调用链路、Token 成本与工具调用；支持敏感信息脱敏、自适应采样、LLM 自动打分评估，可导出到 OpenTelemetry。',
-          tags: ['Go', '可观测性', 'Agent', 'PostgreSQL'] },
-        { name: 'go-zero 短链接服务', repo_url: 'https://github.com/T-DWAG/zeroProject',
-          summary: 'singleflight 合并并发转链请求，布隆过滤器挡掉无效查库，发号器 + base62 生成短码，MD5 去重。',
+        { name: 'Eino agent observability', repo_url: 'https://github.com/T-DWAG/agent-observability',
+          summary: 'Observability kit for agent apps: non-invasive callback hooks capture call chains, token cost and tool calls, plus redaction, adaptive sampling and LLM-as-judge scoring, exportable to OpenTelemetry.',
+          tags: ['Go', 'observability', 'Agent', 'PostgreSQL'] },
+        { name: 'go-zero short-link service', repo_url: 'https://github.com/T-DWAG/zeroProject',
+          summary: 'singleflight merges concurrent redirect requests, a bloom filter blocks useless DB reads, a sequence generator + base62 mints the codes, MD5 dedupes.',
           tags: ['Go', 'go-zero', 'Redis', 'MySQL'] },
-        { name: '遥感无人机影像地块分割', repo_url: 'https://github.com/T-DWAG/remote_v1',
-          summary: '大幅遥感 TIFF 按窗口切片，YOLO 实例分割识别地块，经 rasterio/geopandas 转为带坐标的矢量图层并合并输出。',
-          tags: ['Python', 'YOLO', '遥感', 'GIS'] }
+        { name: 'Remote-sensing parcel segmentation', repo_url: 'https://github.com/T-DWAG/remote_v1',
+          summary: 'Large remote-sensing TIFFs are windowed into tiles, YOLO instance segmentation finds the parcels, then rasterio/geopandas turn them into georeferenced vector layers and merge the output.',
+          tags: ['Python', 'YOLO', 'remote sensing', 'GIS'] }
       ];
       function items(list) {
         return list.map(function (p, i) {

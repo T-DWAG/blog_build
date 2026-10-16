@@ -78,6 +78,8 @@ p { margin: 0; }
 a { color: inherit; text-decoration: underline; text-decoration-style: dashed; text-underline-offset: 4px; text-decoration-color: var(--dim); }
 a:hover { color: var(--bg); background: var(--ink); text-decoration: none; }
 .dim { color: var(--dim); } .meta { color: var(--dim); font-size: var(--s1); }
+/* 双语对照：英文在前，中文在下一行小一号，只作注解 */
+.zh { display: block; margin-top: 6px; color: var(--dim); font-size: var(--s1); }
 .err { color: var(--ink); } .err::before { content: "! "; color: var(--glow); }
 .ps { color: var(--glow); }
 .rev, em { font-style: normal; color: var(--bg); background: var(--ink); padding: 0 .3em; }

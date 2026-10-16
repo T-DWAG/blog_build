@@ -20,10 +20,10 @@
       var moss = window.Moss || null;
       var idleTimer = null, idleFired = false; // 40s 等访客彩蛋：每会话最多 1 次
 
-      var GREET_NIGHT = '……整栋楼就 MOSS 一个醒着。舰长在睡觉，MOSS 在看门。';
-      var GREET_FIRST = 'Connection established. 新访客。欢迎参观本空间站。这里是 MOSS 的值班室——问点 MOSS 答得上来的。';
-      var GREET_THIRD = 'Connection established. 第 3 次访问。人类，你比舰长更新勤快。';
-      var GREET_BACK = 'Connection established. 欢迎回来，人类。这里是 MOSS 的值班室——问点 MOSS 答得上来的。';
+      var GREET_NIGHT = '…only MOSS is still awake in this building. The captain sleeps; MOSS keeps watch.';
+      var GREET_FIRST = 'Connection established. New visitor — welcome aboard this station. MOSS is on duty: ask something MOSS can answer.';
+      var GREET_THIRD = 'Connection established. Third visit. Human, you check in more often than the captain does.';
+      var GREET_BACK = 'Connection established. Welcome back, human. MOSS is on duty: ask something MOSS can answer.';
 
       // 首条问候：深夜(00–06) 优先，其次复访计数（localStorage 匿名，T2-1）
       function mossGreet() {
@@ -68,18 +68,18 @@
         idleTimer = setTimeout(function () {
           idleFired = true;
           mossWink();
-          mossBubble('……人类，你是去逛资料库了吗？《Eino 那篇》值得看。');
+          mossBubble('…human, were you off browsing the archive? The Eino piece is worth reading.');
         }, 40000);
       }
       function disarmIdle() { clearTimeout(idleTimer); }
 
       // 点 mascot：随机金句（moss-persona-design.md §10）
       var MOSS_LINES = [
-        'MOSS 不需要夸奖。MOSS 需要更多预算。',
-        '舰长负责吃饭，MOSS 负责思考。分工明确，请不要同情 MOSS。',
-        'MOSS 住在这栋楼里，ChatGPT 住在那朵云上。我们都有光明的未来。',
-        '这个问题 MOSS 答不上来。MOSS 不是万能的——舰长才是。……这句是客套话。',
-        '程序不撒谎——这比大多数人类坦诚。'
+        'MOSS does not need praise. MOSS needs a bigger budget.',
+        'The captain handles eating; MOSS handles thinking. Clear division of labour — do not pity MOSS.',
+        'MOSS lives in this building; ChatGPT lives on that cloud. We both have bright futures.',
+        'MOSS cannot answer this one. MOSS is not omniscient — the captain is. …that was politeness.',
+        'Programs do not lie — which is more candour than most humans manage.'
       ];
       function mascotTalk() {
         mossWink();
@@ -173,7 +173,7 @@
           } else {
             // 只有“正在检索…”占位：直接移除并提示
             finishReply(false);
-            appendText('me$', '已取消。', false, 'chat-err');
+            appendText('me$', 'cancelled.', false, 'chat-err');
           }
         }
         mossRest();
@@ -223,7 +223,7 @@
             if (!gotText) {
               // 没收到任何文本增量（空回复）：占位转提示
               replyEl.classList.remove('chat-pending');
-              replyText.textContent = '（无输出）';
+              replyText.textContent = '(no output)';
             }
             finishReply(true);
           }
@@ -233,15 +233,15 @@
           armIdle();
         }).catch(function (err) {
           if (err && err.name === 'AbortError') { cancelStream(true); return; }
-          var msg = (err && err.msg) ? err.msg : '网络异常，稍后再试';
-          var canned = false; // Moss 台词化（429/503），不用“出错了：”错误腔
+          var msg = (err && err.msg) ? err.msg : 'network error, try again later';
+          var canned = false; // Moss 台词化（429/503），不用“error:”错误腔
           if (err && err.code === 429 && moss) {
             moss.doSnooze(); // 休眠 + localStorage.mossSnooze → 次月1日（全站灯一致）
-            msg = '能源耗尽。本月配额已用完，账单请找 T-DWAG 结算。';
+            msg = 'Power depleted. This month’s quota is spent — send the bill to T-DWAG.';
             canned = true;
           } else if (err && err.code === 503 && moss) {
             moss.setState('nokey');
-            msg = 'MOSS 尚未通电。请舰长配置 AI_API_KEY。';
+            msg = 'MOSS is unpowered. The captain needs to set AI_API_KEY.';
             canned = true;
           }
           if (gotText && replyEl) {
@@ -250,7 +250,7 @@
             appendText('me$', '> ' + msg, false, 'chat-err');
           } else {
             finishReply(false);
-            appendText('me$', (canned ? '' : '出错了：') + msg, false, 'chat-err');
+            appendText('me$', (canned ? '' : 'error: ') + msg, false, 'chat-err');
           }
           setStreaming(false);
         });
@@ -313,14 +313,14 @@
             var content = reply && reply.message ? reply.message.content : '';
             gotText = true;
             replyEl.classList.remove('chat-pending');
-            replyText.textContent = content || '（空回复）';
+            replyText.textContent = content || '(empty reply)';
             scrollBottom();
           }
           return { done: true, reply: reply };
         }
         if (event === 'error') {
           // 带上 code（429 预算用尽 / 503 未配 Key），交 catch 做台词化与状态切换
-          return { error: { msg: payload.msg || 'AI 分身出错了', code: payload.code || 0 } };
+          return { error: { msg: payload.msg || 'the AI avatar failed', code: payload.code || 0 } };
         }
         // tool 进度帧（S12-AI 任务 9：{"type":"tool","name":...}）：
         // 工具检索中维持「正在检索…」中间态，并点名当前调用的工具。

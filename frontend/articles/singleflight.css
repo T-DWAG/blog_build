@@ -442,31 +442,12 @@ footer a { color: var(--white); }
 /* ============================================================
    窗口框架(Mac 终端风) — 与主站 style.css 保持一致
    ============================================================ */
-@font-face {
-  font-family: "Fusion Pixel";
-  src: url("../fonts/fusion-pixel-12px-proportional-zh_hans.subset.woff2") format("woff2");
-  font-display: swap;
-}
-@font-face {
-  font-family: "Fusion Pixel Full";
-  src: url("../fonts/fusion-pixel-12px-proportional-zh_hans.ttf.woff2") format("woff2");
-  font-display: swap;
-}
-@font-face {
-  font-family: "Fusion Pixel Mono";
-  src: url("../fonts/fusion-pixel-12px-monospaced-zh_hans.subset.woff2") format("woff2");
-  font-display: swap;
-}
-@font-face {
-  font-family: "Fusion Pixel Mono Full";
-  src: url("../fonts/fusion-pixel-12px-monospaced-zh_hans.ttf.woff2") format("woff2");
-  font-display: swap;
-}
-
+/* 字体：不再单独引入 Fusion Pixel，改用全站自托管像素字体
+   （../fonts/fonts.css 声明 --pixel，本页 head 已 link） */
 :root {
   --green: #00ff41;
-  --fp: "Fusion Pixel", "Fusion Pixel Full", "PingFang SC", "Microsoft YaHei", sans-serif;
-  --fp-mono: "Fusion Pixel Mono", "Fusion Pixel Mono Full", "Courier New", monospace;
+  --fp: var(--pixel);
+  --fp-mono: var(--pixel); /* 全站像素字体本身等宽，不再另设等宽系列 */
 }
 
 .pixel-round {
