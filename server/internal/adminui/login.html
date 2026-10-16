@@ -3,82 +3,309 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>admin login — 从气象到代码</title>
-<link rel="preload" href="/admin-assets/fonts/fusion-pixel-12px-monospaced-zh_hans.ttf.woff2" as="font" type="font/woff2" crossorigin>
-<style>
-@font-face {
-  font-family: "Fusion Pixel Mono";
-  src: url("/admin-assets/fonts/fusion-pixel-12px-monospaced-zh_hans.ttf.woff2") format("woff2");
-  font-display: block;
-}
-
-:root{--black:#000;--white:#fff;--green:#00ff41;--lt-red:#ff5f57;--lt-yellow:#febc2e;--lt-green:#28c840;
-
---mono:"Fusion Pixel Mono","Courier New","PingFang SC",monospace}
-*{box-sizing:border-box}
-body{margin:0;min-width:320px;color:var(--black);background:var(--black);border:12px solid var(--black);font-family:var(--mono);font-size:15px;line-height:1.85;cursor:url("/admin-assets/assets/cursor_default.svg") 0 0,default}
-a,button,input{cursor:url("/admin-assets/assets/cursor_pointer.svg") 0 0,pointer}
-.pixel-round{clip-path:polygon(0 4px,2px 4px,4px 2px,4px 0,calc(100% - 4px) 0,calc(100% - 4px) 2px,calc(100% - 2px) 4px,100% 4px,100% calc(100% - 4px),calc(100% - 2px) calc(100% - 4px),calc(100% - 4px) calc(100% - 2px),calc(100% - 4px) 100%,4px 100%,4px calc(100% - 2px),2px calc(100% - 4px),0 calc(100% - 4px))}
-.win{background:var(--white);max-width:420px;margin:10vh auto 0;border:2px solid var(--black);box-shadow:8px 8px 0 var(--black)}
-.winbar{display:flex;align-items:center;gap:10px;padding:9px 12px;border-bottom:4px solid var(--black);font-family:var(--mono);font-size:12px}
-.lights{display:flex;gap:5px}
-.lights i{width:10px;height:10px;border:1px solid var(--black);display:block}
-.r{background:#ff5f57}.y{background:#febc2e}.g{background:#28c840}
-.winbar-path{margin-left:6px;white-space:nowrap;overflow:hidden}
-.main{padding:28px 24px}
-h1{font-size:18px;margin:0 0 4px}
-.sub{font-family:var(--mono);font-size:12px;margin:0 0 20px;opacity:.7}
-label{display:block;font-family:var(--mono);font-size:12px;margin:14px 0 4px}
-input{width:100%;border:2px solid var(--black);background:var(--white);padding:8px 10px;font-family:var(--mono);font-size:14px;color:var(--black);outline:none}
-input:focus{box-shadow:4px 4px 0 var(--black)}
-.btn{display:block;width:100%;margin-top:20px;border:3px solid var(--black);background:var(--black);color:var(--white);padding:10px;font-family:var(--mono);font-size:14px;box-shadow:3px 3px 0 var(--white),5px 5px 0 var(--black);transition:transform .14s ease,box-shadow .14s ease,color .14s ease}
-.btn:hover{transform:translate(2px,2px);box-shadow:1px 1px 0 var(--white),3px 3px 0 var(--black);color:var(--green)}
-.err{font-family:var(--mono);font-size:12px;color:var(--green);margin-top:14px;min-height:18px}
-/* 锁定系统色：自动填充/选中/光标/滚动条统一像素风 */\ninput:-webkit-autofill,input:-webkit-autofill:hover,input:-webkit-autofill:focus{-webkit-text-fill-color:var(--black);-webkit-box-shadow:0 0 0 1000px var(--white) inset;transition:background-color 9999s ease-out 0s}\n::selection{background:var(--black);color:var(--green)}\ninput,textarea,select{caret-color:var(--green)}\n::-webkit-scrollbar{width:12px;height:12px}\n::-webkit-scrollbar-track{background:var(--white)}\n::-webkit-scrollbar-thumb{background:var(--black);border:2px solid var(--white)}\n::-webkit-scrollbar-thumb:hover{background:var(--green)}
-</style>
+<title>login — T-Dwag admin</title>
+<link rel="preload" href="/admin-assets/fonts/pixel-core.woff2" as="font" type="font/woff2" crossorigin>
+<link rel="stylesheet" href="/admin-assets/admin.css">
 </head>
-<body>
-<div class="win pixel-round">
-  <header class="winbar">
-    <div class="lights" aria-hidden="true"><i class="r"></i><i class="y"></i><i class="g"></i></div>
-    <span class="winbar-path">t-dwag@blog: <b>~/admin/login</b></span>
-  </header>
+<body class="solo">
+<div class="app">
   <div class="main">
-    <h1>go /admin login</h1>
-    <p class="sub"># 站主登录 · 没令牌进不去</p>
-    <form id="loginForm" novalidate>
-      <label>USERNAME</label>
-      <input type="text" id="username" autocomplete="username" required>
-      <label>PASSWORD</label>
-      <input type="password" id="password" autocomplete="current-password" required>
-      <button class="btn" type="submit">go login <span>→</span></button>
-    </form>
-    <p class="err" id="err"></p>
+    <div class="page solo-wrap">
+      <p class="prompt" id="ps1" hidden>t-dwag@blog:~$ <b>admin login</b></p>
+      <section class="pane" id="pane" hidden><span class="pt">auth</span>
+        <h1 id="title" hidden>Sign in<span class="zh">站主登录 · 没令牌进不去</span></h1>
+
+        <!-- 自检日志 → 提示符会话 → 像素进度条 -->
+        <div class="term" id="term" aria-live="polite"></div>
+
+        <form id="loginForm" novalidate hidden>
+          <div class="pr" id="prUser">
+            <span class="ps">t-dwag@blog:~$</span>
+            <span class="lbl">login as:</span>
+            <input type="text" id="username" autocomplete="username" autocapitalize="off" spellcheck="false" aria-label="username" required>
+          </div>
+          <div class="pr" id="prPass">
+            <span class="ps">t-dwag@blog:~$</span>
+            <span class="lbl">password:</span>
+            <input type="password" id="password" autocomplete="current-password" aria-label="password" required>
+            <span class="cursor" aria-hidden="true"></span>
+          </div>
+          <div class="rowline"><button class="go" type="submit">go login →</button></div>
+          <div class="bar" id="bar" hidden><span class="track"><i class="fill" id="fill"></i></span><span class="pct" id="pct">0%</span></div>
+          <p class="err" id="err" style="margin-top:14px;min-height:20px"></p>
+        </form>
+
+        <p class="meta" id="skip" hidden style="margin-top:14px">press any key to skip<span class="zh-i">按任意键跳过动画</span></p>
+      </section>
+      <p class="solo-foot" id="foot" hidden>© 2026 T-Dwag · admin console<span class="zh-i">密钥一律走环境变量，不进库</span></p>
+    </div>
   </div>
 </div>
+
+<div class="bo" id="bo"><i></i></div>
+
 <script>
 (function(){
+  var DELAY = 26;                                  // 逐字速度（进场门是 22–26ms）
+  var GLYPHS = '!@#$%&*<>?/\\|{}[]=+-_^~01';       // 与 term-intro.js 同一套乱码字符集
+
+  var bo=document.getElementById('bo');
+  var pane=document.getElementById('pane');
+  var ps1=document.getElementById('ps1');
+  var foot=document.getElementById('foot');
+  var title=document.getElementById('title');
+  var term=document.getElementById('term');
   var form=document.getElementById('loginForm');
+  var prUser=document.getElementById('prUser');
+  var prPass=document.getElementById('prPass');
+  var skipEl=document.getElementById('skip');
+  var uEl=document.getElementById('username');
+  var pEl=document.getElementById('password');
   var err=document.getElementById('err');
+  var bar=document.getElementById('bar');
+  var fill=document.getElementById('fill');
+  var pct=document.getElementById('pct');
+
+  var busy=false, booted=false, timers=[];
+  function later(fn,ms){ var id=setTimeout(fn,ms); timers.push(id); return id; }
+  function clearTimers(){ timers.forEach(clearTimeout); timers.length=0; }
+
+  var reduced=false;
+  try{ reduced=window.matchMedia('(prefers-reduced-motion: reduce)').matches; }catch(e){}
+  var seen=false;
+  try{ seen=!!sessionStorage.getItem('adminLoginBoot'); sessionStorage.setItem('adminLoginBoot','1'); }catch(e){}
+  // 重播开关：?boot=1 强制播一遍（与公开站 ?moss=… 同类的调试约定）
+  if(location.search.indexOf('boot=1')>=0) seen=false;
+
+  // ---------- 工具 ----------
+  function row(ps,label,value){
+    var p=document.createElement('p');
+    p.className='pr boot-on';
+    var a=document.createElement('span'); a.className='ps'; a.textContent=ps;
+    var b=document.createElement('span'); b.className='lbl'; b.textContent=label;
+    var c=document.createElement('span'); c.textContent=value;
+    p.appendChild(a); p.appendChild(b); p.appendChild(c);
+    term.appendChild(p);
+    return p;
+  }
+  function line(en,zh,cls){
+    var p=document.createElement('p');
+    p.className='tl boot-on'+(cls?' '+cls:'');
+    p.appendChild(document.createTextNode(en));
+    if(zh){ var z=document.createElement('span'); z.className='zh-i'; z.textContent=zh; p.appendChild(z); }
+    term.appendChild(p);
+    return p;
+  }
+  function check(name,value,ok){
+    var p=document.createElement('p');
+    p.className='tl boot-on';
+    var m=document.createElement('span');
+    m.className='mk'+(ok?'':' hot');
+    m.textContent=ok?'[ ok ]':'[ !! ]';
+    p.appendChild(m);
+    p.appendChild(document.createTextNode(name));
+    var sp=document.createElement('span');
+    sp.className='dim'; sp.textContent='  '+value;
+    p.appendChild(sp);
+    term.appendChild(p);
+    return p;
+  }
+  function say(en,zh){
+    err.innerHTML='';
+    err.appendChild(document.createTextNode(en));
+    if(zh){ var s=document.createElement('span'); s.className='zh-i'; s.textContent=zh; err.appendChild(s); }
+  }
+  function focusU(){ try{ uEl.focus({preventScroll:true}); }catch(e){} }
+
+  // 打字机（reduced-motion 直接落定）
+  function type(node,text,cb,ms){
+    if(reduced){ node.textContent=text; if(cb)cb(); return; }
+    var i=0;
+    (function step(){
+      i++; node.textContent=text.slice(0,i);
+      if(i<text.length) later(step,ms||DELAY);
+      else if(cb) cb();
+    })();
+  }
+
+  // 标题乱码解码：与进场门同款（35ms 一帧、收尾反白闪一下）
+  function decode(node,final,flashEl){
+    if(reduced){ node.textContent=final; return; }
+    var steps=Math.max(3,Math.round(300/35)), k=0;
+    (function step(){
+      k++;
+      if(k>=steps){
+        node.textContent=final;
+        if(flashEl){
+          flashEl.classList.add('rev');
+          later(function(){ flashEl.classList.remove('rev'); },240);
+        }
+        return;
+      }
+      var out='';
+      for(var i=0;i<final.length;i++) out+=GLYPHS[(Math.random()*GLYPHS.length)|0];
+      node.textContent=out;
+      later(step,35);
+    })();
+  }
+
+  // ---------- 开场：开机光栅 → 自检 → 提示符 ----------
+  function revealShell(){
+    ps1.hidden=false; ps1.classList.add('boot-on');
+    pane.hidden=false; pane.classList.add('boot-on');
+    foot.hidden=false; foot.classList.add('boot-on');
+    title.hidden=false;
+  }
+
+  var BOOT_DONE=false;
+  var onSkipKey=function(e){
+    if(BOOT_DONE){ document.removeEventListener('keydown',onSkipKey); return; }
+    // 只接管可打印键与 Esc，F5/Ctrl/Cmd 等系统快捷键放行
+    var printable=(typeof e.key==='string' && e.key.length===1);
+    if(!printable && e.key!=='Escape') return;
+    e.preventDefault();
+    document.removeEventListener('keydown',onSkipKey);
+    skipAll();
+    BOOT_DONE=true;
+  };
+
+  function bootLog(){
+    // 1) 标题解码
+    decode(title.firstChild,'Sign in ',title);
+    // 2) 自检三行 + 缺口行 + 结论行
+    later(function(){
+      type(line('t-dwag@blog cold boot','','dim').firstChild,'t-dwag@blog cold boot',function(){
+        later(function(){ check('kernel ','pixel-12',true);
+        later(function(){ check('storage','articles.db',true);
+        later(function(){ check('auth   ','jwt · 24h',true);
+        later(function(){
+          check('session','none',false);
+          later(function(){
+            type(line('> authentication required.','需要站主令牌','hot').firstChild,'> authentication required.',function(){
+              enter();
+            });
+          },180);
+        },140); },140); },140); },120);
+      });
+    },260);
+  }
+
+  function enter(){
+    form.hidden=false; form.classList.add('boot-on');
+    skipEl.hidden=true;
+    focusU();
+  }
+
+  // 跳过：全部动画立即落定
+  function skipAll(){
+    if(booted) return;
+    booted=true;
+    clearTimers();
+    if(bo.parentNode) bo.parentNode.removeChild(bo);
+    revealShell();
+    title.firstChild.textContent='Sign in ';
+    term.innerHTML='';
+    check('kernel ','pixel-12',true);
+    check('storage','articles.db',true);
+    check('auth   ','jwt · 24h',true);
+    check('session','none',false);
+    line('> authentication required.','需要站主令牌','hot');
+    enter();
+  }
+
+  function markBooted(){ booted=true; skipEl.hidden=true; document.removeEventListener('keydown',onSkipKey); }
+
+  if(reduced || seen){
+    // 不播动画（reduced-motion 或本会话已经看过）
+    if(bo.parentNode) bo.parentNode.removeChild(bo);
+    revealShell();
+    title.firstChild.textContent='Sign in ';
+    check('kernel ','pixel-12',true);
+    check('storage','articles.db',true);
+    check('auth   ','jwt · 24h',true);
+    check('session','none',false);
+    line('> authentication required.','需要站主令牌','hot');
+    enter();
+    markBooted();
+  }else{
+    skipEl.hidden=false;
+    later(revealShell,820);      // 光栅展开到位后揭开页面
+    later(function(){ if(bo.parentNode) bo.classList.add('out'); },820);
+    later(function(){ if(bo.parentNode) bo.parentNode.removeChild(bo); },1100);
+    later(bootLog,860);
+    later(markBooted,9000);      // 兜底：动画再久也不挡输入
+    document.addEventListener('keydown',onSkipKey);
+  }
+
+  // ---------- 提交：落定输入 → authenticating… → 进度条 → granted ----------
+  function lock(on){
+    busy=on;
+    uEl.disabled=on; pEl.disabled=on;
+    form.querySelector('button').disabled=on;
+    pane.classList.toggle('busy',on);
+  }
+  function showPrompts(on){
+    prUser.hidden=!on; prPass.hidden=!on;
+  }
+  function runBar(cb){
+    bar.hidden=false;
+    if(reduced){ fill.style.width='100%'; pct.textContent='100%'; cb(); return; }
+    var p=0;
+    (function tick(){
+      p+=10; fill.style.width=p+'%'; pct.textContent=p+'%';
+      if(p>=100) later(cb,140); else later(tick,85);
+    })();
+  }
+  function resetBar(){ bar.hidden=true; fill.style.width='0'; pct.textContent='0%'; }
+
   form.addEventListener('submit',function(e){
     e.preventDefault();
+    if(busy) return;
+    var u=uEl.value.trim(), p=pEl.value;
+    if(!u){ say('username required','请填用户名'); focusU(); return; }
+    if(!p){ say('password required','请填密码'); pEl.focus(); return; }
     err.textContent='';
-    var u=document.getElementById('username').value;
-    var p=document.getElementById('password').value;
-    fetch('/api/admin/login',{
-      method:'POST',
-      headers:{'Content-Type':'application/json'},
-      body:JSON.stringify({username:u,password:p})
-    }).then(function(r){return r.json().then(function(d){return{ok:r.ok,d:d}});})
-    .then(function(res){
-      if(res.ok && res.d.code===0){
-        location.href='/admin/articles';
-      } else if(res.d.msg==='locked'){
-        err.textContent='> error: 账号已锁定，10 分钟后再试';
-      } else {
-        err.textContent='> error: unauthorized 用户名或密码错误';
-      }
-    }).catch(function(){err.textContent='> error: 网络错误，请重试';});
+
+    row('t-dwag@blog:~$','login as:',u);
+    row('t-dwag@blog:~$','password:','••••••••');
+    showPrompts(false);
+    lock(true);
+
+    var l1=line('> authenticating…','','');
+    runBar(function(){
+      fetch('/api/admin/login',{
+        method:'POST',
+        headers:{'Content-Type':'application/json'},
+        body:JSON.stringify({username:u,password:p})
+      }).then(function(r){ return r.json().then(function(d){ return {ok:r.ok,d:d,status:r.status}; }); })
+      .then(function(res){
+        if(res.ok && res.d.code===0){
+          l1.className='tl boot-on hot';
+          l1.textContent='> access granted';
+          line('opening ~/admin/articles …');
+          later(function(){ location.href='/admin/articles'; },520);
+          return;
+        }
+        fail(res.d && res.d.msg==='locked'
+          ? ['locked','账号已锁定 · 10 分钟后再试']
+          : (res.status===401 ? ['unauthorized','用户名或密码错误'] : ['login failed','登录失败，请重试']));
+      }).catch(function(){ fail(['network error','网络异常，请重试']); });
+    });
+
+    function fail(msg){
+      resetBar();
+      if(l1.parentNode) l1.parentNode.removeChild(l1);
+      lock(false);
+      showPrompts(true);
+      line(msg[0],msg[1],'err boot-on');
+      pEl.value='';
+      pEl.focus();
+    }
+  });
+
+  // 用户名里回车 = 到密码行；密码里回车 = 提交
+  uEl.addEventListener('keydown',function(e){
+    if(e.key==='Enter'){ e.preventDefault(); pEl.focus(); }
   });
 })();
 </script>

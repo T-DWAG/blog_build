@@ -38,7 +38,7 @@ func TestCompose_LoginPage(t *testing.T) {
 // TestCompose_AdminFont 验证 embed 进二进制的字体资源在容器内可访问，
 // 不依赖 FRONTEND_DIR / 挂载 frontend/。
 func TestCompose_AdminFont(t *testing.T) {
-	resp, err := http.Get("http://localhost:8080/admin-assets/fonts/fusion-pixel-12px-monospaced-zh_hans.ttf.woff2")
+	resp, err := http.Get("http://localhost:8080/admin-assets/fonts/pixel-core.woff2")
 	if err != nil {
 		t.Fatalf("GET font: %v", err)
 	}

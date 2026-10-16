@@ -160,7 +160,8 @@ func TestRequireAdmin_Cookie(t *testing.T) {
 func TestAdminAssets_FontEmbedded(t *testing.T) {
 	srv, _ := newTestServer(t, "s9_asset_font")
 
-	req := httptest.NewRequest(http.MethodGet, "/admin-assets/fonts/fusion-pixel-12px-monospaced-zh_hans.ttf.woff2", nil)
+	// 管理台字体与公开站同一份文件（pixel-core.woff2 / pixel-rest.woff2）
+	req := httptest.NewRequest(http.MethodGet, "/admin-assets/fonts/pixel-core.woff2", nil)
 	rec := httptest.NewRecorder()
 	srv.Handler().ServeHTTP(rec, req)
 	if rec.Code != http.StatusOK {

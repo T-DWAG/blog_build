@@ -3,111 +3,74 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>go /admin/settings — 从气象到代码</title>
-<link rel="preload" href="/admin-assets/fonts/fusion-pixel-12px-monospaced-zh_hans.ttf.woff2" as="font" type="font/woff2" crossorigin>
-<style>
-@font-face {
-  font-family: "Fusion Pixel Mono";
-  src: url("/admin-assets/fonts/fusion-pixel-12px-monospaced-zh_hans.ttf.woff2") format("woff2");
-  font-display: block;
-}
-
-:root{--black:#000;--white:#fff;--green:#00ff41;--lt-red:#ff5f57;--lt-yellow:#febc2e;--lt-green:#28c840;
-
---mono:"Fusion Pixel Mono","Courier New","PingFang SC",monospace}
-*{box-sizing:border-box}
-body{margin:0;min-width:320px;color:var(--black);background:var(--black);border:12px solid var(--black);font-family:var(--mono);font-size:15px;line-height:1.85;cursor:url("/admin-assets/assets/cursor_default.svg") 0 0,default}
-a,button,input,textarea,select{cursor:url("/admin-assets/assets/cursor_pointer.svg") 0 0,pointer}
-a{color:inherit;text-decoration:none}
-.pixel-round{clip-path:polygon(0 4px,2px 4px,4px 2px,4px 0,calc(100% - 4px) 0,calc(100% - 4px) 2px,calc(100% - 2px) 4px,100% 4px,100% calc(100% - 4px),calc(100% - 2px) calc(100% - 4px),calc(100% - 4px) calc(100% - 2px),calc(100% - 4px) 100%,4px 100%,4px calc(100% - 2px),2px calc(100% - 4px),0 calc(100% - 4px))}
-.win{background:var(--white);max-width:1120px;margin:0 auto;border:4px solid var(--black);box-shadow:12px 12px 0 var(--black)}
-.winbar{display:flex;align-items:center;gap:10px;padding:9px 12px;border-bottom:4px solid var(--black);font-family:var(--mono);font-size:12px}
-.lights{display:flex;gap:5px}.lights i{width:10px;height:10px;border:1px solid var(--black);display:block}
-.r{background:#ff5f57}.y{background:#febc2e}.g{background:#28c840}
-.winbar-path{margin-left:6px;white-space:nowrap;overflow:hidden}
-.nav{display:flex;flex-wrap:wrap;border-bottom:4px solid var(--black);font-family:var(--mono);font-size:13px}
-.nav a{padding:10px 16px;border-right:1px solid var(--black)}
-.nav a:hover{background:var(--black);color:var(--white)}
-.nav a.on{background:var(--black);color:var(--green)}
-.main{position:relative;overflow:hidden;background:var(--white);padding:24px}
-.main .bg-layer{position:absolute;inset:0;opacity:.35;pointer-events:none;background-image:url('/admin-assets/assets/scanline.svg');background-size:8px 48px;animation:scan-down 6s linear infinite}
-.main .content{position:relative;z-index:1;max-width:760px}
-@keyframes scan-down{from{background-position:0 0}to{background-position:0 48px}}
-h1{font-size:18px;margin:0 0 16px}
-label{display:block;font-family:var(--mono);font-size:12px;margin:14px 0 4px}
-input,textarea{width:100%;border:2px solid var(--black);background:var(--white);padding:8px 10px;font-family:var(--mono);font-size:14px;color:var(--black);outline:none}
-textarea{min-height:90px;resize:vertical}
-input:focus,textarea:focus{box-shadow:4px 4px 0 var(--black)}
-.field-row{display:flex;flex-wrap:wrap;align-items:center;gap:10px}
-.field-row input,.field-row textarea{flex:1 1 240px;width:auto}
-.field-row textarea{align-self:flex-start;min-height:56px;resize:vertical}
-.field-hint{flex:0 1 auto;font-family:var(--mono);font-size:12px;color:#666;white-space:nowrap}
-.field-hint-block{font-family:var(--mono);font-size:12px;color:#666;margin:4px 0 0}
-.btn{border:2px solid var(--black);background:var(--black);color:var(--white);padding:8px 20px;font-family:var(--mono);font-size:13px;margin-top:8px}
-.btn:hover{transform:translate(2px,2px);box-shadow:1px 1px 0 var(--white),3px 3px 0 var(--black);color:var(--green)}
-.note{font-family:var(--mono);font-size:12px;opacity:.7}
-.err{font-family:var(--mono);font-size:12px;color:var(--green);min-height:18px;margin-top:6px}
-hr{border:none;border-top:2px solid var(--black);margin:28px 0}
-/* 锁定系统色：自动填充/选中/光标/滚动条统一像素风，防止跟随系统强调色变紫 */
-input:-webkit-autofill,input:-webkit-autofill:hover,input:-webkit-autofill:focus{-webkit-text-fill-color:var(--black);-webkit-box-shadow:0 0 0 1000px var(--white) inset;transition:background-color 9999s ease-out 0s}
-::selection{background:var(--black);color:var(--green)}
-input,textarea,select{caret-color:var(--green)}
-::-webkit-scrollbar{width:12px;height:12px}
-::-webkit-scrollbar-track{background:var(--white)}
-::-webkit-scrollbar-thumb{background:var(--black);border:2px solid var(--white)}
-::-webkit-scrollbar-thumb:hover{background:var(--green)}
-
-</style>
+<title>settings — T-Dwag admin</title>
+<link rel="preload" href="/admin-assets/fonts/pixel-core.woff2" as="font" type="font/woff2" crossorigin>
+<link rel="stylesheet" href="/admin-assets/admin.css">
 </head>
 <body>
-<div class="win pixel-round">
-  <header class="winbar">
-    <div class="lights" aria-hidden="true"><i class="r"></i><i class="y"></i><i class="g"></i></div>
-    <span class="winbar-path">t-dwag@blog: <b>~/admin/settings</b></span>
-  </header>
-  <nav class="nav">
-    <a href="/admin/articles">articles</a>
-    <a href="/admin/projects">projects</a>
-    <a href="/admin/messages">messages</a>
-    <a class="on" href="/admin/settings">settings</a>
-    <a href="/admin/logout">logout</a>
+<div class="app">
+  <nav class="side" aria-label="Admin">
+    <a class="brand" href="/admin/articles">t-dwag<i>@blog</i><small>admin console</small></a>
+    <div class="navs">
+      <a class="nv" href="/admin/articles">articles</a>
+      <a class="nv" href="/admin/projects">projects</a>
+      <a class="nv" href="/admin/messages">messages</a>
+      <a class="nv" href="/admin/settings" aria-current="page">settings</a>
+    </div>
+    <div class="side-foot">
+      <span class="st" id="st">connected</span>
+      <a href="/admin/logout">logout ↗</a>
+    </div>
   </nav>
   <div class="main">
-    <div class="bg-layer"></div>
-    <div class="content">
-      <h1>站点设置</h1>
-      <p class="note"># API Key 不进库：AI 密钥走环境变量，表单只能填非密钥项</p>
+    <div class="strip">
+      <span>t-dwag@blog:<b>~/admin/settings</b></span>
+      <span class="meta">persona · budget · suggestions</span>
+    </div>
+    <div class="page">
+      <header class="head">
+        <p class="meta">cat ~/.blogrc</p>
+        <h1>Settings<span class="zh">站点设置</span></h1>
+        <p class="lede">API keys never enter the database — they live in environment variables.<span class="zh-i">表单只能填非密钥项</span></p>
+      </header>
 
-    <h2 style="font-size:16px;margin:0 0 4px">PERSONA · AI 人格</h2>
-    <p class="note"># 决定 AI 分身怎么说话（role 身份 / style 风格 / fallback 没素材时）</p>
-    <label>ROLE（身份）</label>
-    <div class="field-row"><input type="text" id="p_role"><span class="field-hint"># 站主的 AI 分身，以第一人称回答</span></div>
-    <label>STYLE（风格）</label>
-    <div class="field-row"><input type="text" id="p_style"><span class="field-hint"># 简洁、克制，以证据说话</span></div>
-    <label>FALLBACK（素材外内容怎么答）</label>
-    <div class="field-row"><textarea id="p_fallback"></textarea><span class="field-hint"># 素材里没有的内容，明确说不知道，不编造</span></div>
+      <section class="pane"><span class="pt">persona</span>
+        <h2>AI persona</h2>
+        <p class="meta">How the AI avatar talks: identity, style, and what to say when the knowledge base has nothing.<span class="zh-i">决定 MOSS 怎么说话</span></p>
+        <label class="field" style="margin-top:20px"><span>role</span><input type="text" id="p_role" placeholder="the site owner's AI avatar, answers in first person"><i class="hint">身份</i></label>
+        <label class="field"><span>style</span><input type="text" id="p_style" placeholder="concise, restrained, evidence first"><i class="hint">风格</i></label>
+        <label class="field"><span>fallback</span><textarea id="p_fallback" placeholder="if it is not in the knowledge base, say so — never invent"></textarea><i class="hint">素材外内容怎么答</i></label>
+      </section>
 
-    <hr style="border:none;border-top:2px solid var(--black);margin:24px 0">
-    <h2 style="font-size:16px;margin:0 0 4px">AI 限额</h2>
-    <p class="note"># 每月允许的对话次数（0 = 当月全部拒绝）</p>
-    <label>BUDGET / MONTH</label>
-    <div class="field-row"><input type="text" id="ai_budget"><span class="field-hint"># 默认 10，例如 10</span></div>
+      <section class="pane"><span class="pt">budget</span>
+        <h2>Monthly budget</h2>
+        <p class="meta">Conversations allowed per month. <span class="ps">0</span> rejects every request this month.<span class="zh-i">用尽返回 429，不调模型</span></p>
+        <label class="field" style="margin-top:20px;max-width:280px"><span>budget / month</span><input type="text" id="ai_budget" placeholder="10"></label>
+      </section>
 
-    <hr style="border:none;border-top:2px solid var(--black);margin:24px 0">
-    <h2 style="font-size:16px;margin:0 0 4px">SUGGESTIONS · 常用问题</h2>
-    <p class="note"># 访客点一下就发问的按钮，每行一条</p>
-    <textarea id="suggestions"></textarea>
-    <p class="field-hint-block"># 例如：他是做什么的？<br>他的技术栈？</p>
+      <section class="pane"><span class="pt">suggestions</span>
+        <h2>Suggested questions</h2>
+        <p class="meta">One per line. They appear as buttons in the visitor chat panel.<span class="zh-i">访客点一下就发问</span></p>
+        <textarea id="suggestions" style="margin-top:20px;min-height:120px" placeholder="What does he do?&#10;What is his stack?"></textarea>
+      </section>
 
-    <button class="btn" id="saveBtn" type="button">保存设置</button>
-    <p class="err" id="saveErr"></p>
+      <div class="rowline">
+        <button class="go" id="saveBtn" type="button">save settings</button>
+        <span class="meta" id="saveErr"></span>
+      </div>
 
-    <hr style="border:none;border-top:2px solid var(--black);margin:28px 0">
-    <h1 style="font-size:16px">修改密码</h1>
-    <label>OLD PASSWORD</label><input type="password" id="old_pw" autocomplete="current-password">
-    <label>NEW PASSWORD</label><input type="password" id="new_pw" autocomplete="new-password">
-    <button class="btn" id="pwBtn" type="button">改密码</button>
-    <p class="err" id="pwErr"></p>
+      <section class="pane"><span class="pt">password</span>
+        <h2>Change password</h2>
+        <p class="meta">Sessions issued before the change stay valid for 24h.<span class="zh-i">改完旧令牌仍有效到过期</span></p>
+        <div class="field-row" style="margin-top:20px;gap:24px;align-items:flex-end">
+          <label class="field" style="flex:1;margin-bottom:0"><span>old password</span><input type="password" id="old_pw" autocomplete="current-password"></label>
+          <label class="field" style="flex:1;margin-bottom:0"><span>new password</span><input type="password" id="new_pw" autocomplete="new-password"></label>
+        </div>
+        <div class="rowline">
+          <button class="btn2" id="pwBtn" type="button">change password</button>
+          <span class="meta" id="pwErr"></span>
+        </div>
+      </section>
     </div>
   </div>
 </div>
@@ -115,6 +78,15 @@ input,textarea,select{caret-color:var(--green)}
 (function(){
   var saveErr=document.getElementById('saveErr');
   function v(id){return document.getElementById(id).value.trim();}
+
+  // 反馈行：英文在前，中文小字在后（.zh-i）
+  function say(el,en,zh,ok){
+    el.innerHTML='';
+    el.appendChild(document.createTextNode(en));
+    if(zh){var s=document.createElement('span'); s.className='zh-i'; s.textContent=zh; el.appendChild(s);}
+    el.className = ok ? 'meta' : 'err meta';
+  }
+
   function load(){
     fetch('/api/admin/settings').then(function(r){
       if(r.status===401){location.href='/admin/login';throw new Error('redirect');}
@@ -129,46 +101,53 @@ input,textarea,select{caret-color:var(--green)}
       document.getElementById('ai_budget').value=ai.budget_per_month!=null?ai.budget_per_month:'';
       var su=d.suggestions||[];
       document.getElementById('suggestions').value=(su||[]).join('\n');
-    }).catch(function(e){if(e.message!=='redirect')saveErr.textContent='> error: 加载失败';});
+    }).catch(function(e){ if(e.message!=='redirect') say(saveErr,'failed to load','加载失败'); });
   }
+
   function put(key,value){
     return fetch('/api/admin/settings',{method:'PUT',headers:{'Content-Type':'application/json'},body:JSON.stringify({key:key,value:value})})
       .then(function(r){return r.json().then(function(d){return{ok:r.ok,d:d};});});
   }
+
   document.getElementById('saveBtn').addEventListener('click',function(){
     saveErr.textContent='';
     var jobs=[];
-    // persona
+    // persona：三项都不填就不发（保持原行为，避免把已有值覆盖成空）
     var persona={};
     if(v('p_role'))persona.role=v('p_role');
     if(v('p_style'))persona.style=v('p_style');
     if(v('p_fallback'))persona.fallback=v('p_fallback');
     if(Object.keys(persona).length)jobs.push(put('persona',persona));
-    // ai
-    var budget=parseInt(v('ai_budget'),10);
+    // ai：留空就不发（0 = 当月全部拒绝，不能拿空值当 0 发上去）
     if(v('ai_budget')!==''){
+      var budget=parseInt(v('ai_budget'),10);
       jobs.push(put('ai',{budget_per_month:isNaN(budget)?0:budget}));
     }
-    // suggestions（每行一条）
+    // suggestions：每行一条
     var sugs=document.getElementById('suggestions').value.split(/\n/).map(function(s){return s.trim();}).filter(Boolean);
     jobs.push(put('suggestions',sugs));
 
     Promise.all(jobs).then(function(res){
       var bad=res.filter(function(r){return !r.ok||r.d.code!==0;});
-      saveErr.textContent=bad.length?'> error: 部分保存失败（含密钥字段会被拒绝）':'> ok: 设置已保存';
-    }).catch(function(){saveErr.textContent='> error: 保存失败';});
+      if(bad.length) say(saveErr,'save failed','部分保存失败（含密钥字段会被拒绝）');
+      else say(saveErr,'saved','已保存',true);
+    }).catch(function(){ say(saveErr,'network error','网络异常'); });
   });
+
   document.getElementById('pwBtn').addEventListener('click',function(){
-    var e=document.getElementById('pwErr');
-    e.textContent='';
-    var old=document.getElementById('old_pw').value;
-    var nw=document.getElementById('new_pw').value;
-    if(!old||!nw){e.textContent='> error: 两个密码都要填';return;}
-    fetch('/api/admin/password',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({old:old,new:nw})})
-      .then(function(r){return r.json().then(function(d){return{ok:r.ok,d:d};});})
-      .then(function(res){e.textContent=res.ok&&res.d.code===0?'> ok: 密码已修改':'> error: 旧密码错误或保存失败';})
-      .catch(function(){e.textContent='> error: 网络错误';});
+    var pwErr=document.getElementById('pwErr');
+    pwErr.textContent='';
+    if(!v('old_pw')||!v('new_pw')){ say(pwErr,'both fields are required','两个密码都要填'); return; }
+    fetch('/api/admin/password',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({old:v('old_pw'),new:v('new_pw')})})
+      .then(function(r){return r.json().then(function(d){return{ok:r.ok,d:d,status:r.status};});})
+      .then(function(res){
+        if(res.ok&&res.d.code===0){ say(pwErr,'password changed','密码已修改',true); }
+        else if(res.status===401){ say(pwErr,'wrong old password','原密码不正确'); }
+        else { say(pwErr,'change failed','修改失败'); }
+      })
+      .catch(function(){ say(pwErr,'network error','网络异常'); });
   });
+
   load();
 })();
 </script>
