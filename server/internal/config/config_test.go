@@ -41,8 +41,8 @@ func TestLoadDefaults(t *testing.T) {
 	if cfg.AIBaseURL != "https://api.deepseek.com/v1" {
 		t.Errorf("AIBaseURL = %q, want default deepseek endpoint", cfg.AIBaseURL)
 	}
-	if cfg.AIModel != "deepseek-chat" {
-		t.Errorf("AIModel = %q, want %q", cfg.AIModel, "deepseek-chat")
+	if cfg.AIModel != "deepseek-flash" {
+		t.Errorf("AIModel = %q, want %q", cfg.AIModel, "deepseek-flash")
 	}
 	if cfg.AIAPIKey != "" {
 		t.Errorf("AIAPIKey = %q, want empty", cfg.AIAPIKey)

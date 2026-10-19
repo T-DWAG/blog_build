@@ -57,7 +57,7 @@ export ADMIN_PASSWORD='换成强密码'
 # AI 三项可留空：服务照常启动，仅 AI 对话返回 503
 export AI_API_KEY=''                       # OpenAI 兼容服务的密钥
 export AI_BASE_URL='https://api.deepseek.com'   # 默认 DeepSeek；可换任意兼容端点
-export AI_MODEL='deepseek-v4-flash'        # 默认 deepseek-chat
+export AI_MODEL='deepseek-flash'        # 默认 deepseek-flash
 
 go run ./cmd/blog
 ```
@@ -85,7 +85,7 @@ python3 -m http.server 8000    # 或 python3 serve.py [port] / nginx / GitHub Pa
 | `ADDR` | 否 | 监听地址，默认 `:8080` |
 | `AI_API_KEY` | 否 | 留空：服务可起，`/api/ai/chat` 返回 503 |
 | `AI_BASE_URL` | 否 | OpenAI 兼容端点，默认 `https://api.deepseek.com` |
-| `AI_MODEL` | 否 | 默认 `deepseek-chat` |
+| `AI_MODEL` | 否 | 默认 `deepseek-flash` |
 
 > 换 AI 供应商只改 `AI_BASE_URL` + `AI_MODEL`，不改代码。密钥一律走环境变量/`.env`，**不落库、不进 git**（`PutSetting` 会拒绝含 `api_key`/`secret` 的设置）。
 
@@ -120,4 +120,4 @@ make test-s1 ... make test-s12   # 每步验收对应测试集；当前进度 te
 
 - **留言不显示**：提交后是 `pending`，需管理台 `/admin/messages` 审核通过才公开（设计如此）。
 - **WSL2 联调**：Windows 浏览器访问 WSL 内服务时若 localhost 转发失效，用 WSL IP 访问，并把 `api-base.js` 临时指向 `http://<WSL-IP>:8080`。
-- **DeepSeek 模型名**：可用 `curl https://api.deepseek.com/models -H "Authorization: Bearer $AI_API_KEY"` 查询；当前有 `deepseek-v4-flash` / `deepseek-v4-pro` 等。
+- **DeepSeek 模型名**：可用 `curl https://api.deepseek.com/models -H "Authorization: Bearer $AI_API_KEY"` 查询；当前有 `deepseek-flash` / `deepseek-pro` 等。

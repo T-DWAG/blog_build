@@ -23,7 +23,7 @@ type Config struct {
 
 const (
 	defaultAIBaseURL = "https://api.deepseek.com/v1"
-	defaultAIModel   = "deepseek-chat"
+	defaultAIModel   = "deepseek-flash"
 )
 
 // Load 从环境变量读取配置。

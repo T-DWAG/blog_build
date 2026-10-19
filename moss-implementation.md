@@ -146,7 +146,7 @@ cd E:/data/code/blog_build-ui-sandbox/frontend && python serve.py 8000
 # 后端（需 Docker Postgres + DeepSeek Key；已跑）
 cd E:/data/code/blog_build-ui-sandbox/server
 export DATABASE_URL='postgres://postgres:postgres@localhost:5432/blog?sslmode=disable'
-export AI_API_KEY='sk-…'  AI_BASE_URL='https://api.deepseek.com/v1'  AI_MODEL='deepseek-v4-flash'
+export AI_API_KEY='sk-…'  AI_BASE_URL='https://api.deepseek.com/v1'  AI_MODEL='deepseek-flash'
 go run ./cmd/blog
 ```
 
