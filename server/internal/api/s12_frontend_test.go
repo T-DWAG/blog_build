@@ -6,23 +6,24 @@ import (
 	"testing"
 )
 
-// S12：AI 分身前端契约（S12-AI 验收 TestChatHTML_UsesAPI / TestSettingsHTML_NoEmbedding）。
-// chat.html 是公开站页面（frontend/）；settings.html 是管理台 embed 页面（adminui/）。
+// S12：AI 分身前端契约（S12-AI 验收 TestChatPanel_UsesAPI / TestSettingsHTML_NoEmbedding）。
+// redesign 后 AI 聊天逻辑收敛到 chat-panel.js（全站共用，chat.html 仅挂载 <aside> 面板）；
+// settings.html 是管理台 embed 页面（adminui/）。
 
-func TestChatHTML_UsesAPI(t *testing.T) {
-	b, err := os.ReadFile("../../../frontend/chat.html")
+func TestChatPanel_UsesAPI(t *testing.T) {
+	b, err := os.ReadFile("../../../frontend/chat-panel.js")
 	if err != nil {
-		t.Fatalf("read chat.html: %v", err)
+		t.Fatalf("read chat-panel.js: %v", err)
 	}
 	s := string(b)
 	if !strings.Contains(s, "/api/ai/chat") {
-		t.Fatal("chat.html 应包含 /api/ai/chat")
+		t.Fatal("chat-panel.js 应包含 /api/ai/chat")
 	}
 	if !strings.Contains(s, "/api/ai/suggestions") {
-		t.Fatal("chat.html 应包含 /api/ai/suggestions")
+		t.Fatal("chat-panel.js 应包含 /api/ai/suggestions")
 	}
 	if !strings.Contains(s, "正在检索") {
-		t.Fatal("chat.html 应含「正在检索…」中间态")
+		t.Fatal("chat-panel.js 应含「正在检索…」中间态")
 	}
 }
 

@@ -28,8 +28,8 @@ func TestIndexHTML_UsesAPI(t *testing.T) {
 		t.Fatalf("read index.html: %v", err)
 	}
 	s := string(b)
-	if !strings.Contains(s, `id="latest-articles"`) {
-		t.Fatal("index.html 应包含 #latest-articles")
+	if !strings.Contains(s, `id="latest"`) {
+		t.Fatal("index.html 应包含 #latest 容器")
 	}
 	if !strings.Contains(s, "/api/articles") {
 		t.Fatal("index.html 应包含 /api/articles")
